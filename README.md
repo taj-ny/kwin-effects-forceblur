@@ -5,3 +5,6 @@
 A fork of [KWin](https://invent.kde.org/plasma/kwin) that forces the blur effect on all windows on Wayland.
 
 For X11 use the [kwin-forceblur](https://github.com/esjeon/kwin-forceblur) script instead.
+
+### Supported versions
+- 5.27.10 (coming soon)
