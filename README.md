@@ -7,4 +7,4 @@ A fork of [KWin](https://invent.kde.org/plasma/kwin) that forces the blur effect
 For X11 use the [kwin-forceblur](https://github.com/esjeon/kwin-forceblur) script instead.
 
 ### Supported versions
-- 5.27.10 (coming soon)
+- [5.27.10](https://github.com/taj-ny/kwin-forceblur-wayland/tree/v5.27.10) (coming soon)
