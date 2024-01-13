@@ -431,5 +431,14 @@
       <max code="true">static_cast&lt;Rules::SetRule&gt;(Rules::ForceTemporarily)</max>
       <default code="true">Rules::UnusedSetRule</default>
     </entry>
+
+    <entry name="forceblur" type="Bool">
+      <label>Force blur</label>
+      <default>false</default>
+    </entry>
+    <entry name="forceblurrule" type="Int">
+      <label>Force blur rule type</label>
+      <default code="true">Rules::UnusedForceRule</default>
+    </entry>
   </group>
 </kcfg>

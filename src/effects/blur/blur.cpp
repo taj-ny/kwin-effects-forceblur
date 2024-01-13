@@ -30,6 +30,9 @@
 
 #include <KDecoration2/Decoration>
 
+#include <window.h>
+#include <workspace.h>
+
 namespace KWin
 {
 
@@ -314,6 +317,13 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
             region = property.value<QRegion>();
             valid = true;
         }
+    }
+
+    // In the future, EffectsWindow's window() method could be used instead.
+    Window *window = Workspace::self()->findToplevel(w->internalId());
+    if (window != NULL && window->forceBlur()) {
+        region = w->rect().toRect();
+        valid = true;
     }
 
     if (valid) {

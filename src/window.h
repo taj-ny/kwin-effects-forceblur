@@ -587,6 +587,8 @@ class KWIN_EXPORT Window : public QObject
      */
     Q_PROPERTY(KWin::Tile *tile READ tile WRITE setTile NOTIFY tileChanged)
 
+    Q_PROPERTY(bool forceBlur READ forceBlur WRITE setForceBlur)
+
 public:
     ~Window() override;
 
@@ -921,6 +923,12 @@ public:
     {
         return m_demandsAttention;
     }
+
+    bool forceBlur() const
+    {
+        return m_forceBlur;
+    }
+    void setForceBlur(bool);
 
     void cancelAutoRaise();
 
@@ -2037,6 +2045,8 @@ private:
     bool m_lockScreenOverlay = false;
     uint32_t m_offscreenRenderCount = 0;
     QTimer m_offscreenFramecallbackTimer;
+
+    bool m_forceBlur = false;
 };
 
 /**

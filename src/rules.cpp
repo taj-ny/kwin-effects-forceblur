@@ -77,6 +77,7 @@ Rules::Rules()
     , shortcutrule(UnusedSetRule)
     , disableglobalshortcutsrule(UnusedForceRule)
     , desktopfilerule(UnusedSetRule)
+    , forceblurrule(UnusedForceRule)
 {
 }
 
@@ -180,6 +181,7 @@ void Rules::readFromSettings(const RuleSettings *settings)
     READ_SET_RULE(shortcut);
     READ_FORCE_RULE(disableglobalshortcuts, );
     READ_SET_RULE(desktopfile);
+    READ_FORCE_RULE(forceblur, );
 }
 
 #undef READ_MATCH_STRING
@@ -258,6 +260,7 @@ void Rules::write(RuleSettings *settings) const
     WRITE_SET_RULE(shortcut, Shortcut, );
     WRITE_FORCE_RULE(disableglobalshortcuts, Disableglobalshortcuts, );
     WRITE_SET_RULE(desktopfile, Desktopfile, );
+    WRITE_FORCE_RULE(forceblur, Forceblur, );
 }
 
 #undef WRITE_MATCH_STRING
@@ -302,7 +305,8 @@ bool Rules::isEmpty() const
             && strictgeometryrule == UnusedForceRule
             && shortcutrule == UnusedSetRule
             && disableglobalshortcutsrule == UnusedForceRule
-            && desktopfilerule == UnusedSetRule);
+            && desktopfilerule == UnusedSetRule
+            && forceblurrule == UnusedForceRule);
 }
 
 Rules::ForceRule Rules::convertForceRule(int v)
@@ -533,6 +537,10 @@ bool Rules::update(Window *c, int selection)
         updated = updated || desktopfile != c->desktopFileName();
         desktopfile = c->desktopFileName();
     }
+    if NOW_REMEMBER (ForceBlur, forceblur) {
+        updated = updated || forceblur != c->forceBlur();
+        forceblur = c->forceBlur();
+    }
     return updated;
 }
 
@@ -662,6 +670,7 @@ APPLY_FORCE_RULE(strictgeometry, StrictGeometry, bool)
 APPLY_RULE(shortcut, Shortcut, QString)
 APPLY_FORCE_RULE(disableglobalshortcuts, DisableGlobalShortcuts, bool)
 APPLY_RULE(desktopfile, DesktopFile, QString)
+APPLY_FORCE_RULE(forceblur, ForceBlur, bool)
 
 #undef APPLY_RULE
 #undef APPLY_FORCE_RULE
@@ -737,6 +746,7 @@ bool Rules::discardUsed(bool withdrawn)
     DISCARD_USED_SET_RULE(shortcut);
     DISCARD_USED_FORCE_RULE(disableglobalshortcuts);
     DISCARD_USED_SET_RULE(desktopfile);
+    DISCARD_USED_FORCE_RULE(forceblur);
 
     return changed;
 }
@@ -897,6 +907,7 @@ CHECK_FORCE_RULE(StrictGeometry, bool)
 CHECK_RULE(Shortcut, QString)
 CHECK_FORCE_RULE(DisableGlobalShortcuts, bool)
 CHECK_RULE(DesktopFile, QString)
+CHECK_FORCE_RULE(ForceBlur, bool)
 
 #undef CHECK_RULE
 #undef CHECK_FORCE_RULE

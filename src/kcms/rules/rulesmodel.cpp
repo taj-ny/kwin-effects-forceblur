@@ -650,6 +650,11 @@ void RulesModel::populateRuleList()
                          RulePolicy::ForceRule, RuleItem::Boolean,
                          i18n("Block compositing"), i18n("Appearance & Fixes"),
                          QIcon::fromTheme("composite-track-on")));
+
+    addRule(new RuleItem(QLatin1String("forceblur"),
+                         RulePolicy::ForceRule, RuleItem::Boolean,
+                         i18n("Force blur"), i18n("Appearance & Fixes"),
+                         QIcon::fromTheme("edit-opacity")));
 }
 
 const QHash<QString, QString> RulesModel::x11PropertyHash()
@@ -672,6 +677,7 @@ const QHash<QString, QString> RulesModel::x11PropertyHash()
         {"type", "type"},
         {"desktopFile", "desktopfile"},
         {"desktops", "desktops"},
+        {"forceBlur", "forceblur"},
     };
     return propertyToRule;
 };

@@ -4503,6 +4503,7 @@ void Window::applyWindowRules()
     setKeepBelow(keepBelow());
     setFullScreen(isRequestedFullScreen(), true);
     setNoBorder(noBorder());
+    setForceBlur(forceBlur());
     updateColorScheme();
     // FSP
     // AcceptFocus :
@@ -4580,6 +4581,16 @@ void Window::maybeSendFrameCallback()
         // update refresh rate, it might have changed
         m_offscreenFramecallbackTimer.start(1'000'000 / output()->refreshRate());
     }
+}
+
+void Window::setForceBlur(bool b)
+{
+    b = rules()->checkForceBlur(b);
+    if (b == forceBlur()) {
+        return;
+    }
+    m_forceBlur = b;
+    updateWindowRules(Rules::ForceBlur);
 }
 
 WindowOffscreenRenderRef::WindowOffscreenRenderRef(Window *window)

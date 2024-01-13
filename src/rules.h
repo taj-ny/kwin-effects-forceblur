@@ -79,6 +79,7 @@ public:
     QString checkShortcut(QString s, bool init = false) const;
     bool checkDisableGlobalShortcuts(bool disable) const;
     QString checkDesktopFile(QString desktopFile, bool init = false) const;
+    bool checkForceBlur(bool blur) const;
 
 private:
     MaximizeMode checkMaximizeVert(MaximizeMode mode, bool init) const;
@@ -114,6 +115,7 @@ public:
         Activity = 1 << 16,
         Screen = 1 << 17,
         DesktopFile = 1 << 18,
+        ForceBlur = 1 << 19,
         All = 0xffffffff
     };
     Q_DECLARE_FLAGS(Types, Type)
@@ -189,6 +191,7 @@ public:
     bool applyShortcut(QString &shortcut, bool init) const;
     bool applyDisableGlobalShortcuts(bool &disable) const;
     bool applyDesktopFile(QString &desktopFile, bool init) const;
+    bool applyForceBlur(bool &blur) const;
 
 private:
 #endif
@@ -293,6 +296,8 @@ private:
     ForceRule disableglobalshortcutsrule;
     QString desktopfile;
     SetRule desktopfilerule;
+    bool forceblur;
+    ForceRule forceblurrule;
     friend QDebug &operator<<(QDebug &stream, const Rules *);
 };
 
