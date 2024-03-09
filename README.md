@@ -8,7 +8,7 @@ Plasma >= 6.0, qt6, kf6 and kwin development packages
 
 # Building
 ```sh
-git clone https://github.com/taj-ny/kwin-forceblur
+git clone https://github.com/taj-ny/kwin-forceblur --single-branch
 cd kwin-forceblur
 mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
 ```
