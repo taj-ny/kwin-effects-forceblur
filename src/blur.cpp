@@ -130,15 +130,6 @@ BlurEffect::BlurEffect()
     m_valid = true;
 }
 
-void enableBlurBehind(QWindow *window, bool enable, const QRegion &region)
-{
-    if (enable) {
-        window->setProperty("kwin_blur", region);
-    } else {
-        window->setProperty("kwin_blur", {});
-    }
-}
-
 BlurEffect::~BlurEffect()
 {
     // When compositing is restarted, avoid removing the manager immediately.
