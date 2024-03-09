@@ -190,17 +190,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel">
-     <property name="text">
-      <string>Classes of windows to exclude from decoration blurring (one per line):</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="kcfg_DecorationExcludedWindowClasses">
-    </widget>
-   </item>
-   <item>
     <widget class="QCheckBox" name="kcfg_TransparentBlur">
      <property name="text">
       <string>Apply window opacity to the blur</string>

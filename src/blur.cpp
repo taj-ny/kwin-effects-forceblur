@@ -209,7 +209,6 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_blurNonMatching = BlurConfig::blurNonMatching();
     m_blurDecorations = BlurConfig::blurDecorations();
     m_windowClasses = BlurConfig::windowClasses().split("\n");
-    m_decorationExcludedwindowClasses = BlurConfig::decorationExcludedWindowClasses().split("\n");
     m_transparentBlur = BlurConfig::transparentBlur();
 
     for (EffectWindow *w : effects->stackingOrder()) {
@@ -261,9 +260,10 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     }
 
     if (shouldForceBlur(w)) {
-        content = QRegion(w->expandedGeometry().toRect()).translated(-w->x(), -w->y());
-        if (m_blurDecorations && shouldBlurDecorations(w)) {
-            frame = w->contentsRect().toRect();
+        content = w->expandedGeometry().toRect().translated(-w->x(), -w->y());
+        if (m_blurDecorations && w->decoration()) {
+            const QMargins borders = w->decoration()->borders();
+            frame = w->contentsRect().adjusted(0, 0, borders.left() + borders.right(), borders.top() + borders.bottom()).toRect();
         }
     }
 
@@ -512,12 +512,6 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
     bool matches = m_windowClasses.contains(w->window()->resourceName())
         || m_windowClasses.contains(w->window()->resourceClass());
     return (matches && m_blurMatching) || (!matches && m_blurNonMatching);
-}
-
-bool BlurEffect::shouldBlurDecorations(const EffectWindow *w) const
-{
-    return !m_decorationExcludedwindowClasses.contains(w->window()->resourceName())
-        && !m_decorationExcludedwindowClasses.contains(w->window()->resourceClass());
 }
 
 void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
