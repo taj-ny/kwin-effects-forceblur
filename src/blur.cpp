@@ -211,6 +211,10 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_windowClasses = BlurConfig::windowClasses().split("\n");
     m_transparentBlur = BlurConfig::transparentBlur();
 
+    for (EffectWindow *w : effects->stackingOrder()) {
+        updateBlurRegion(w);
+    }
+
     // Update all windows for the blur to take effect
     effects->addRepaintFull();
 }
