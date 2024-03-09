@@ -213,6 +213,8 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_topCornerRadius = BlurConfig::topCornerRadius();
     m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
 
+    updateCornerRegions();
+
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
     }
@@ -279,6 +281,36 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
             m_windows.erase(it);
         }
     }
+}
+
+void BlurEffect::updateCornerRegions()
+{
+    QRegion square = QRegion(0, 0, m_topCornerRadius, m_topCornerRadius);
+    QRegion circle = QRegion(0, 0, 2 * m_topCornerRadius, 2 * m_topCornerRadius, QRegion::RegionType::Ellipse);
+    m_topLeftCorner = QRegion(0, 0, m_topCornerRadius, m_topCornerRadius);
+    m_topRightCorner = QRegion(0, 0, m_topCornerRadius, m_topCornerRadius);
+
+    m_topLeftCorner &= circle;
+    m_topLeftCorner ^= square;
+    circle.translate(-m_topCornerRadius, 0);
+    m_topRightCorner &= circle;
+    m_topRightCorner ^= square;
+
+    square = QRegion(0, 0, m_bottomCornerRadius, m_bottomCornerRadius);
+    circle = QRegion(0, 0, 2 * m_bottomCornerRadius, 2 * m_bottomCornerRadius, QRegion::RegionType::Ellipse);
+
+    m_bottomLeftCorner = QRegion(0, 0, m_bottomCornerRadius, m_bottomCornerRadius);
+    m_bottomRightCorner = QRegion(0, 0, m_bottomCornerRadius, m_bottomCornerRadius);
+    circle.translate(0, -m_bottomCornerRadius);
+    m_bottomLeftCorner &= circle;
+    m_bottomLeftCorner ^= square;
+
+    circle.translate(0, m_bottomCornerRadius);
+    circle.translate(-m_bottomCornerRadius, 0);
+    circle.translate(0, -m_bottomCornerRadius);
+
+    m_bottomRightCorner &= circle;
+    m_bottomRightCorner ^= square;
 }
 
 void BlurEffect::slotWindowAdded(EffectWindow *w)
@@ -429,6 +461,22 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
             }
         } else if (frame.has_value()) {
             region = frame.value();
+        }
+    }
+
+    bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
+    if (!isMaximized) {
+        if (m_blurDecorations && m_topCornerRadius) {
+            QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
+            region -= m_topLeftCorner;
+            region -= m_topRightCorner.translated(topRightPosition);
+        }
+
+        if (m_bottomCornerRadius) {
+            QPoint bottomLeftPosition = QPoint(0, w->rect().height() - m_bottomCornerRadius);
+            QPoint bottomRightPosition = QPoint(w->rect().width() - m_bottomCornerRadius, w->rect().height() - m_bottomCornerRadius);
+            region -= m_bottomLeftCorner.translated(bottomLeftPosition);
+            region -= m_bottomRightCorner.translated(bottomRightPosition);
         }
     }
 
