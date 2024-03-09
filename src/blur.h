@@ -82,6 +82,7 @@ private:
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
     bool shouldForceBlur(const EffectWindow *w) const;
+    bool shouldBlurDecorations(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
@@ -126,6 +127,7 @@ private:
     int m_expandSize;
     int m_noiseStrength;
     QStringList m_windowClasses;
+    QStringList m_decorationExcludedwindowClasses;
     bool m_blurMatching;
     bool m_blurNonMatching;
     bool m_blurDecorations;

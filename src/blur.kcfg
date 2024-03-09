@@ -19,6 +19,9 @@
 class2
 class3</default>
         </entry>
+        <entry name="DecorationExcludedWindowClasses" type="String">
+            <default></default>
+        </entry>
         <entry name="BlurMatching" type="Bool">
             <default>true</default>
         </entry>
