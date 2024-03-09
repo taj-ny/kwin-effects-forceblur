@@ -210,6 +210,8 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_blurDecorations = BlurConfig::blurDecorations();
     m_windowClasses = BlurConfig::windowClasses().split("\n");
     m_transparentBlur = BlurConfig::transparentBlur();
+    m_topCornerRadius = BlurConfig::topCornerRadius();
+    m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);

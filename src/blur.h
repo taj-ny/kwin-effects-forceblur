@@ -130,6 +130,8 @@ private:
     bool m_blurNonMatching;
     bool m_blurDecorations;
     bool m_transparentBlur;
+    int m_topCornerRadius;
+    int m_bottomCornerRadius;
 
     struct OffsetStruct
     {
