@@ -257,6 +257,9 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
 
     if (shouldForceBlur(w)) {
         content = w->rect().toRect();
+        if (m_blurDecorations) {
+            frame = w->contentsRect().toRect();
+        }
     }
 
     if (content.has_value() || frame.has_value()) {

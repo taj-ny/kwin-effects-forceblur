@@ -185,7 +185,7 @@
    <item>
     <widget class="QCheckBox" name="kcfg_BlurDecorations">
      <property name="text">
-      <string>Blur window decorations</string>
+      <string>Blur window decorations as well</string>
      </property>
     </widget>
    </item>
