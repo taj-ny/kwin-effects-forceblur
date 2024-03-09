@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.0)
 
-project(blurplus)
+project(forceblur)
 set(PROJECT_VERSION "1.0.0")
 set(PROJECT_VERSION_MAJOR 0)
 

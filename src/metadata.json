@@ -3,14 +3,14 @@
         "Category": "Appearance",
         "Description": "Blurs the background behind semi-transparent windows",
         "EnabledByDefault": false,
-        "Id": "kwin_blur_plus",
+        "Id": "kwin_forceblur",
         "License": "GPL",
-        "Name": "Blur+",
+        "Name": "Force Blur",
         "ServiceTypes": [
             "KWin/Effect"
         ]
     },
-    "X-KDE-ConfigModule": "kwin_blurplus_blur_config",
+    "X-KDE-ConfigModule": "kwin_forceblur_config",
     "org.kde.kwin.effect": {
         "enabledByDefaultMethod": true
     }

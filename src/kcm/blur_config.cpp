@@ -37,7 +37,7 @@ void BlurEffectConfig::save()
     OrgKdeKwinEffectsInterface interface(QStringLiteral("org.kde.KWin"),
                                          QStringLiteral("/Effects"),
                                          QDBusConnection::sessionBus());
-    interface.reconfigureEffect(QStringLiteral("blurplus_blur"));
+    interface.reconfigureEffect(QStringLiteral("forceblur"));
 }
 
 } // namespace KWin
