@@ -19,4 +19,4 @@ mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && su
 
 You can specify the classes of windows to blur in the effect settings.
 
-Blurring window decorations doesn't work well with GTK windows, so you have to exclude them.
+Window borders will be blurred only if decoration blur is enabled.
