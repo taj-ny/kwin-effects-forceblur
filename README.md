@@ -1,8 +1,6 @@
 # kwin-forceblur
 A fork of the KWin Blur effect that allows blurring any user-specified window. Both X11 and Wayland are supported.
 
-Blurring window decorations doesn't work yet.
-
 # Dependencies
 Plasma >= 6.0, qt6, kf6 and kwin development packages
 
@@ -20,3 +18,5 @@ mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && su
 4. Enable the ``Force Blur`` effect.
 
 You can specify the classes of windows to blur in the effect settings.
+
+Blurring window decorations doesn't work well with GTK windows, so you have to exclude them.
