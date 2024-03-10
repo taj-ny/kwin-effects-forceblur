@@ -326,7 +326,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         });
     }
 
-    windowFrameGeometryChangedConnections[w] = connect(w, &EffectWindow::windowFrameGeometryChanged, this, [this,w]() {
+    windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
         if (w) {
             updateBlurRegion(w);
         }
@@ -352,9 +352,9 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowBlurChangedConnections.erase(it);
     }
-    if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
+    if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
         disconnect(*it);
-        windowFrameGeometryChangedConnections.erase(it);
+        windowExpandedGeometryChangedConnections.erase(it);
     }
 }
 

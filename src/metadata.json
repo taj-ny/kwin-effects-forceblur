@@ -1,5 +1,10 @@
 {
     "KPlugin": {
+        "Authors": [
+            {
+                "Name": "taj_ny"
+            }
+        ],
         "Category": "Appearance",
         "Description": "Blurs the background behind semi-transparent windows",
         "EnabledByDefault": false,
