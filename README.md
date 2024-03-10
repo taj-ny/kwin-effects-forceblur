@@ -1,7 +1,9 @@
-# kwin-forceblur
+# kwin-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
 A fork of the KWin Blur effect that allows blurring any user-specified window. Both X11 and Wayland are supported.
 
 This effect cannot be used along with the stock blur effect, or any other fork of it.
+
+![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/ca9892b5-2eba-47be-ae58-9009742a70f5)
 
 # Installation
 ### Arch Linux
