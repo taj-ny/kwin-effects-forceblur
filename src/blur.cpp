@@ -212,6 +212,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_transparentBlur = BlurConfig::transparentBlur();
     m_topCornerRadius = BlurConfig::topCornerRadius();
     m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
+    m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
 
     updateCornerRegions();
 
@@ -465,7 +466,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
     }
 
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (!isMaximized) {
+    if (!isMaximized || m_roundCornersOfMaximizedWindows) {
         if (m_blurDecorations && m_topCornerRadius) {
             QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
             region -= m_topLeftCorner;

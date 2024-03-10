@@ -133,6 +133,7 @@ private:
     bool m_transparentBlur;
     int m_topCornerRadius;
     int m_bottomCornerRadius;
+    bool m_roundCornersOfMaximizedWindows;
 
     // Regions to subtract from the blurred region
     QRegion m_topLeftCorner;

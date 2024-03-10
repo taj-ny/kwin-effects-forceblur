@@ -263,6 +263,13 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="kcfg_RoundCornersOfMaximizedWindows">
+        <property name="text">
+         <string>Round corners of maximized windows</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
