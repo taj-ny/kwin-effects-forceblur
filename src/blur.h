@@ -83,6 +83,7 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
+    void updateCornerRegions();
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
 
@@ -130,6 +131,15 @@ private:
     bool m_blurNonMatching;
     bool m_blurDecorations;
     bool m_transparentBlur;
+    int m_topCornerRadius;
+    int m_bottomCornerRadius;
+    bool m_roundCornersOfMaximizedWindows;
+
+    // Regions to subtract from the blurred region
+    QRegion m_topLeftCorner;
+    QRegion m_topRightCorner;
+    QRegion m_bottomLeftCorner;
+    QRegion m_bottomRightCorner;
 
     struct OffsetStruct
     {
