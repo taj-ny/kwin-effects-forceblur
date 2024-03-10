@@ -1,12 +1,28 @@
 # kwin-forceblur
 A fork of the KWin Blur effect that allows blurring any user-specified window. Both X11 and Wayland are supported.
 
-# Dependencies
-Plasma >= 6.0, qt6, kf6 and kwin development packages
+This effect cannot be used along with the stock blur effect, or any other fork of it.
 
-# Building
+# Installation
+### Arch Linux
+https://aur.archlinux.org/packages/kwin-effects-forceblur
+
+### NixOS
+https://gist.github.com/taj-ny/c1abdde710f33e34dc39dc53a5dc2c09
+
+``pkgs.kdePackages.callPackage``
+
+## Building from source
+Required dependencies:
+- CMake
+- Extra CMake Modules
+- Plasma 6
+- Qt 6
+- KF6
+- KWin development packages
+
 ```sh
-git clone https://github.com/taj-ny/kwin-forceblur --single-branch
+git clone https://github.com/taj-ny/kwin-forceblur
 cd kwin-forceblur
 mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
 ```
@@ -14,7 +30,7 @@ mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && su
 # Usage
 1. Install the plugin.
 2. Open the ``Desktop Effects`` page in ``System Settings``.
-3. Disable the Blur effect, and any other forks of the blur effect as well (such as LightlyShaders).
+3. Disable the Blur effect, and any other forks of the blur effect as well (such as the one provided by LightlyShaders).
 4. Enable the ``Force Blur`` effect.
 
 You can specify the classes of windows to blur in the effect settings.
