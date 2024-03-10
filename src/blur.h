@@ -159,7 +159,7 @@ private:
     QList<BlurValuesStruct> blurStrengthValues;
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
-    QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
+    QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     static BlurManagerInterface *s_blurManager;
