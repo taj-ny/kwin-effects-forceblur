@@ -268,7 +268,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         content = w->expandedGeometry().toRect().translated(-w->x(), -w->y());
         if (m_blurDecorations && w->decoration()) {
             const QMargins borders = w->decoration()->borders();
-            frame = w->contentsRect().adjusted(0, 0, borders.left() + borders.right(), borders.top() + borders.bottom()).toRect();
+            frame = w->frameGeometry().toRect().translated(-w->x(), -w->y());
         }
     }
 
