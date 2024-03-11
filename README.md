@@ -3,7 +3,11 @@ A fork of the KWin Blur effect that allows blurring any user-specified window. B
 
 This effect cannot be used along with the stock blur effect, or any other fork of it.
 
+
+
 ![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/ca9892b5-2eba-47be-ae58-9009742a70f5)
+
+Window opacity has been set to 85% in the screenshot.
 
 # Installation
 ### Arch Linux
@@ -30,6 +34,9 @@ mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && su
 ```
 
 # Usage
+> [!NOTE]  
+> The window needs to be transparent in order for the blur to be visible.
+
 1. Install the plugin.
 2. Open the ``Desktop Effects`` page in ``System Settings``.
 3. Disable the Blur effect, and any other forks of the blur effect as well (such as the one provided by LightlyShaders).
