@@ -3,11 +3,8 @@ A fork of the KWin Blur effect that allows blurring any user-specified window. B
 
 This effect cannot be used along with the stock blur effect, or any other fork of it.
 
-
-
 ![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/ca9892b5-2eba-47be-ae58-9009742a70f5)
-
-Window opacity has been set to 85% in the screenshot.
+<sup>Window opacity has been set to 85% in the screenshot.</sup>
 
 # Installation
 ### Arch Linux
