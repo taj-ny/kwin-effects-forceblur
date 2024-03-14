@@ -6,7 +6,7 @@
             }
         ],
         "Category": "Appearance",
-        "Description": "Blurs the background behind semi-transparent windows",
+        "Description": "Blurs the background behind user-specified windows",
         "EnabledByDefault": false,
         "Id": "kwin_forceblur",
         "License": "GPL",
