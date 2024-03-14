@@ -1,5 +1,5 @@
 # kwin-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-A fork of the KWin Blur effect that allows blurring any user-specified window. Both X11 and Wayland are supported.
+A fork of the KWin Blur effect for Plasma 6 with the ability to blur any window on Wayland and X11.
 
 This effect cannot be used along with the stock blur effect, or any other fork of it.
 
