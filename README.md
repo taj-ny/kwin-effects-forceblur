@@ -3,7 +3,7 @@ A fork of the KWin Blur effect for Plasma 6 with the ability to blur any window 
 
 This effect cannot be used along with the stock blur effect, or any other fork of it.
 
-![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/ca9892b5-2eba-47be-ae58-9009742a70f5)
+![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/5f466c9c-584f-4db3-9a15-57e590a591e0)
 <sup>Window opacity has been set to 85% in the screenshot.</sup>
 
 # Installation
