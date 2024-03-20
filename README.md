@@ -1,7 +1,7 @@
 # kwin-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-A fork of the KWin Blur effect for Plasma 6 with the ability to blur any window on Wayland and X11.
+A fork of the KWin Blur effect for Plasma 6 with the ability to blur any window on Wayland and X11. It cannot be used along with the stock blur effect or any other fork of it.
 
-This effect cannot be used along with the stock blur effect, or any other fork of it.
+Latest features are available on the ``develop`` branch.
 
 ![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/5f466c9c-584f-4db3-9a15-57e590a591e0)
 <sup>Window opacity has been set to 85% in the screenshot.</sup>
@@ -16,7 +16,10 @@ https://gist.github.com/taj-ny/c1abdde710f33e34dc39dc53a5dc2c09
 ``pkgs.kdePackages.callPackage``
 
 ## Building from source
-Required dependencies:
+> [!NOTE]  
+> It may be necessary to rebuild the effect after a system upgrade.
+
+Dependencies:
 - CMake
 - Extra CMake Modules
 - Plasma 6
@@ -27,7 +30,11 @@ Required dependencies:
 ```sh
 git clone https://github.com/taj-ny/kwin-forceblur
 cd kwin-forceblur
-mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
+mkdir build
+cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
+make
+sudo make install
 ```
 
 # Usage
@@ -36,10 +43,12 @@ mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && su
 
 1. Install the plugin.
 2. Open the ``Desktop Effects`` page in ``System Settings``.
-3. Disable the Blur effect, and any other forks of the blur effect as well (such as the one provided by LightlyShaders).
+3. Disable the Blur effect and any other forks of it as well, such as the one provided by LightlyShaders.
 4. Enable the ``Force Blur`` effect.
 
-You can specify the classes of windows to blur in the effect settings.
+The classes of windows to blur can be specified in the effect settings. You can obtain them in two ways:
+  - Run ``qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo`` and click on the window. You can use either ``resourceClass`` or ``resourceName``.
+  - Right click on the titlebar, go to More Options and Configure Special Window/Application Settings. The class can be found at ``Window class (application)``. If there is a space, for example ``Navigator firefox``, you can use either ``Navigator`` or ``firefox``.
 
 Window borders will be blurred only if decoration blur is enabled.
 
