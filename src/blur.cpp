@@ -560,6 +560,9 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
+    if (w->isDock())
+        return false;
+
     bool matches = m_windowClasses.contains(w->window()->resourceName())
         || m_windowClasses.contains(w->window()->resourceClass());
     return (matches && m_blurMatching) || (!matches && m_blurNonMatching);
