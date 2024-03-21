@@ -1,9 +1,9 @@
-# kwin-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+# kwin-effects-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
 A fork of the KWin Blur effect for Plasma 6 with the ability to blur any window on Wayland and X11. It cannot be used along with the stock blur effect or any other fork of it.
 
 Latest features are available on the ``develop`` branch.
 
-![image](https://github.com/taj-ny/kwin-forceblur/assets/79316397/5f466c9c-584f-4db3-9a15-57e590a591e0)
+![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/5f466c9c-584f-4db3-9a15-57e590a591e0)
 <sup>Window opacity has been set to 85% in the screenshot.</sup>
 
 # Installation
@@ -28,8 +28,8 @@ Dependencies:
 - KWin development packages
 
 ```sh
-git clone https://github.com/taj-ny/kwin-forceblur
-cd kwin-forceblur
+git clone https://github.com/taj-ny/kwin-effects-forceblur
+cd kwin-effects-forceblur
 mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
