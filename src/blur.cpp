@@ -213,6 +213,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_topCornerRadius = BlurConfig::topCornerRadius();
     m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
     m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
+    m_blurMenus = BlurConfig::blurMenus();
 
     updateCornerRegions();
 
@@ -402,23 +403,7 @@ bool BlurEffect::eventFilter(QObject *watched, QEvent *event)
 
 bool BlurEffect::enabledByDefault()
 {
-    GLPlatform *gl = GLPlatform::instance();
-
-    if (gl->isIntel() && gl->chipClass() < SandyBridge) {
-        return false;
-    }
-    if (gl->isPanfrost() && gl->chipClass() <= MaliT8XX) {
-        return false;
-    }
-    // The blur effect works, but is painfully slow (FPS < 5) on Mali and VideoCore
-    if (gl->isLima() || gl->isVideoCore4() || gl->isVideoCore3D()) {
-        return false;
-    }
-    if (gl->isSoftwareEmulation()) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 bool BlurEffect::supported()
@@ -467,7 +452,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
 
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
     if (!isMaximized || m_roundCornersOfMaximizedWindows) {
-        if (m_blurDecorations && m_topCornerRadius) {
+        if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
             QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
             region -= m_topLeftCorner;
             region -= m_topRightCorner.translated(topRightPosition);
@@ -560,6 +545,9 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
+    if (w->isDock() || (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu())))
+        return false;
+
     bool matches = m_windowClasses.contains(w->window()->resourceName())
         || m_windowClasses.contains(w->window()->resourceClass());
     return (matches && m_blurMatching) || (!matches && m_blurNonMatching);

@@ -37,5 +37,8 @@ class3</default>
         <entry name="RoundCornersOfMaximizedWindows" type="Bool">
             <default>false</default>
         </entry>
+        <entry name="BlurMenus" type="Bool">
+            <default>false</default>
+        </entry>
     </group>
 </kcfg>

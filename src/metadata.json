@@ -8,15 +8,8 @@
         "Category": "Appearance",
         "Description": "Blurs the background behind user-specified windows",
         "EnabledByDefault": false,
-        "Id": "kwin_forceblur",
         "License": "GPL",
-        "Name": "Force Blur",
-        "ServiceTypes": [
-            "KWin/Effect"
-        ]
+        "Name": "Force Blur"
     },
-    "X-KDE-ConfigModule": "kwin_forceblur_config",
-    "org.kde.kwin.effect": {
-        "enabledByDefaultMethod": true
-    }
+    "X-KDE-ConfigModule": "kwin_forceblur_config"
 }
