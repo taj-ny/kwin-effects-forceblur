@@ -213,6 +213,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_topCornerRadius = BlurConfig::topCornerRadius();
     m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
     m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
+    m_blurMenus = BlurConfig::blurMenus();
 
     updateCornerRegions();
 
@@ -560,7 +561,7 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
-    if (w->isDock())
+    if (w->isDock() || (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu())))
         return false;
 
     bool matches = m_windowClasses.contains(w->window()->resourceName())
