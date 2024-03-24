@@ -52,6 +52,9 @@ The classes of windows to blur can be specified in the effect settings. You can 
 
 Window borders will be blurred only if decoration blur is enabled.
 
+# Cursor input lag or stuttering on Wayland
+If you're experiencing cursor input lag or stuttering when having many blurred windows open, launch KWin with ``KWIN_DRM_NO_AMS=1``. For Intel GPUs, ``KWIN_FORCE_SW_CURSOR=0`` is also necessary, however this may cause other issues.
+
 # Credits
 - [a-parhom/LightlyShaders](https://github.com/a-parhom/LightlyShaders) - CMakeLists.txt files
 - [Alban-Boissard/kwin-effects-blur-respect-rounded-decorations](https://github.com/Alban-Boissard/kwin-effects-blur-respect-rounded-decorations) - Rounded corners
