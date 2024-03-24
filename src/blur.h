@@ -135,6 +135,7 @@ private:
     int m_bottomCornerRadius;
     bool m_roundCornersOfMaximizedWindows;
     bool m_blurMenus;
+    bool m_blurDocks;
 
     // Regions to subtract from the blurred region
     QRegion m_topLeftCorner;
