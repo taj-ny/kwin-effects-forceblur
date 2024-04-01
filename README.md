@@ -11,13 +11,12 @@ Latest features are available on the ``develop`` branch.
 https://aur.archlinux.org/packages/kwin-effects-forceblur
 
 ## NixOS
-> [!NOTE]
-> Plasma 6 is only available in nixpkgs unstable.
-
 ``flake.nix``:
 ```nix
 {
   inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
     kwin-effects-forceblur = {
       url = "github:taj-ny/kwin-effects-forceblur";
       inputs.nixpkgs.follows = "nixpkgs";
