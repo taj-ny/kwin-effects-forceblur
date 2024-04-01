@@ -5,7 +5,6 @@
 , kwin
 , wrapQtAppsHook
 , qttools
-, fetchFromGitHub
 }:
 
 stdenv.mkDerivation rec {
