@@ -7,13 +7,35 @@ Latest features are available on the ``develop`` branch.
 <sup>Window opacity has been set to 85% in the screenshot.</sup>
 
 # Installation
-### Arch Linux
+## Arch Linux
 https://aur.archlinux.org/packages/kwin-effects-forceblur
 
-### NixOS
-https://gist.github.com/taj-ny/c1abdde710f33e34dc39dc53a5dc2c09
+## NixOS
+> [!NOTE]
+> Plasma 6 is only available in nixpkgs unstable.
 
-``pkgs.kdePackages.callPackage``
+``flake.nix``:
+```nix
+{
+  inputs = {
+    kwin-effects-forceblur = {
+      url = "github:taj-ny/kwin-effects-forceblur";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+}
+```
+
+```nix
+{ inputs, pkgs, ... }:
+
+{
+  environment.systemPackages = [
+    inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+  ];
+}
+```
+
 
 ## Building from source
 > [!NOTE]  
