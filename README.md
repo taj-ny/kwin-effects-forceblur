@@ -7,13 +7,34 @@ Latest features are available on the ``develop`` branch.
 <sup>Window opacity has been set to 85% in the screenshot.</sup>
 
 # Installation
-### Arch Linux
+## Arch Linux
 https://aur.archlinux.org/packages/kwin-effects-forceblur
 
-### NixOS
-https://gist.github.com/taj-ny/c1abdde710f33e34dc39dc53a5dc2c09
+## NixOS
+``flake.nix``:
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-``pkgs.kdePackages.callPackage``
+    kwin-effects-forceblur = {
+      url = "github:taj-ny/kwin-effects-forceblur";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+}
+```
+
+```nix
+{ inputs, pkgs, ... }:
+
+{
+  environment.systemPackages = [
+    inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+  ];
+}
+```
+
 
 ## Building from source
 > [!NOTE]  
@@ -51,6 +72,9 @@ The classes of windows to blur can be specified in the effect settings. You can 
   - Right click on the titlebar, go to More Options and Configure Special Window/Application Settings. The class can be found at ``Window class (application)``. If there is a space, for example ``Navigator firefox``, you can use either ``Navigator`` or ``firefox``.
 
 Window borders will be blurred only if decoration blur is enabled.
+
+# Cursor input lag or stuttering on Wayland
+If you're experiencing cursor input lag or stuttering when having many blurred windows open, launch KWin with ``KWIN_DRM_NO_AMS=1``. For Intel GPUs, ``KWIN_FORCE_SW_CURSOR=0`` is also necessary, however this may cause other issues.
 
 # Credits
 - [a-parhom/LightlyShaders](https://github.com/a-parhom/LightlyShaders) - CMakeLists.txt files
