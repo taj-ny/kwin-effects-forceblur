@@ -215,6 +215,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
     m_blurMenus = BlurConfig::blurMenus();
     m_blurDocks = BlurConfig::blurDocks();
+    m_paintAsTranslucent = BlurConfig::paintAsTranslucent();
 
     updateCornerRegions();
 
@@ -482,6 +483,11 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseco
 void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime)
 {
     // this effect relies on prePaintWindow being called in the bottom to top order
+
+    // fix artifacts for some translucent windows
+    if (m_paintAsTranslucent && shouldForceBlur(w)) {
+        data.setTranslucent();
+    }
 
     effects->prePaintWindow(w, data, presentTime);
 
