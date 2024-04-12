@@ -43,5 +43,8 @@ class3</default>
         <entry name="BlurDocks" type="Bool">
             <default>false</default>
         </entry>
+        <entry name="PaintAsTranslucent" type="Bool">
+            <default>false</default>
+        </entry>
     </group>
 </kcfg>
