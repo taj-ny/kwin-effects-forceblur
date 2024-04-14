@@ -8,7 +8,7 @@ Latest features are available on the ``develop`` branch.
 
 # Features
 - Wayland support
-- Fake blur (draws an already blurred image behind windows, which results in lower GPU usage)
+- Fake blur (optional, draws an already blurred image behind windows, which results in lower GPU usage)
 - Rounded corners ([not perfect](https://github.com/taj-ny/kwin-effects-forceblur/issues/34), as it's currently just a pixel mask)
 - Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
 - Ability to disable force blur for decorations, so that it won't interfere with ones that support blur, such as [Klassy](https://github.com/paulmcauley/klassy)
