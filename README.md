@@ -4,7 +4,7 @@ A fork of the KWin Blur effect for KDE Plasma 6 with the ability to blur any win
 Latest features are available on the ``develop`` branch.
 
 ![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/9d2f337e-badd-4d95-ba55-96c80202e196)
-<sup>Window opacity has been set to 85% for system settings, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
+<sup>Window opacity has been set to 85% for System Settings and Dolphin, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
 
 # Features
 - Wayland support
