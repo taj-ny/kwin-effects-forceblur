@@ -21,6 +21,7 @@
 #include "wayland/surface.h"
 
 #include <QGuiApplication>
+#include <QImage>
 #include <QMatrix4x4>
 #include <QScreen>
 #include <QTime>
@@ -89,6 +90,18 @@ BlurEffect::BlurEffect()
         m_noisePass.mvpMatrixLocation = m_noisePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_noisePass.noiseTextureSizeLocation = m_noisePass.shader->uniformLocation("noiseTextureSize");
         m_noisePass.texStartPosLocation = m_noisePass.shader->uniformLocation("texStartPos");
+    }
+
+    m_texturePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
+                                                                            QStringLiteral(":/effects/blur/shaders/vertex.vert"),
+                                                                            QStringLiteral(":/effects/blur/shaders/texture.frag"));
+    if (!m_texturePass.shader) {
+        qCWarning(KWIN_BLUR) << "Failed to load noise pass shader";
+        return;
+    } else {
+        m_texturePass.mvpMatrixLocation = m_texturePass.shader->uniformLocation("modelViewProjectionMatrix");
+        m_texturePass.textureSizeLocation = m_texturePass.shader->uniformLocation("textureSize");
+        m_texturePass.texStartPosLocation = m_texturePass.shader->uniformLocation("texStartPos");
     }
 
     initBlurStrengthValues();
@@ -214,6 +227,16 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
     m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
     m_blurMenus = BlurConfig::blurMenus();
+    m_blurDocks = BlurConfig::blurDocks();
+    m_paintAsTranslucent = BlurConfig::paintAsTranslucent();
+    m_fakeBlur = BlurConfig::fakeBlur();
+    m_fakeBlurImage = BlurConfig::fakeBlurImage();
+
+    QImage fakeBlurImage(m_fakeBlurImage);
+    m_hasValidFakeBlurTexture = !fakeBlurImage.isNull();
+    if (m_hasValidFakeBlurTexture) {
+        m_texturePass.texture = GLTexture::upload(fakeBlurImage);
+    }
 
     updateCornerRegions();
 
@@ -427,7 +450,7 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
 
-QRegion BlurEffect::blurRegion(EffectWindow *w) const
+QRegion BlurEffect::blurRegion(EffectWindow *w, bool noRoundedCorners) const
 {
     QRegion region;
 
@@ -451,7 +474,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
     }
 
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (!isMaximized || m_roundCornersOfMaximizedWindows) {
+    if (!noRoundedCorners && (!isMaximized || m_roundCornersOfMaximizedWindows)) {
         if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
             QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
             region -= m_topLeftCorner;
@@ -482,42 +505,58 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 {
     // this effect relies on prePaintWindow being called in the bottom to top order
 
+    // in case this window has regions to be blurred
+    const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
+
+    bool hasFakeBlur = m_fakeBlur && m_hasValidFakeBlurTexture && !blurArea.isEmpty();
+    if (hasFakeBlur) {
+        data.opaque += blurArea;
+    }
+
+    if (shouldForceBlur(w) && m_paintAsTranslucent) {
+        if (hasFakeBlur) {
+            // Remove rounded corners region
+            data.opaque -= blurRegion(w, true).translated(w->pos().toPoint()) - blurArea;
+        } else {
+            data.setTranslucent();
+        }
+    }
+
     effects->prePaintWindow(w, data, presentTime);
 
-    const QRegion oldOpaque = data.opaque;
-    if (data.opaque.intersects(m_currentBlur)) {
-        // to blur an area partially we have to shrink the opaque area of a window
-        QRegion newOpaque;
-        for (const QRect &rect : data.opaque) {
-            newOpaque += rect.adjusted(m_expandSize, m_expandSize, -m_expandSize, -m_expandSize);
+    if (!hasFakeBlur) {
+        const QRegion oldOpaque = data.opaque;
+        if (data.opaque.intersects(m_currentBlur)) {
+            // to blur an area partially we have to shrink the opaque area of a window
+            QRegion newOpaque;
+            for (const QRect &rect : data.opaque) {
+                newOpaque += rect.adjusted(m_expandSize, m_expandSize, -m_expandSize, -m_expandSize);
+            }
+            data.opaque = newOpaque;
+
+            // we don't have to blur a region we don't see
+            m_currentBlur -= newOpaque;
         }
-        data.opaque = newOpaque;
 
-        // we don't have to blur a region we don't see
-        m_currentBlur -= newOpaque;
-    }
-
-    // if we have to paint a non-opaque part of this window that intersects with the
-    // currently blurred region we have to redraw the whole region
-    if ((data.paint - oldOpaque).intersects(m_currentBlur)) {
-        data.paint += m_currentBlur;
-    }
-
-    // in case this window has regions to be blurred
-    const QRegion blurArea = blurRegion(w).boundingRect().translated(w->pos().toPoint());
-
-    // if this window or a window underneath the blurred area is painted again we have to
-    // blur everything
-    if (m_paintedArea.intersects(blurArea) || data.paint.intersects(blurArea)) {
-        data.paint += blurArea;
-        // we have to check again whether we do not damage a blurred area
-        // of a window
-        if (blurArea.intersects(m_currentBlur)) {
+        // if we have to paint a non-opaque part of this window that intersects with the
+        // currently blurred region we have to redraw the whole region
+        if ((data.paint - oldOpaque).intersects(m_currentBlur)) {
             data.paint += m_currentBlur;
         }
-    }
 
-    m_currentBlur += blurArea;
+        // if this window or a window underneath the blurred area is painted again we have to
+        // blur everything
+        if (m_paintedArea.intersects(blurArea) || data.paint.intersects(blurArea)) {
+            data.paint += blurArea;
+            // we have to check again whether we do not damage a blurred area
+            // of a window
+            if (blurArea.intersects(m_currentBlur)) {
+                data.paint += m_currentBlur;
+            }
+        }
+
+        m_currentBlur += blurArea;
+    }
 
     m_paintedArea -= data.opaque;
     m_paintedArea += data.paint;
@@ -545,8 +584,9 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
-    if (w->isDock() || (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu())))
+    if ((!m_blurDocks && w->isDock()) || (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu()))) {
         return false;
+    }
 
     bool matches = m_windowClasses.contains(w->window()->resourceName())
         || m_windowClasses.contains(w->window()->resourceClass());
@@ -796,35 +836,58 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     vbo->bindArrays();
 
-    // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
-    {
-        ShaderManager::instance()->pushShader(m_downsamplePass.shader.get());
+    if (m_fakeBlur && m_hasValidFakeBlurTexture) {
+        ShaderManager::instance()->pushShader(m_texturePass.shader.get());
 
-        QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+        QMatrix4x4 projectionMatrix = data.projectionMatrix();
+        projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
-        m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
-        m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
+        m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
+        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(m_texturePass.texture.get()->width(), m_texturePass.texture.get()->height()));
+        m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(0, 0));
 
-        for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
-            const auto &read = renderInfo.framebuffers[i - 1];
-            const auto &draw = renderInfo.framebuffers[i];
+        m_texturePass.texture.get()->bind();
 
-            const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
-                                      0.5 / read->colorAttachment()->height());
-            m_downsamplePass.shader->setUniform(m_downsamplePass.halfpixelLocation, halfpixel);
+        glEnable(GL_BLEND);
+        float o = 1.0f - (opacity);
+        o = 1.0f - o * o;
+        glBlendColor(0, 0, 0, o);
+        glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
 
-            read->colorAttachment()->bind();
+        vbo->draw(GL_TRIANGLES, 6, vertexCount);
 
-            GLFramebuffer::pushFramebuffer(draw.get());
-            vbo->draw(GL_TRIANGLES, 0, 6);
-        }
+        glDisable(GL_BLEND);
 
         ShaderManager::instance()->popShader();
-    }
+    } else {
+        // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
+        {
+            ShaderManager::instance()->pushShader(m_downsamplePass.shader.get());
 
-    // The upsample pass of the dual Kawase algorithm: the background will be scaled up 200% every iteration.
-    {
+            QMatrix4x4 projectionMatrix;
+            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+
+            m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
+            m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
+
+            for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
+                const auto &read = renderInfo.framebuffers[i - 1];
+                const auto &draw = renderInfo.framebuffers[i];
+
+                const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
+                                        0.5 / read->colorAttachment()->height());
+                m_downsamplePass.shader->setUniform(m_downsamplePass.halfpixelLocation, halfpixel);
+
+                read->colorAttachment()->bind();
+
+                GLFramebuffer::pushFramebuffer(draw.get());
+                vbo->draw(GL_TRIANGLES, 0, 6);
+            }
+
+            ShaderManager::instance()->popShader();
+        }
+
+        // The upsample pass of the dual Kawase algorithm: the background will be scaled up 200% every iteration.
         ShaderManager::instance()->pushShader(m_upsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
@@ -876,37 +939,37 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
 
         ShaderManager::instance()->popShader();
-    }
 
-    if (m_noiseStrength > 0) {
-        // Apply an additive noise onto the blurred image. The noise is useful to mask banding
-        // artifacts, which often happens due to the smooth color transitions in the blurred image.
+        if (m_noiseStrength > 0) {
+            // Apply an additive noise onto the blurred image. The noise is useful to mask banding
+            // artifacts, which often happens due to the smooth color transitions in the blurred image.
 
-        glEnable(GL_BLEND);
-        if (opacity < 1.0) {
-            glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
-        } else {
-            glBlendFunc(GL_ONE, GL_ONE);
+            glEnable(GL_BLEND);
+            if (opacity < 1.0) {
+                glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
+            } else {
+                glBlendFunc(GL_ONE, GL_ONE);
+            }
+
+            if (GLTexture *noiseTexture = ensureNoiseTexture()) {
+                ShaderManager::instance()->pushShader(m_noisePass.shader.get());
+
+                QMatrix4x4 projectionMatrix = data.projectionMatrix();
+                projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
+
+                m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
+                m_noisePass.shader->setUniform(m_noisePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
+                m_noisePass.shader->setUniform(m_noisePass.texStartPosLocation, QVector2D(deviceBackgroundRect.topLeft()));
+
+                noiseTexture->bind();
+
+                vbo->draw(GL_TRIANGLES, 6, vertexCount);
+
+                ShaderManager::instance()->popShader();
+            }
+
+            glDisable(GL_BLEND);
         }
-
-        if (GLTexture *noiseTexture = ensureNoiseTexture()) {
-            ShaderManager::instance()->pushShader(m_noisePass.shader.get());
-
-            QMatrix4x4 projectionMatrix = data.projectionMatrix();
-            projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
-
-            m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
-            m_noisePass.shader->setUniform(m_noisePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
-            m_noisePass.shader->setUniform(m_noisePass.texStartPosLocation, QVector2D(deviceBackgroundRect.topLeft()));
-
-            noiseTexture->bind();
-
-            vbo->draw(GL_TRIANGLES, 6, vertexCount);
-
-            ShaderManager::instance()->popShader();
-        }
-
-        glDisable(GL_BLEND);
     }
 
     vbo->unbindArrays();
@@ -920,6 +983,11 @@ bool BlurEffect::isActive() const
 bool BlurEffect::blocksDirectScanout() const
 {
     return false;
+}
+
+bool BlurEffect::hasFakeBlur(EffectWindow *w) const
+{
+    return m_fakeBlur && m_hasValidFakeBlurTexture && !blurRegion(w).isEmpty();
 }
 
 } // namespace KWin

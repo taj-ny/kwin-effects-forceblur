@@ -1,15 +1,19 @@
 # kwin-effects-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-A fork of the KWin Blur effect for KDE Plasma 6 with the ability to blur any window on Wayland and X11. It cannot be used along with the stock blur effect or any other fork of it.
+A fork of the KWin Blur effect for KDE Plasma 6 with the ability to blur any window on Wayland and X11.
 
 Latest features are available on the ``develop`` branch.
 
-![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/5f466c9c-584f-4db3-9a15-57e590a591e0)
-<sup>Window opacity has been set to 85% in the screenshot.</sup>
+![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/9d2f337e-badd-4d95-ba55-96c80202e196)
+<sup>Window opacity has been set to 85% for System Settings and Dolphin, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
+
+# Features
+- Wayland support
+- Fake blur (optional, draws an already blurred image behind windows, which results in lower GPU usage)
+- Rounded corners ([not perfect](https://github.com/taj-ny/kwin-effects-forceblur/issues/34), as it's currently just a pixel mask)
+- Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
+- Ability to disable force blur for decorations, so that it won't interfere with ones that support blur, such as [Klassy](https://github.com/paulmcauley/klassy)
 
 # Installation
-## Arch Linux
-https://aur.archlinux.org/packages/kwin-effects-forceblur
-
 ## NixOS
 ``flake.nix``:
 ```nix
@@ -35,11 +39,7 @@ https://aur.archlinux.org/packages/kwin-effects-forceblur
 }
 ```
 
-
 ## Building from source
-> [!NOTE]  
-> It may be necessary to rebuild the effect after a system upgrade.
-
 Dependencies:
 - CMake
 - Extra CMake Modules
@@ -60,21 +60,32 @@ sudo make install
 
 # Usage
 > [!NOTE]  
-> The window needs to be transparent in order for the blur to be visible.
+> If the effect stops working after a system upgrade, you will need to rebuild it.
+
+Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using. Using force blur together with another blur effect will result in blur being applied twice.
 
 1. Install the plugin.
-2. Open the ``Desktop Effects`` page in ``System Settings``.
-3. Disable the Blur effect and any other forks of it as well, such as the one provided by LightlyShaders.
-4. Enable the ``Force Blur`` effect.
+2. Open the *Desktop Effects* page in *System Settings*.
+3. Disable any blur effects.
+4. Enable the *Force Blur* effect.
 
+For more detailed descriptions of some options, check out the [wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
+   
+### Window transparency
+The window needs to be translucent in order for the blur to be visible. This can be done in multiple ways:
+- Use a transparent theme for the program if it supports it
+- Use a transparent color scheme, such as [Alpha](https://store.kde.org/p/1972214)
+- Create a window rule that reduces the window opacity
+
+### Obtaining window classes
 The classes of windows to blur can be specified in the effect settings. You can obtain them in two ways:
-  - Run ``qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo`` and click on the window. You can use either ``resourceClass`` or ``resourceName``.
-  - Right click on the titlebar, go to More Options and Configure Special Window/Application Settings. The class can be found at ``Window class (application)``. If there is a space, for example ``Navigator firefox``, you can use either ``Navigator`` or ``firefox``.
+  - Run ``qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo`` and click on the window. You can use either *resourceClass* or *resourceName*.
+  - Right click on the titlebar, go to *More Options* and *Configure Special Window/Application Settings*. The class can be found at *Window class (application)*. If there is a space, for example *Navigator firefox*, you can use either *Navigator* or *firefox*.
 
-Window borders will be blurred only if decoration blur is enabled.
+# High cursor latency or stuttering on Wayland
+This effect can be very resource-intensive if you have a lot of windows open. On Wayland, high GPU load may result in higher cursor latency or even stuttering. If that bothers you, set the following environment variable: ``KWIN_DRM_NO_AMS=1``. If that's not enough, try enabling or disabling the software cursor by also setting ``KWIN_FORCE_SW_CURSOR=0`` or ``KWIN_FORCE_SW_CURSOR=1``.
 
-# Cursor input lag or stuttering on Wayland
-If you're experiencing cursor input lag or stuttering when having many blurred windows open, launch KWin with ``KWIN_DRM_NO_AMS=1``. For Intel GPUs, ``KWIN_FORCE_SW_CURSOR=0`` is also necessary, however this may cause other issues.
+Intel GPUs use software cursor by default due to [this bug](https://gitlab.freedesktop.org/drm/intel/-/issues/9571), however it doesn't seem to affect all GPUs.
 
 # Credits
 - [a-parhom/LightlyShaders](https://github.com/a-parhom/LightlyShaders) - CMakeLists.txt files
