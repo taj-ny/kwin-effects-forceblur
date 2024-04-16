@@ -9,7 +9,7 @@
 
 stdenv.mkDerivation rec {
   pname = "kwin-effects-forceblur";
-  version = "1.1.2";
+  version = "1.2.0";
 
   src = ./.;
 
