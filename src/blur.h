@@ -77,7 +77,7 @@ public Q_SLOTS:
 
 private:
     void initBlurStrengthValues();
-    QRegion blurRegion(EffectWindow *w) const;
+    QRegion blurRegion(EffectWindow *w, bool noRoundedCorners = false) const;
     QRegion decorationBlurRegion(const EffectWindow *w) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
@@ -86,6 +86,7 @@ private:
     void updateCornerRegions();
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
+    bool hasFakeBlur(EffectWindow *w) const;
 
 private:
     struct
@@ -116,6 +117,16 @@ private:
         int noiseTextureStength = 0;
     } m_noisePass;
 
+    struct
+    {
+        std::unique_ptr<GLShader> shader;
+        int mvpMatrixLocation;
+        int textureSizeLocation;
+        int texStartPosLocation;
+
+        std::unique_ptr<GLTexture> texture;
+    } m_texturePass;
+
     bool m_valid = false;
     long net_wm_blur_region = 0;
     QRegion m_paintedArea; // keeps track of all painted areas (from bottom to top)
@@ -137,6 +148,10 @@ private:
     bool m_blurMenus;
     bool m_blurDocks;
     bool m_paintAsTranslucent;
+    bool m_fakeBlur;
+    QString m_fakeBlurImage;
+
+    bool m_hasValidFakeBlurTexture;
 
     // Regions to subtract from the blurred region
     QRegion m_topLeftCorner;

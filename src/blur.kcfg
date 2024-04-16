@@ -46,5 +46,11 @@ class3</default>
         <entry name="PaintAsTranslucent" type="Bool">
             <default>false</default>
         </entry>
+        <entry name="FakeBlur" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="FakeBlurImage" type="String">
+            <default></default>
+        </entry>
     </group>
 </kcfg>

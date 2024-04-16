@@ -172,6 +172,37 @@
    <item>
     <widget class="QGroupBox">
      <property name="title">
+      <string>Fake blur</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <item>
+       <widget class="QCheckBox" name="kcfg_FakeBlur">
+        <property name="text">
+         <string>Fake blur</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel">
+          <property name="text">
+           <string>Path to image</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="kcfg_FakeBlurImage">
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox">
+     <property name="title">
       <string>Force blur</string>
      </property>
      <layout class="QVBoxLayout">
