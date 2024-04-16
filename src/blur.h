@@ -12,7 +12,6 @@
 #include "window.h"
 
 #include <QList>
-#include <QImage>
 
 #include <unordered_map>
 
@@ -78,7 +77,7 @@ public Q_SLOTS:
 
 private:
     void initBlurStrengthValues();
-    QRegion blurRegion(EffectWindow *w) const;
+    QRegion blurRegion(EffectWindow *w, bool noRoundedCorners = false) const;
     QRegion decorationBlurRegion(const EffectWindow *w) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
@@ -87,6 +86,7 @@ private:
     void updateCornerRegions();
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
+    bool hasFakeBlur(EffectWindow *w) const;
 
 private:
     struct

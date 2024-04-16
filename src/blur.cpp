@@ -450,7 +450,7 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
 
-QRegion BlurEffect::blurRegion(EffectWindow *w) const
+QRegion BlurEffect::blurRegion(EffectWindow *w, bool noRoundedCorners) const
 {
     QRegion region;
 
@@ -474,7 +474,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
     }
 
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (!isMaximized || m_roundCornersOfMaximizedWindows) {
+    if (!noRoundedCorners && (!isMaximized || m_roundCornersOfMaximizedWindows)) {
         if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
             QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
             region -= m_topLeftCorner;
@@ -505,47 +505,58 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 {
     // this effect relies on prePaintWindow being called in the bottom to top order
 
-    // fix artifacts for some translucent windows
-    if (m_paintAsTranslucent && shouldForceBlur(w)) {
-        data.setTranslucent();
+    // in case this window has regions to be blurred
+    const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
+
+    bool hasFakeBlur = m_fakeBlur && m_hasValidFakeBlurTexture && !blurArea.isEmpty();
+    if (hasFakeBlur) {
+        data.opaque += blurArea;
+    }
+
+    if (shouldForceBlur(w) && m_paintAsTranslucent) {
+        if (hasFakeBlur) {
+            // Remove rounded corners region
+            data.opaque -= blurRegion(w, true).translated(w->pos().toPoint()) - blurArea;
+        } else {
+            data.setTranslucent();
+        }
     }
 
     effects->prePaintWindow(w, data, presentTime);
 
-    const QRegion oldOpaque = data.opaque;
-    if (data.opaque.intersects(m_currentBlur)) {
-        // to blur an area partially we have to shrink the opaque area of a window
-        QRegion newOpaque;
-        for (const QRect &rect : data.opaque) {
-            newOpaque += rect.adjusted(m_expandSize, m_expandSize, -m_expandSize, -m_expandSize);
+    if (!hasFakeBlur) {
+        const QRegion oldOpaque = data.opaque;
+        if (data.opaque.intersects(m_currentBlur)) {
+            // to blur an area partially we have to shrink the opaque area of a window
+            QRegion newOpaque;
+            for (const QRect &rect : data.opaque) {
+                newOpaque += rect.adjusted(m_expandSize, m_expandSize, -m_expandSize, -m_expandSize);
+            }
+            data.opaque = newOpaque;
+
+            // we don't have to blur a region we don't see
+            m_currentBlur -= newOpaque;
         }
-        data.opaque = newOpaque;
 
-        // we don't have to blur a region we don't see
-        m_currentBlur -= newOpaque;
-    }
-
-    // if we have to paint a non-opaque part of this window that intersects with the
-    // currently blurred region we have to redraw the whole region
-    if ((data.paint - oldOpaque).intersects(m_currentBlur)) {
-        data.paint += m_currentBlur;
-    }
-
-    // in case this window has regions to be blurred
-    const QRegion blurArea = blurRegion(w).boundingRect().translated(w->pos().toPoint());
-
-    // if this window or a window underneath the blurred area is painted again we have to
-    // blur everything
-    if (m_paintedArea.intersects(blurArea) || data.paint.intersects(blurArea)) {
-        data.paint += blurArea;
-        // we have to check again whether we do not damage a blurred area
-        // of a window
-        if (blurArea.intersects(m_currentBlur)) {
+        // if we have to paint a non-opaque part of this window that intersects with the
+        // currently blurred region we have to redraw the whole region
+        if ((data.paint - oldOpaque).intersects(m_currentBlur)) {
             data.paint += m_currentBlur;
         }
-    }
 
-    m_currentBlur += blurArea;
+        // if this window or a window underneath the blurred area is painted again we have to
+        // blur everything
+        if (m_paintedArea.intersects(blurArea) || data.paint.intersects(blurArea)) {
+            data.paint += blurArea;
+            // we have to check again whether we do not damage a blurred area
+            // of a window
+            if (blurArea.intersects(m_currentBlur)) {
+                data.paint += m_currentBlur;
+            }
+        }
+
+        m_currentBlur += blurArea;
+    }
 
     m_paintedArea -= data.opaque;
     m_paintedArea += data.paint;
@@ -972,6 +983,11 @@ bool BlurEffect::isActive() const
 bool BlurEffect::blocksDirectScanout() const
 {
     return false;
+}
+
+bool BlurEffect::hasFakeBlur(EffectWindow *w) const
+{
+    return m_fakeBlur && m_hasValidFakeBlurTexture && !blurRegion(w).isEmpty();
 }
 
 } // namespace KWin
