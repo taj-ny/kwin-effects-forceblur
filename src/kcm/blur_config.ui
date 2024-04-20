@@ -21,7 +21,7 @@
      </property>
      <widget class="QWidget">
       <attribute name="title">
-       <string>Blur</string>
+       <string>General</string>
       </attribute>
       <layout class="QVBoxLayout">
        <item>
@@ -180,22 +180,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QWidget">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>1</verstretch>
-          </sizepolicy>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>15</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget">
-      <attribute name="title">
-       <string>Fake blur</string>
-      </attribute>
-      <layout class="QVBoxLayout">
        <item>
         <widget class="QCheckBox" name="kcfg_FakeBlur">
          <property name="sizePolicy">
@@ -205,7 +201,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Fake blur</string>
+          <string>Draw image behind windows instead of blurring</string>
          </property>
         </widget>
        </item>
