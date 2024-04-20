@@ -58,6 +58,8 @@ make
 sudo make install
 ```
 
+Remove the *build* directory when rebuilding the effect.
+
 # Usage
 > [!NOTE]  
 > If the effect stops working after a system upgrade, you will need to rebuild it.
