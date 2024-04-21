@@ -8,10 +8,9 @@ Latest features are available on the ``develop`` branch.
 
 # Features
 - Wayland support
-- Fake blur (optional, draws an already blurred image behind windows, which results in lower GPU usage)
-- Rounded corners ([not perfect](https://github.com/taj-ny/kwin-effects-forceblur/issues/34), as it's currently just a pixel mask)
+- Draw image behind windows instead of blurring (can be used with a blurred image of the wallpaper in order to achieve a very similar effect to blur but with **much** lower GPU usage)
+- Rounded corners
 - Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
-- Ability to disable force blur for decorations, so that it won't interfere with ones that support blur, such as [Klassy](https://github.com/paulmcauley/klassy)
 
 # Installation
 ## NixOS
@@ -64,14 +63,14 @@ Remove the *build* directory when rebuilding the effect.
 > [!NOTE]  
 > If the effect stops working after a system upgrade, you will need to rebuild it.
 
-Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using. Using force blur together with another blur effect will result in blur being applied twice.
+Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using.
 
 1. Install the plugin.
 2. Open the *Desktop Effects* page in *System Settings*.
 3. Disable any blur effects.
 4. Enable the *Force Blur* effect.
 
-For more detailed descriptions of some options, check out the [wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
+For more detailed descriptions of some options, check out [this wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
    
 ### Window transparency
 The window needs to be translucent in order for the blur to be visible. This can be done in multiple ways:
