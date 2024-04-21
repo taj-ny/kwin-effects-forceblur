@@ -2,6 +2,9 @@
     "KPlugin": {
         "Authors": [
             {
+                "Name": "KWin development team"
+            },
+            {
                 "Name": "taj_ny"
             }
         ],
