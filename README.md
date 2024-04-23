@@ -42,8 +42,8 @@ Latest features are available on the ``develop`` branch.
   ```
 </details>
 
-## Building from source
-Dependencies:
+# Building from source
+### Dependencies
 - CMake
 - Extra CMake Modules
 - Plasma 6
@@ -51,6 +51,16 @@ Dependencies:
 - KF6
 - KWin development packages
 
+<details>
+  <summary>Fedora</summary>
+  <br>
+
+  ```
+  sudo dnf install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake kwin-devel extra-cmake-modules kwin-devel kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel
+  ```
+</details>
+
+### Building
 ```sh
 git clone https://github.com/taj-ny/kwin-effects-forceblur
 cd kwin-effects-forceblur
