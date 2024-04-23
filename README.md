@@ -13,30 +13,34 @@ Latest features are available on the ``develop`` branch.
 - Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
 
 # Installation
-## NixOS
-``flake.nix``:
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    kwin-effects-forceblur = {
-      url = "github:taj-ny/kwin-effects-forceblur";
-      inputs.nixpkgs.follows = "nixpkgs";
+<details>
+  <summary>NixOS (flakes)</summary>
+  <br>
+  
+  ``flake.nix``:
+  ```nix
+  {
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  
+      kwin-effects-forceblur = {
+        url = "github:taj-ny/kwin-effects-forceblur";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
     };
-  };
-}
-```
-
-```nix
-{ inputs, pkgs, ... }:
-
-{
-  environment.systemPackages = [
-    inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
-  ];
-}
-```
+  }
+  ```
+  
+  ```nix
+  { inputs, pkgs, ... }:
+  
+  {
+    environment.systemPackages = [
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+    ];
+  }
+  ```
+</details>
 
 ## Building from source
 Dependencies:
