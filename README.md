@@ -52,6 +52,15 @@ Latest features are available on the ``develop`` branch.
 - KWin development packages
 
 <details>
+  <summary>Arch Linux</summary>
+  <br>
+
+  ```
+  sudo pacman -S base-devel git extra-cmake-modules qt6-tools
+  ```
+</details>
+
+<details>
   <summary>Fedora</summary>
   <br>
 
