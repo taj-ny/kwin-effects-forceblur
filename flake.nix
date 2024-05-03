@@ -12,7 +12,11 @@
     pkgs = import nixpkgs {
       inherit system;
     };
-  in {
+  in rec {
     packages.default = pkgs.kdePackages.callPackage ./package.nix { };
+
+    devShells.default = pkgs.mkShell {
+      inputsFrom = [ packages.default ];
+    };
   });
 }
