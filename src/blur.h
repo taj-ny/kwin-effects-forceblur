@@ -77,16 +77,17 @@ public Q_SLOTS:
 
 private:
     void initBlurStrengthValues();
-    QRegion blurRegion(EffectWindow *w, bool noRoundedCorners = false) const;
+    QRegion blurRegion(EffectWindow *w) const;
     QRegion decorationBlurRegion(const EffectWindow *w) const;
+    QRegion effectiveBlurRegion(QRegion blurRegion, const WindowPaintData &data) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
-    void updateCornerRegions();
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
     bool hasFakeBlur(EffectWindow *w) const;
+    inline QVector2D toVector2D(const QSizeF& s) { return {static_cast<float>(s.width()), static_cast<float>(s.height())}; }
 
 private:
     struct
@@ -127,6 +128,29 @@ private:
         std::unique_ptr<GLTexture> texture;
     } m_texturePass;
 
+    struct
+    {
+        std::unique_ptr<GLShader> shader;
+
+        int roundTopLeftCornerLocation;
+        int roundTopRightCornerLocation;
+        int roundBottomLeftCornerLocation;
+        int roundBottomRightCornerLocation;
+
+        int topCornerRadiusLocation;
+        int bottomCornerRadiusLocation;
+
+        int antialiasingLocation;
+
+        int regionSizeLocation;
+        int offsetLocation;
+
+        int beforeBlurTextureLocation;
+        int afterBlurTextureLocation;
+
+        int mvpMatrixLocation;
+    } m_roundedCorners;
+
     bool m_valid = false;
     long net_wm_blur_region = 0;
     QRegion m_paintedArea; // keeps track of all painted areas (from bottom to top)
@@ -142,8 +166,9 @@ private:
     bool m_blurNonMatching;
     bool m_blurDecorations;
     bool m_transparentBlur;
-    int m_topCornerRadius;
-    int m_bottomCornerRadius;
+    float m_topCornerRadius;
+    float m_bottomCornerRadius;
+    float m_roundedCornersAntialiasing;
     bool m_roundCornersOfMaximizedWindows;
     bool m_blurMenus;
     bool m_blurDocks;
@@ -152,12 +177,6 @@ private:
     QString m_fakeBlurImage;
 
     bool m_hasValidFakeBlurTexture;
-
-    // Regions to subtract from the blurred region
-    QRegion m_topLeftCorner;
-    QRegion m_topRightCorner;
-    QRegion m_bottomLeftCorner;
-    QRegion m_bottomRightCorner;
 
     struct OffsetStruct
     {
