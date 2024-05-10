@@ -647,36 +647,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     // Compute the effective blur shape. Note that if the window is transformed, so will be the blur shape.
     QRegion blurShape = effectiveBlurRegion(blurRegion(w).translated(w->pos().toPoint()), data);
 
-    // Check whether the effective blur shape contains corners that need to be rounded.
-    // If the shape contains only a fragment of a corner, the entire corner will be added to the shape.
-    // TODO Corners shouldn't be blurred if they are clipped.
-    bool roundTopLeftCorner = false;
-    bool roundTopRightCorner = false;
-    bool roundBottomLeftCorner = false;
-    bool roundBottomRightCorner = false;
-
-    bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (!isMaximized || m_roundCornersOfMaximizedWindows) {
-        const auto windowGeometry = w->frameGeometry();
-        if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
-            const QRect topLeftCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius)),data).boundingRect();
-            roundTopLeftCorner = blurShape.intersects(topLeftCorner);
-
-            const QRect topRightCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(),m_topCornerRadius, m_topCornerRadius)), data).boundingRect();
-            roundTopRightCorner = blurShape.intersects(topRightCorner);
-        }
-
-        if (m_bottomCornerRadius) {
-            const QRect bottomLeftCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius,m_bottomCornerRadius)),data).boundingRect();
-            roundBottomLeftCorner = blurShape.intersects(bottomLeftCorner);
-
-            const QRect bottomRightCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius,windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius, m_bottomCornerRadius)), data).boundingRect();
-            roundBottomRightCorner = blurShape.intersects(bottomRightCorner);
-        }
-    }
-
-    const bool hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
-
     const QRect backgroundRect = blurShape.boundingRect();
     const QRect deviceBackgroundRect = snapToPixelGrid(scaledRect(backgroundRect, viewport.scale()));
     const auto opacity = m_transparentBlur
@@ -705,6 +675,35 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     if (effectiveShape.isEmpty()) {
         return;
     }
+
+    // Check whether the effective blur shape contains corners that need to be rounded.
+    bool roundTopLeftCorner = false;
+    bool roundTopRightCorner = false;
+    bool roundBottomLeftCorner = false;
+    bool roundBottomRightCorner = false;
+
+    bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
+    if (!isMaximized || m_roundCornersOfMaximizedWindows) {
+        const auto windowGeometry = w->frameGeometry();
+        for (const QRectF &rect : effectiveShape) {
+            if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
+                const QRectF topLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                roundTopLeftCorner = roundTopLeftCorner || rect.intersects(topLeftCorner);
+
+                const QRectF topRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(),m_topCornerRadius, m_topCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                roundTopRightCorner = roundTopRightCorner || rect.intersects(topRightCorner);
+            }
+            if (m_bottomCornerRadius) {
+                const QRectF bottomLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius,m_bottomCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                roundBottomLeftCorner = roundBottomLeftCorner || rect.intersects(bottomLeftCorner);
+
+                const QRectF bottomRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius,windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius, m_bottomCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                roundBottomRightCorner = roundBottomRightCorner || rect.intersects(bottomRightCorner);
+            }
+        }
+    }
+
+    const bool hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
 
     // Maybe reallocate offscreen render targets. Keep in mind that the first one contains
     // original background behind the window, it's not blurred.
