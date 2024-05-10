@@ -655,21 +655,19 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     bool roundBottomLeftCorner = false;
     bool roundBottomRightCorner = false;
 
-    // The Y axis is flipped on Wayland.
-    bool isWayland = effects->waylandDisplay();
-
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
     if (!isMaximized || m_roundCornersOfMaximizedWindows) {
         const auto windowGeometry = w->frameGeometry();
-        if (m_topCornerRadius && (!isWayland || (!w->decoration() || (w->decoration() && m_blurDecorations)))) {
+        if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
             const QRect topLeftCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius)),data).boundingRect();
             roundTopLeftCorner = blurShape.intersects(topLeftCorner);
 
             const QRect topRightCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(),m_topCornerRadius, m_topCornerRadius)), data).boundingRect();
             roundTopRightCorner = blurShape.intersects(topRightCorner);
         }
-        if (m_bottomCornerRadius && (isWayland || (!w->decoration() || (w->decoration() && m_blurDecorations)))) {
-            const QRect bottomLeftCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() +windowGeometry.height() -m_bottomCornerRadius,m_bottomCornerRadius,m_bottomCornerRadius)),data).boundingRect();
+
+        if (m_bottomCornerRadius) {
+            const QRect bottomLeftCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius,m_bottomCornerRadius)),data).boundingRect();
             roundBottomLeftCorner = blurShape.intersects(bottomLeftCorner);
 
             const QRect bottomRightCorner = effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius,windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius, m_bottomCornerRadius)), data).boundingRect();
@@ -1022,13 +1020,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         QMatrix4x4 projectionMatrix = data.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
+        // The Y axis is flipped in OpenGL.
+        // TODO Rename the uniforms
         ShaderManager::instance()->pushShader(m_roundedCorners.shader.get());
-        m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopLeftCornerLocation, roundTopLeftCorner);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopRightCornerLocation, roundTopRightCorner);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomLeftCornerLocation, roundBottomLeftCorner);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomRightCornerLocation, roundBottomRightCorner);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, isWayland ? m_topCornerRadius : m_bottomCornerRadius);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, isWayland ? m_bottomCornerRadius : m_topCornerRadius);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopLeftCornerLocation, roundBottomLeftCorner);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopRightCornerLocation, roundBottomRightCorner);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomLeftCornerLocation, roundTopLeftCorner);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomRightCornerLocation, roundTopRightCorner);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, m_bottomCornerRadius);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, m_topCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.antialiasingLocation, m_roundedCornersAntialiasing);
         m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(deviceBackgroundRect.size().width(), deviceBackgroundRect.size().height()));
         m_roundedCorners.shader->setUniform(m_roundedCorners.mvpMatrixLocation, projectionMatrix);
