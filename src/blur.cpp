@@ -677,6 +677,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     }
 
+    float topCornerRadius = m_topCornerRadius * viewport.scale();
+    float bottomCornerRadius = m_bottomCornerRadius * viewport.scale();
+
     // Check whether the effective blur shape contains corners that need to be rounded.
     bool roundTopLeftCorner = false;
     bool roundTopRightCorner = false;
@@ -687,18 +690,18 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     if (!isMaximized || m_roundCornersOfMaximizedWindows) {
         const auto windowGeometry = w->frameGeometry();
         for (const QRectF &rect : effectiveShape) {
-            if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
-                const QRectF topLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+            if (topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
+                const QRectF topLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), topCornerRadius, topCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
                 roundTopLeftCorner = roundTopLeftCorner || rect.intersects(topLeftCorner);
 
-                const QRectF topRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(),m_topCornerRadius, m_topCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                const QRectF topRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - topCornerRadius, windowGeometry.y(),topCornerRadius, topCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
                 roundTopRightCorner = roundTopRightCorner || rect.intersects(topRightCorner);
             }
-            if (m_bottomCornerRadius) {
-                const QRectF bottomLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius,m_bottomCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+            if (bottomCornerRadius) {
+                const QRectF bottomLeftCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius,bottomCornerRadius)),data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
                 roundBottomLeftCorner = roundBottomLeftCorner || rect.intersects(bottomLeftCorner);
 
-                const QRectF bottomRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius,windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius,m_bottomCornerRadius, m_bottomCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
+                const QRectF bottomRightCorner = snapToPixelGridF(scaledRect(effectiveBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - bottomCornerRadius,windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect(), viewport.scale())).translated(-deviceBackgroundRect.topLeft());
                 roundBottomRightCorner = roundBottomRightCorner || rect.intersects(bottomRightCorner);
             }
         }
@@ -1028,8 +1031,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopRightCornerLocation, roundBottomRightCorner);
         m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomLeftCornerLocation, roundTopLeftCorner);
         m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomRightCornerLocation, roundTopRightCorner);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, m_bottomCornerRadius);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, m_topCornerRadius);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, bottomCornerRadius);
+        m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, topCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.antialiasingLocation, m_roundedCornersAntialiasing);
         m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
         m_roundedCorners.shader->setUniform(m_roundedCorners.mvpMatrixLocation, projectionMatrix);
