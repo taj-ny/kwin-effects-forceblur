@@ -103,6 +103,7 @@ BlurEffect::BlurEffect()
         m_texturePass.mvpMatrixLocation = m_texturePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_texturePass.textureSizeLocation = m_texturePass.shader->uniformLocation("textureSize");
         m_texturePass.texStartPosLocation = m_texturePass.shader->uniformLocation("texStartPos");
+        m_texturePass.regionSizeLocation = m_texturePass.shader->uniformLocation("regionSize");
     }
 
     m_roundedCorners.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -865,7 +866,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
         m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(m_texturePass.texture.get()->width(), m_texturePass.texture.get()->height()));
-        m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(0, 0));
+        m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
+        m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
 
         m_texturePass.texture.get()->bind();
 
@@ -1029,7 +1031,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, m_bottomCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, m_topCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.antialiasingLocation, m_roundedCornersAntialiasing);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(deviceBackgroundRect.size().width(), deviceBackgroundRect.size().height()));
+        m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
         m_roundedCorners.shader->setUniform(m_roundedCorners.mvpMatrixLocation, projectionMatrix);
 
         glUniform1i(m_roundedCorners.beforeBlurTextureLocation, 0);

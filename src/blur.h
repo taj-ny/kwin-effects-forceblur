@@ -124,6 +124,7 @@ private:
         int mvpMatrixLocation;
         int textureSizeLocation;
         int texStartPosLocation;
+        int regionSizeLocation;
 
         std::unique_ptr<GLTexture> texture;
     } m_texturePass;

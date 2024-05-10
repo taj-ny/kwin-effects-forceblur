@@ -38,5 +38,5 @@ void main(void)
     vec2 halfRegionSize = regionSize * 0.5;
     vec2 fragCoord = uv * regionSize;
     float box = udRoundBox(fragCoord - halfRegionSize, halfRegionSize, fragCoord);
-    gl_FragCoord = vec4(mix(texture2D(afterBlurTexture, uv).rgb, texture2D(beforeBlurTexture, uv).rgb, smoothstep(0.0, antialiasing, box)), 1.0);
+    gl_FragColor = vec4(mix(texture2D(afterBlurTexture, uv).rgb, texture2D(beforeBlurTexture, uv).rgb, smoothstep(0.0, antialiasing, box)), 1.0);
 }
