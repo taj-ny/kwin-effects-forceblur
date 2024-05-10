@@ -1057,6 +1057,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         vbo->draw(GL_TRIANGLES, 6, vertexCount);
 
         glDisable(GL_BLEND);
+        glActiveTexture(GL_TEXTURE0);
         renderInfo.textures[0]->unbind();
         finalBlurTexture->unbind();
         ShaderManager::instance()->popShader();
