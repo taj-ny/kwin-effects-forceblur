@@ -122,7 +122,6 @@ BlurEffect::BlurEffect()
 
         m_roundedCorners.antialiasingLocation = m_roundedCorners.shader->uniformLocation("antialiasing");
 
-        m_roundedCorners.offsetLocation = m_roundedCorners.shader->uniformLocation("offset");
         m_roundedCorners.regionSizeLocation = m_roundedCorners.shader->uniformLocation("regionSize");
 
         m_roundedCorners.beforeBlurTextureLocation = m_roundedCorners.shader->uniformLocation("beforeBlurTexture");
@@ -881,7 +880,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
         }
 
-        vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, vertexCount);
+        vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, hasRoundedCorners ? 6 : vertexCount);
 
         if (!hasRoundedCorners) {
             glDisable(GL_BLEND);
@@ -970,7 +969,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
         }
 
-        vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, vertexCount);
+        vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, hasRoundedCorners ? 6 : vertexCount);
 
         if (!hasRoundedCorners && opacity < 1.0) {
             glDisable(GL_BLEND);
@@ -1006,7 +1005,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
                 noiseTexture->bind();
 
-                vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, vertexCount);
+                vbo->draw(GL_TRIANGLES, hasRoundedCorners ? 0 : 6, hasRoundedCorners ? 6 : vertexCount);
 
                 ShaderManager::instance()->popShader();
             }
@@ -1023,11 +1022,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         QMatrix4x4 projectionMatrix = data.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
-        float yOffset = deviceBackgroundRect.y();
-        if (!isWayland) {
-            yOffset = renderTarget.framebuffer()->size().height() - w->y() - w->height(); // why
-        }
-
         ShaderManager::instance()->pushShader(m_roundedCorners.shader.get());
         m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopLeftCornerLocation, roundTopLeftCorner);
         m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopRightCornerLocation, roundTopRightCorner);
@@ -1036,7 +1030,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, isWayland ? m_topCornerRadius : m_bottomCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, isWayland ? m_bottomCornerRadius : m_topCornerRadius);
         m_roundedCorners.shader->setUniform(m_roundedCorners.antialiasingLocation, m_roundedCornersAntialiasing);
-        m_roundedCorners.shader->setUniform(m_roundedCorners.offsetLocation, QVector2D(deviceBackgroundRect.x(), yOffset));
         m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(deviceBackgroundRect.size().width(), deviceBackgroundRect.size().height()));
         m_roundedCorners.shader->setUniform(m_roundedCorners.mvpMatrixLocation, projectionMatrix);
 
@@ -1060,7 +1053,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         vbo->draw(GL_TRIANGLES, 6, vertexCount);
 
         glDisable(GL_BLEND);
-        vbo->unbindArrays();
         renderInfo.textures[0]->unbind();
         finalBlurTexture->unbind();
         ShaderManager::instance()->popShader();

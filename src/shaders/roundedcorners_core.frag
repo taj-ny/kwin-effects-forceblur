@@ -13,7 +13,6 @@ uniform float bottomCornerRadius;
 uniform float antialiasing;
 
 uniform vec2 regionSize;
-uniform vec2 offset;
 
 uniform sampler2D beforeBlurTexture;
 uniform sampler2D afterBlurTexture;
@@ -41,7 +40,7 @@ float udRoundBox(vec2 p, vec2 b, vec2 fragCoord)
 void main(void)
 {
     vec2 halfRegionSize = regionSize * 0.5;
-    vec2 textureLocation = (gl_FragCoord.xy - offset) / regionSize.xy;
-    float box = udRoundBox(-offset + gl_FragCoord.xy - halfRegionSize, halfRegionSize, gl_FragCoord.xy - offset);
+    vec2 fragCoord = uv * regionSize;
+    float box = udRoundBox(fragCoord - halfRegionSize, halfRegionSize, fragCoord);
     fragColor = vec4(mix(texture(afterBlurTexture, uv).rgb, texture(beforeBlurTexture, uv).rgb, smoothstep(0.0, antialiasing, box)), 1.0);
 }

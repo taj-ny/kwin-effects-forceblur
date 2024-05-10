@@ -143,7 +143,6 @@ private:
         int antialiasingLocation;
 
         int regionSizeLocation;
-        int offsetLocation;
 
         int beforeBlurTextureLocation;
         int afterBlurTextureLocation;
