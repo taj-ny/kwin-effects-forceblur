@@ -511,6 +511,16 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     bool hasFakeBlur = m_fakeBlur && m_hasValidFakeBlurTexture && !blurArea.isEmpty();
     if (hasFakeBlur) {
         data.opaque += blurArea;
+
+        const auto windowGeometry = w->frameGeometry();
+        if (m_topCornerRadius) {
+            data.opaque -= QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius);
+            data.opaque -= QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(), m_topCornerRadius, m_topCornerRadius);
+        }
+        if (m_bottomCornerRadius) {
+            data.opaque -= QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
+            data.opaque -= QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius, windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
+        }
     }
 
     if (shouldForceBlur(w) && m_paintAsTranslucent) {
