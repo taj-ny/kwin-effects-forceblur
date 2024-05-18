@@ -24,13 +24,15 @@ float udRoundBox(vec2 p, vec2 b, vec2 fragCoord)
         && ((roundTopLeftCorner && fragCoord.x <= topCornerRadius)
             || (roundTopRightCorner && fragCoord.x >= regionSize.x - topCornerRadius))) {
         radius = topCornerRadius;
+        p.y -= radius;
     } else if ((fragCoord.y >= regionSize.y - bottomCornerRadius)
         && ((roundBottomLeftCorner && fragCoord.x <= bottomCornerRadius)
             || (roundBottomRightCorner && fragCoord.x >= regionSize.x - bottomCornerRadius))) {
         radius = bottomCornerRadius;
+        p.y += radius;
     }
 
-    return length(max(abs(p) - b + radius, 0.0)) - radius;
+    return length(max(abs(p) - (b + vec2(0.0, radius)) + radius, 0.0)) - radius;
 }
 
 void main(void)
