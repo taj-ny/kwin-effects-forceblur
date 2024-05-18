@@ -726,12 +726,12 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         textureFormat = renderTarget.texture()->internalFormat();
     }
 
-    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != backgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
+    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != deviceBackgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
 
         for (size_t i = 0; i <= m_iterationCount; ++i) {
-            auto texture = GLTexture::allocate(textureFormat, backgroundRect.size() / (1 << i));
+            auto texture = GLTexture::allocate(textureFormat, deviceBackgroundRect.size() / (1 << i));
             if (!texture) {
                 qCWarning(KWIN_BLUR) << "Failed to allocate an offscreen texture";
                 return;
@@ -753,7 +753,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     // This framebuffer is left unchanged, so we can use that for rounding corners.
     const QRegion dirtyRegion = region & backgroundRect;
     for (const QRect &dirtyRect : dirtyRegion) {
-        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
+        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, snapToPixelGrid(scaledRect(dirtyRect.translated(-backgroundRect.topLeft()), viewport.scale())));
     }
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
@@ -770,17 +770,17 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         // The geometry that will be blurred offscreen, in logical pixels.
         {
-            const QRectF localRect = QRectF(0, 0, backgroundRect.width(), backgroundRect.height());
+            const QRectF localRect = QRectF(0, 0, deviceBackgroundRect.width(), deviceBackgroundRect.height());
 
             const float x0 = localRect.left();
             const float y0 = localRect.top();
             const float x1 = localRect.right();
             const float y1 = localRect.bottom();
 
-            const float u0 = x0 / backgroundRect.width();
-            const float v0 = 1.0f - y0 / backgroundRect.height();
-            const float u1 = x1 / backgroundRect.width();
-            const float v1 = 1.0f - y1 / backgroundRect.height();
+            const float u0 = x0 / deviceBackgroundRect.width();
+            const float v0 = 1.0f - y0 / deviceBackgroundRect.height();
+            const float u1 = x1 / deviceBackgroundRect.width();
+            const float v1 = 1.0f - y1 / deviceBackgroundRect.height();
 
             // first triangle
             map[vboIndex++] = GLVertex2D{
@@ -860,7 +860,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     vbo->bindArrays();
 
-    const auto finalBlurTexture = GLTexture::allocate(textureFormat, backgroundRect.size());
+    const auto finalBlurTexture = GLTexture::allocate(textureFormat, deviceBackgroundRect.size());
     finalBlurTexture->setFilter(GL_LINEAR);
     finalBlurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
     const auto finalBlurFramebuffer = std::make_unique<GLFramebuffer>(finalBlurTexture.get());
@@ -870,7 +870,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         QMatrix4x4 projectionMatrix;
         if (hasRoundedCorners) {
-            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+            projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
             GLFramebuffer::pushFramebuffer(finalBlurFramebuffer.get());
         } else {
             projectionMatrix = data.projectionMatrix();
@@ -879,8 +879,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
         m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(m_texturePass.texture.get()->width(), m_texturePass.texture.get()->height()));
-        m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
-        m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
+        m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(deviceBackgroundRect.x(), deviceBackgroundRect.y()));
+        m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
 
         m_texturePass.texture.get()->bind();
 
@@ -908,7 +908,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             ShaderManager::instance()->pushShader(m_downsamplePass.shader.get());
 
             QMatrix4x4 projectionMatrix;
-            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+            projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
 
             m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
             m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
@@ -934,7 +934,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->pushShader(m_upsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
         m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));
@@ -959,7 +959,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         if (hasRoundedCorners) {
             GLFramebuffer::pushFramebuffer(finalBlurFramebuffer.get());
             projectionMatrix = QMatrix4x4();
-            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+            projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
         } else {
             projectionMatrix = data.projectionMatrix();
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
@@ -1005,7 +1005,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
                 QMatrix4x4 projectionMatrix;
                 if (hasRoundedCorners) {
-                    projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+                    projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
                 } else {
                     projectionMatrix = data.projectionMatrix();
                     projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
