@@ -8,39 +8,42 @@ Latest features are available on the ``develop`` branch.
 
 # Features
 - Wayland support
-- Fake blur (optional, draws an already blurred image behind windows, which results in lower GPU usage)
-- Rounded corners ([not perfect](https://github.com/taj-ny/kwin-effects-forceblur/issues/34), as it's currently just a pixel mask)
+- Draw image behind windows instead of blurring (can be used with a blurred image of the wallpaper in order to achieve a very similar effect to blur but with **much** lower GPU usage)
+- Rounded corners
 - Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
-- Ability to disable force blur for decorations, so that it won't interfere with ones that support blur, such as [Klassy](https://github.com/paulmcauley/klassy)
 
 # Installation
-## NixOS
-``flake.nix``:
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    kwin-effects-forceblur = {
-      url = "github:taj-ny/kwin-effects-forceblur";
-      inputs.nixpkgs.follows = "nixpkgs";
+<details>
+  <summary>NixOS (flakes)</summary>
+  <br>
+  
+  ``flake.nix``:
+  ```nix
+  {
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  
+      kwin-effects-forceblur = {
+        url = "github:taj-ny/kwin-effects-forceblur";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
     };
-  };
-}
-```
+  }
+  ```
+  
+  ```nix
+  { inputs, pkgs, ... }:
+  
+  {
+    environment.systemPackages = [
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+    ];
+  }
+  ```
+</details>
 
-```nix
-{ inputs, pkgs, ... }:
-
-{
-  environment.systemPackages = [
-    inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
-  ];
-}
-```
-
-## Building from source
-Dependencies:
+# Building from source
+### Dependencies
 - CMake
 - Extra CMake Modules
 - Plasma 6
@@ -48,6 +51,34 @@ Dependencies:
 - KF6
 - KWin development packages
 
+<details>
+  <summary>Arch Linux</summary>
+  <br>
+
+  ```
+  sudo pacman -S base-devel git extra-cmake-modules qt6-tools
+  ```
+</details>
+
+<details>
+  <summary>Fedora</summary>
+  <br>
+
+  ```
+  sudo dnf install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake kwin-devel extra-cmake-modules kwin-devel kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel
+  ```
+</details>
+
+<details>
+  <summary>openSUSE</summary>
+  <br>
+
+  ```
+  sudo zypper in git cmake-full gcc-c++ kf6-extra-cmake-modules kcoreaddons-devel kguiaddons-devel kconfigwidgets-devel kwindowsystem-devel ki18n-devel kiconthemes-devel kpackage-devel frameworkintegration-devel kcmutils-devel kirigami2-devel "cmake(KF6Config)" "cmake(KF6CoreAddons)" "cmake(KF6FrameworkIntegration)" "cmake(KF6GuiAddons)" "cmake(KF6I18n)" "cmake(KF6KCMUtils)" "cmake(KF6KirigamiPlatform)" "cmake(KF6WindowSystem)" "cmake(Qt6Core)" "cmake(Qt6DBus)" "cmake(Qt6Quick)" "cmake(Qt6Svg)" "cmake(Qt6Widgets)" "cmake(Qt6Xml)" "cmake(Qt6UiTools)" "cmake(KF6Crash)" "cmake(KF6GlobalAccel)" "cmake(KF6KIO)" "cmake(KF6Service)" "cmake(KF6Notifications)" libepoxy-devel kwin6-devel
+  ```
+</details>
+
+### Building
 ```sh
 git clone https://github.com/taj-ny/kwin-effects-forceblur
 cd kwin-effects-forceblur
@@ -64,14 +95,14 @@ Remove the *build* directory when rebuilding the effect.
 > [!NOTE]  
 > If the effect stops working after a system upgrade, you will need to rebuild it.
 
-Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using. Using force blur together with another blur effect will result in blur being applied twice.
+Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using.
 
 1. Install the plugin.
 2. Open the *Desktop Effects* page in *System Settings*.
 3. Disable any blur effects.
 4. Enable the *Force Blur* effect.
 
-For more detailed descriptions of some options, check out the [wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
+For more detailed descriptions of some options, check out [this wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
    
 ### Window transparency
 The window needs to be translucent in order for the blur to be visible. This can be done in multiple ways:
