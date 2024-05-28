@@ -431,7 +431,7 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
+    return effects->openglContext() && effects->openglContext()->supportsBlits();
 }
 
 bool BlurEffect::decorationSupportsBlurBehind(const EffectWindow *w) const
@@ -839,7 +839,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     if (m_fakeBlur && m_hasValidFakeBlurTexture) {
         ShaderManager::instance()->pushShader(m_texturePass.shader.get());
 
-        QMatrix4x4 projectionMatrix = data.projectionMatrix();
+        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
@@ -913,7 +913,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         GLFramebuffer::popFramebuffer();
         const auto &read = renderInfo.framebuffers[1];
 
-        projectionMatrix = data.projectionMatrix();
+        projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
 
@@ -954,7 +954,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             if (GLTexture *noiseTexture = ensureNoiseTexture()) {
                 ShaderManager::instance()->pushShader(m_noisePass.shader.get());
 
-                QMatrix4x4 projectionMatrix = data.projectionMatrix();
+                QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
                 projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
                 m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
