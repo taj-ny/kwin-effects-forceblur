@@ -5,8 +5,8 @@ uniform bool roundTopRightCorner;
 uniform bool roundBottomLeftCorner;
 uniform bool roundBottomRightCorner;
 
-uniform float topCornerRadius;
-uniform float bottomCornerRadius;
+uniform int topCornerRadius;
+uniform int bottomCornerRadius;
 
 uniform float antialiasing;
 
@@ -40,5 +40,14 @@ void main(void)
     vec2 halfRegionSize = regionSize * 0.5;
     vec2 fragCoord = uv * regionSize;
     float box = udRoundBox(fragCoord - halfRegionSize, halfRegionSize, fragCoord);
-    gl_FragColor = vec4(mix(texture2D(afterBlurTexture, uv).rgb, texture2D(beforeBlurTexture, uv).rgb, smoothstep(0.0, antialiasing, box)), 1.0);
+
+    // If antialiasing is 0, the shader will be used to generate corner masks.
+    vec3 foreground = vec3(1.0, 1.0, 1.0);
+    vec3 background = vec3(0.0, 0.0, 0.0);
+    if (antialiasing > 0.0) {
+        foreground = texture2D(afterBlurTexture, uv).rgb;
+        background = texture2D(beforeBlurTexture, uv).rgb;
+    }
+
+    gl_FragColor = vec4(mix(foreground, background, smoothstep(0.0, antialiasing, box)), 1.0);
 }
