@@ -478,7 +478,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w, bool noRoundedCorners) const
     }
 
     bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (!noRoundedCorners && (!isMaximized || m_roundCornersOfMaximizedWindows)) {
+    if (!w->isDock() && !noRoundedCorners && (!isMaximized || m_roundCornersOfMaximizedWindows)) {
         if (m_topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
             QPoint topRightPosition = QPoint(w->rect().width() - m_topCornerRadius, 0);
             region -= m_topLeftCorner;
