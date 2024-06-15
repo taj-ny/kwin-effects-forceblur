@@ -261,9 +261,8 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_fakeBlur = BlurConfig::fakeBlur();
     m_fakeBlurImage = BlurConfig::fakeBlurImage();
 
+    // Antialiasing does take up a bit of space, so the corner radius will be reduced by the offset in order to leave some space.
     m_cornerRadiusOffset = m_roundedCornersAntialiasing == 0 ? 0 : std::round(m_roundedCornersAntialiasing) + 2;
-    m_topCornerRadius = std::max(0, m_topCornerRadius - m_cornerRadiusOffset);
-    m_bottomCornerRadius = std::max(0, m_bottomCornerRadius - m_cornerRadiusOffset);
 
     QImage fakeBlurImage(m_fakeBlurImage);
     m_hasValidFakeBlurTexture = !fakeBlurImage.isNull();
@@ -324,7 +323,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     if (shouldForceBlur(w)) {
         content = w->expandedGeometry().toRect().translated(-w->x(), -w->y());
         if (m_blurDecorations && w->decoration()) {
-            const QMargins borders = w->decoration()->borders();
             frame = w->frameGeometry().toRect().translated(-w->x(), -w->y());
         }
     }
@@ -446,8 +444,8 @@ std::array<QRegion, 4> BlurEffect::roundedCorners(qreal scale)
     }
 
     std::array<QRegion, 4> corners;
-    generateRoundedCornerMasks(std::round(m_topCornerRadius * scale), corners[0], corners[1], true);
-    generateRoundedCornerMasks(std::round(m_bottomCornerRadius * scale), corners[2], corners[3], false);
+    generateRoundedCornerMasks(std::max(0, (int)std::round(m_topCornerRadius * scale) - m_cornerRadiusOffset), corners[0], corners[1], true);
+    generateRoundedCornerMasks(std::max(0, (int)std::round(m_bottomCornerRadius * scale) - m_cornerRadiusOffset), corners[2], corners[3], false);
     return m_corners[scale] = corners;
 }
 
@@ -759,30 +757,6 @@ GLTexture *BlurEffect::ensureNoiseTexture()
     return m_noisePass.noiseTexture.get();
 }
 
-QList<QRectF> BlurEffect::effectiveBlurShape(const QRect &backgroundRect, const QRect &deviceBackgroundRect, const QRegion &paintRegion, const QRegion &blurRegion, qreal screenScale, qreal regionScale) const
-{
-    QList<QRectF> effectiveShape;
-    effectiveShape.reserve(blurRegion.rectCount());
-    if (paintRegion != infiniteRegion()) {
-        for (const QRect &clipRect : paintRegion) {
-            const QRectF deviceClipRect = snapToPixelGridF(scaledRect(clipRect, screenScale))
-                    .translated(-deviceBackgroundRect.topLeft());
-            for (const QRect &shapeRect : blurRegion) {
-                const QRectF deviceShapeRect = snapToPixelGridF(scaledRect(shapeRect.translated(-backgroundRect.topLeft()), regionScale));
-                if (const QRectF intersected = deviceClipRect.intersected(deviceShapeRect); !intersected.isEmpty()) {
-                    effectiveShape.append(intersected);
-                }
-            }
-        }
-    } else {
-        for (const QRect &rect : blurRegion) {
-            effectiveShape.append(snapToPixelGridF(scaledRect(rect.translated(-backgroundRect.topLeft()), regionScale)));
-        }
-    }
-
-    return effectiveShape;
-}
-
 void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
 {
     auto it = m_windows.find(w);
@@ -796,88 +770,93 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     }
 
-    bool hasRoundedCorners = (data.xScale() == 1 || data.yScale() == 1) && ((m_topCornerRadius || m_bottomCornerRadius));
+    int topCornerRadius = std::max(0, (int)std::round(m_topCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
+    int bottomCornerRadius = std::max(0, (int)std::round(m_bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
+    bool hasRoundedCorners = m_topCornerRadius || m_bottomCornerRadius;
 
-    // The blur region is scaled later, so we'll remove the corners for now and add them back after scaling, otherwise they'll look terrible.
-    QRegion blurShape = blurRegion(w);
-    if (hasRoundedCorners) {
-        const auto corners = roundedCorners(viewport.scale());
-        const auto windowGeometry = w->frameGeometry();
-        if (m_topCornerRadius) {
-            blurShape -= QRect(0, 0, m_topCornerRadius, m_topCornerRadius);
-            blurShape -= QRect(windowGeometry.width() - m_topCornerRadius, 0, m_topCornerRadius, m_topCornerRadius);
-        }
-        if (m_bottomCornerRadius) {
-            blurShape -= QRect(0, windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
-            blurShape -= QRect(windowGeometry.width() - m_bottomCornerRadius, windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
-        }
-    }
-
-    // Compute the effective blur shape. Note that if the window is transformed, so will be the blur shape.
-    blurShape = transformedBlurRegion(blurShape.translated(w->pos().toPoint()), data);
-
+    const QRegion blurShape = transformedBlurRegion(blurRegion(w).translated(w->pos().toPoint()), data);
     const QRect backgroundRect = blurShape.boundingRect();
+
+    // The blur shape has to be moved to 0,0 before being scaled, otherwise the size may end up being off by 1 pixel.
+    QRegion scaledBlurShape = scaledRegion(blurShape.translated(-backgroundRect.topLeft()), viewport.scale());
+    const QRegion scaledBlurShapeNotTranslated = scaledRegion(blurShape, viewport.scale());
     const QRect deviceBackgroundRect = snapToPixelGrid(scaledRect(backgroundRect, viewport.scale()));
-    const auto opacity = m_transparentBlur
-        ? w->opacity() * data.opacity()
-        : data.opacity();
 
-    int topCornerRadius = std::round(m_topCornerRadius * viewport.scale());
-    int bottomCornerRadius = std::round(m_bottomCornerRadius * viewport.scale());
-
-    // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
-    QList<QRectF> effectiveShape = effectiveBlurShape(backgroundRect, deviceBackgroundRect, region, blurShape, viewport.scale(), viewport.scale());
-
-    // Add rounded corners to the blur region.
-    if (hasRoundedCorners) {
-        QRegion cornersRegion;
-        const auto corners = roundedCorners(viewport.scale());
-        const auto windowGeometry = scaledRect(w->frameGeometry(), viewport.scale());
-        if (topCornerRadius) {
-            QRegion square = QRect(0, 0, topCornerRadius, topCornerRadius);
-            cornersRegion += square - corners[0];
-            cornersRegion += (square - corners[1]).translated(std::round(windowGeometry.width()) - topCornerRadius, 0);
-        }
-        if (bottomCornerRadius) {
-            QRegion square = QRect(0, 0, bottomCornerRadius, bottomCornerRadius);
-            cornersRegion += (square - corners[2]).translated(0, std::round(windowGeometry.height()) - bottomCornerRadius);
-            cornersRegion += (square - corners[3]).translated(std::round(windowGeometry.width()) - bottomCornerRadius, std::round(windowGeometry.height()) - bottomCornerRadius);
-        }
-        cornersRegion = cornersRegion.intersected(scaledRegion(blurRegion(w), viewport.scale()));
-        cornersRegion = transformedBlurRegion(cornersRegion.translated(w->pos().toPoint()), data);
-        effectiveShape.append(effectiveBlurShape(backgroundRect, deviceBackgroundRect, region, cornersRegion, viewport.scale(), 1));
-    }
-    if (effectiveShape.isEmpty()) {
-        return;
-    }
-
-    // Check whether the effective blur shape contains corners that need to be rounded.
     bool roundTopLeftCorner = false;
     bool roundTopRightCorner = false;
     bool roundBottomLeftCorner = false;
     bool roundBottomRightCorner = false;
-
-    if (hasRoundedCorners && m_roundedCornersAntialiasing > 0) {
-        const auto windowGeometry = scaledRect(w->frameGeometry(), viewport.scale());
-        for (const QRectF &rect : effectiveShape) {
+    if (hasRoundedCorners) {
+        if (w->isDock()) {
+            // TODO Add option to toggle rounding for the dock
+            roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
+            roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
+        } else {
+            // Ensure the blur region corners touch the window corners before rounding them.
+            const QRect windowGeometry = w->frameGeometry().toRect();
             if (topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
-                const QRectF topLeftCorner = snapToPixelGridF(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), topCornerRadius, topCornerRadius)), data).boundingRect()).translated(-deviceBackgroundRect.topLeft());
-                roundTopLeftCorner = roundTopLeftCorner || rect.intersects(topLeftCorner);
+                const QRect topLeftCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), topCornerRadius, topCornerRadius)), data).boundingRect(), viewport.scale()));
+                roundTopLeftCorner = scaledBlurShapeNotTranslated.intersects(topLeftCorner);
 
-                const QRectF topRightCorner = snapToPixelGridF(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - topCornerRadius, windowGeometry.y(),topCornerRadius, topCornerRadius)), data).boundingRect()).translated(-deviceBackgroundRect.topLeft());
-                roundTopRightCorner = roundTopRightCorner || rect.intersects(topRightCorner);
+                const QRect topRightCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - topCornerRadius, windowGeometry.y(),topCornerRadius, topCornerRadius)), data).boundingRect(), viewport.scale()));
+                roundTopRightCorner = scaledBlurShapeNotTranslated.intersects(topRightCorner);
             }
             if (bottomCornerRadius) {
-                const QRectF bottomLeftCorner = snapToPixelGridF(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect()).translated(-deviceBackgroundRect.topLeft());
-                roundBottomLeftCorner = roundBottomLeftCorner || rect.intersects(bottomLeftCorner);
+                const QRect bottomLeftCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect(), viewport.scale()));
+                roundBottomLeftCorner = scaledBlurShapeNotTranslated.intersects(bottomLeftCorner);
 
-                const QRectF bottomRightCorner = snapToPixelGridF(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - bottomCornerRadius, windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect()).translated(-deviceBackgroundRect.topLeft());
-                roundBottomRightCorner = roundBottomRightCorner || rect.intersects(bottomRightCorner);
+                const QRect bottomRightCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - bottomCornerRadius, windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect(), viewport.scale()));
+                roundBottomRightCorner = scaledBlurShapeNotTranslated.intersects(bottomRightCorner);
             }
+
+            hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
+        }
+
+        const auto corners = roundedCorners(viewport.scale());
+        const QRect blurRect = scaledBlurShape.boundingRect();
+
+        if (roundTopLeftCorner) {
+            scaledBlurShape -= corners[0];
+        }
+        if (roundTopRightCorner) {
+            scaledBlurShape -= corners[1].translated(blurRect.width() - topCornerRadius, 0);
+        }
+
+        if (roundBottomLeftCorner) {
+            scaledBlurShape -= corners[2].translated(0, blurRect.height() - bottomCornerRadius);
+        }
+        if (roundBottomRightCorner) {
+            scaledBlurShape -= corners[3].translated(blurRect.width() - bottomCornerRadius, blurRect.height() - bottomCornerRadius);
         }
     }
 
-    const bool hasAntialiasedRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
+    const auto opacity = m_transparentBlur
+        ? w->opacity() * data.opacity()
+        : data.opacity();
+
+    // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
+    QRegion effectiveShape;
+    if (region != infiniteRegion()) {
+        for (const QRect &clipRect : region) {
+            const QRect deviceClipRect = snapToPixelGrid(scaledRect(clipRect, viewport.scale()))
+                    .translated(-deviceBackgroundRect.topLeft());
+            for (const QRect &shapeRect : scaledBlurShape) {
+                const QRect deviceShapeRect = shapeRect;
+                if (const QRect intersected = deviceClipRect.intersected(deviceShapeRect); !intersected.isEmpty()) {
+                    effectiveShape += intersected;
+                }
+            }
+        }
+    } else {
+        for (const QRect &rect : scaledBlurShape) {
+            effectiveShape += rect;
+        }
+    }
+    if (!effectiveShape.rectCount()) {
+        return;
+    }
+
+    const bool hasAntialiasedRoundedCorners = hasRoundedCorners && m_roundedCornersAntialiasing > 0;
 
     // Maybe reallocate offscreen render targets. Keep in mind that the first one contains
     // original background behind the window, it's not blurred.
@@ -922,7 +901,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     vbo->reset();
     vbo->setAttribLayout(std::span(GLVertexBuffer::GLVertex2DLayout), sizeof(GLVertex2D));
 
-    const int vertexCount = effectiveShape.size() * 6;
+    const int vertexCount = effectiveShape.rectCount() * 6;
     if (auto result = vbo->map<GLVertex2D>(6 + vertexCount)) {
         auto map = *result;
 
@@ -1033,7 +1012,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
             GLFramebuffer::pushFramebuffer(finalBlurFramebuffer.get());
         } else {
-            projectionMatrix = data.projectionMatrix();
+            projectionMatrix = viewport.projectionMatrix();
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
         }
 
@@ -1121,7 +1100,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             projectionMatrix = QMatrix4x4();
             projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
         } else {
-            projectionMatrix = data.projectionMatrix();
+            projectionMatrix = viewport.projectionMatrix();
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
         }
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
@@ -1167,7 +1146,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                 if (hasAntialiasedRoundedCorners) {
                     projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
                 } else {
-                    projectionMatrix = data.projectionMatrix();
+                    projectionMatrix = viewport.projectionMatrix();
                     projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
                 }
 
@@ -1191,7 +1170,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     if (hasAntialiasedRoundedCorners) {
-        QMatrix4x4 projectionMatrix = data.projectionMatrix();
+        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
         // The Y axis is flipped in OpenGL.
