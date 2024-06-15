@@ -792,9 +792,13 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     bool roundBottomRightCorner = false;
     if (hasRoundedCorners) {
         if (w->isDock()) {
-            // TODO Add option to toggle rounding for the dock
-            roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
-            roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
+            // Only round floating panels. If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0)
+            // for vertical panels doesn't belong to the blur region, the panel is most likely floating. The (0,0)
+            // pixel may be outside the blur region if the panel can float but isn't at the moment.
+            if (!blurRegion(w).intersects(QRect(0, w->height() / 2, 1, 1)) && !blurRegion(w).intersects(QRect(w->width() / 2, 0, 1, 1))) {
+                roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
+                roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
+            }
         } else {
             // Ensure the blur region corners touch the window corners before rounding them.
             const QRect windowGeometry = w->frameGeometry().toRect();
