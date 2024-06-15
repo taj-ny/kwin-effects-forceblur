@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
 
 project(forceblur)
-set(PROJECT_VERSION "1.2.0")
+set(PROJECT_VERSION "1.2.1")
 set(PROJECT_VERSION_MAJOR 0)
 
 set(KF_MIN_VERSION "5.240.0")
@@ -65,6 +65,10 @@ find_package(XCB REQUIRED COMPONENTS XCB)
 find_package(KWin REQUIRED COMPONENTS
     kwineffects
 )
+
+if(${KWin_VERSION} VERSION_LESS_EQUAL 6.0.5)
+    add_compile_definitions(KWIN_6_0)
+endif()
 
 find_package(KDecoration2 REQUIRED)
 

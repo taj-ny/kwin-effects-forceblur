@@ -1,0 +1,33 @@
+name: Arch Linux
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+      options: --user root
+
+    steps:
+    - name: Refresh Packages
+      run: pacman -Syu --noconfirm
+
+    - name: Install Dependencies
+      run: pacman -S --noconfirm base-devel git extra-cmake-modules qt6-tools kwin
+
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
