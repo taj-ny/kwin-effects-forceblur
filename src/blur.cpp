@@ -778,12 +778,12 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     int bottomCornerRadius = std::max(0, (int)std::round(m_bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
     bool hasRoundedCorners = m_topCornerRadius || m_bottomCornerRadius;
 
-    const QRegion blurShape = transformedBlurRegion(blurRegion(w).translated(w->pos().toPoint()), data);
+    const QRegion rawBlurRegion = blurRegion(w);
+    const QRegion blurShape = transformedBlurRegion(rawBlurRegion.translated(w->pos().toPoint()), data);
     const QRect backgroundRect = blurShape.boundingRect();
 
     // The blur shape has to be moved to 0,0 before being scaled, otherwise the size may end up being off by 1 pixel.
     QRegion scaledBlurShape = scaledRegion(blurShape.translated(-backgroundRect.topLeft()), viewport.scale());
-    const QRegion scaledBlurShapeNotTranslated = scaledRegion(blurShape, viewport.scale());
     const QRect deviceBackgroundRect = snapToPixelGrid(scaledRect(backgroundRect, viewport.scale()));
 
     bool roundTopLeftCorner = false;
@@ -795,28 +795,20 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             // Only round floating panels. If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0)
             // for vertical panels doesn't belong to the blur region, the panel is most likely floating. The (0,0)
             // pixel may be outside the blur region if the panel can float but isn't at the moment.
-            if (!blurRegion(w).intersects(QRect(0, w->height() / 2, 1, 1)) && !blurRegion(w).intersects(QRect(w->width() / 2, 0, 1, 1))) {
+            if (!rawBlurRegion.intersects(QRect(0, w->height() / 2, 1, 1)) && !rawBlurRegion.intersects(QRect(w->width() / 2, 0, 1, 1))) {
                 roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
                 roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
             }
         } else {
             // Ensure the blur region corners touch the window corners before rounding them.
-            const QRect windowGeometry = w->frameGeometry().toRect();
             if (topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
-                const QRect topLeftCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y(), topCornerRadius, topCornerRadius)), data).boundingRect(), viewport.scale()));
-                roundTopLeftCorner = scaledBlurShapeNotTranslated.intersects(topLeftCorner);
-
-                const QRect topRightCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - topCornerRadius, windowGeometry.y(),topCornerRadius, topCornerRadius)), data).boundingRect(), viewport.scale()));
-                roundTopRightCorner = scaledBlurShapeNotTranslated.intersects(topRightCorner);
+                roundTopLeftCorner = rawBlurRegion.intersects(QRect(0, 0, topCornerRadius, topCornerRadius));
+                roundTopRightCorner = rawBlurRegion.intersects(QRect(w->width() - topCornerRadius, 0, topCornerRadius, topCornerRadius));
             }
             if (bottomCornerRadius) {
-                const QRect bottomLeftCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect(), viewport.scale()));
-                roundBottomLeftCorner = scaledBlurShapeNotTranslated.intersects(bottomLeftCorner);
-
-                const QRect bottomRightCorner = snapToPixelGrid(scaledRect(transformedBlurRegion(QRegion(QRect(windowGeometry.x() + windowGeometry.width() - bottomCornerRadius, windowGeometry.y() + windowGeometry.height() - bottomCornerRadius,bottomCornerRadius, bottomCornerRadius)), data).boundingRect(), viewport.scale()));
-                roundBottomRightCorner = scaledBlurShapeNotTranslated.intersects(bottomRightCorner);
+                roundBottomLeftCorner = rawBlurRegion.intersects(QRect(0, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
+                roundBottomRightCorner = rawBlurRegion.intersects(QRect(w->width() - bottomCornerRadius, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
             }
-
             hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
         }
 
