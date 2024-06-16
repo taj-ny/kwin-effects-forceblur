@@ -380,6 +380,10 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowExpandedGeometryChangedConnections.erase(it);
     }
+
+    if (m_blurWhenTransformed.contains(w)) {
+        m_blurWhenTransformed.erase(w);
+    }
 }
 
 void BlurEffect::slotScreenRemoved(KWin::Output *screen)
@@ -581,19 +585,17 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
     bool scaled = !qFuzzyCompare(data.xScale(), 1.0) && !qFuzzyCompare(data.yScale(), 1.0);
     bool translated = data.xTranslation() || data.yTranslation();
     if (!(scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED)))) {
+        if (m_blurWhenTransformed.contains(w)) {
+            m_blurWhenTransformed.erase(w);
+        }
+
         return true;
     }
 
     // The force blur role may be removed while the window is still transformed, causing the blur to disappear for
-    // a short time. To avoid that, we allow the window to be blurred for another 30 paints.
-    if (hasForceBlurRole) {
-        m_paintsSinceForceBlurRoleRemoval[w] = 0;
-        return true;
-    } else if (m_paintsSinceForceBlurRoleRemoval.contains(w)) {
-        m_paintsSinceForceBlurRoleRemoval[w]++;
-        if (m_paintsSinceForceBlurRoleRemoval[w] == 29) {
-            m_paintsSinceForceBlurRoleRemoval.erase(w);
-        }
+    // a short time. To avoid that, we allow the window to be blurred until it's not transformed anymore.'
+    if (hasForceBlurRole || m_blurWhenTransformed.contains(w)) {
+        m_blurWhenTransformed[w] = true;
         return true;
     }
 
