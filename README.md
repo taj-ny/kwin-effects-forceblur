@@ -3,8 +3,8 @@ Kwin-effects-forceblur (name subject to change) is a fork of the KWin Blur effec
 
 Latest features are available on the ``develop`` branch.
 
-![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/9d2f337e-badd-4d95-ba55-96c80202e196)
-<sup>Window opacity has been set to 85% for System Settings and Dolphin, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
+![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/1078cf12-e6da-43c7-80b4-d90a8b0f3404)
+<sup>Window opacity has been set to 85% for System Settings, Dolphin and VSCodium, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
 
 # Features
 - Wayland support
