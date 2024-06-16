@@ -80,7 +80,7 @@ private:
     QRegion blurRegion(EffectWindow *w, bool noRoundedCorners = false) const;
     QRegion decorationBlurRegion(const EffectWindow *w) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
-    bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
+    bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
     void updateCornerRegions();
@@ -179,6 +179,7 @@ private:
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
+    std::unordered_map<const EffectWindow *, int> m_paintsSinceForceBlurRoleRemoval;
 
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;

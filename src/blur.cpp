@@ -566,9 +566,11 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     m_paintedArea += data.paint;
 }
 
-bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const
+bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data)
 {
-    if (effects->activeFullScreenEffect() && !w->data(WindowForceBlurRole).toBool()) {
+    const bool hasForceBlurRole = w->data(WindowForceBlurRole).toBool();
+
+    if (effects->activeFullScreenEffect() && !hasForceBlurRole) {
         return false;
     }
 
@@ -578,12 +580,24 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
     bool scaled = !qFuzzyCompare(data.xScale(), 1.0) && !qFuzzyCompare(data.yScale(), 1.0);
     bool translated = data.xTranslation() || data.yTranslation();
-
-    if ((scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED))) && !w->data(WindowForceBlurRole).toBool()) {
-        return false;
+    if (!(scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED)))) {
+        return true;
     }
 
-    return true;
+    // The force blur role may be removed while the window is still transformed, causing the blur to disappear for
+    // a short time. To avoid that, we allow the window to be blurred for another 30 paints.
+    if (hasForceBlurRole) {
+        m_paintsSinceForceBlurRoleRemoval[w] = 0;
+        return true;
+    } else if (m_paintsSinceForceBlurRoleRemoval.contains(w)) {
+        m_paintsSinceForceBlurRoleRemoval[w]++;
+        if (m_paintsSinceForceBlurRoleRemoval[w] == 29) {
+            m_paintsSinceForceBlurRoleRemoval.erase(w);
+        }
+        return true;
+    }
+
+    return false;
 }
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
