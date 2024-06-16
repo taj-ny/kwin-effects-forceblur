@@ -1,5 +1,5 @@
 # kwin-effects-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-A fork of the KWin Blur effect for KDE Plasma 6 with the ability to blur any window on Wayland and X11.
+Kwin-effects-forceblur (name subject to change) is a fork of the KWin Blur effect for KDE Plasma 6 with several improvements and bug fixes.
 
 Latest features are available on the ``develop`` branch.
 
@@ -8,9 +8,15 @@ Latest features are available on the ``develop`` branch.
 
 # Features
 - Wayland support
+- Force blur
+- Rounded corners with optional anti-aliasing
 - Draw image behind windows instead of blurring (can be used with a blurred image of the wallpaper in order to achieve a very similar effect to blur but with **much** lower GPU usage)
-- Rounded corners
-- Fix for [artifacts](https://github.com/taj-ny/kwin-effects-forceblur/pull/38) when using a transparent color scheme
+
+### Bug fixes
+Fixes for blur-related Plasma bugs that haven't been patched yet.
+
+- Blur may sometimes disappear during animations
+- [Transparent color schemes don't work properly with the Breeze application style](https://github.com/taj-ny/kwin-effects-forceblur/pull/38)
 
 # Installation
 <details>
