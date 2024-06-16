@@ -1016,6 +1016,20 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     vbo->bindArrays();
 
+    /*
+     * The anti-aliasing implementation is actually really bad, but that's the best I can do for now. Suprisingly,
+     * there are no performance issues.
+     *
+     * Anti-aliasing is done by a shader that paints rounded rectangles. It's a modified version of
+     * https://www.shadertoy.com/view/ldfSDj.
+     * The shader requires two textures: the blur region before being blurred and after being blurred.
+     * The first texture can simply be taken from renderInfo.textures[0], as it's left unchanged.
+     * The second texture is more tricky. We could just blit, but that's slow. A faster solution is to create a virtual
+     * framebuffer with a texture attached to it and paint the blur in that framebuffer instead of the screen.
+     *
+     * Since only a fragment of the window may be painted, the shader allows to toggle rounding for each corner.
+    */
+
     const auto finalBlurTexture = GLTexture::allocate(textureFormat, backgroundRect.size());
     finalBlurTexture->setFilter(GL_LINEAR);
     finalBlurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
