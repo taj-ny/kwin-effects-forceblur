@@ -806,7 +806,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     bool roundTopRightCorner = false;
     bool roundBottomLeftCorner = false;
     bool roundBottomRightCorner = false;
-    if (hasRoundedCorners) {
+    const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
+    if (hasRoundedCorners && ((!w->isFullScreen() && !isMaximized) || m_roundCornersOfMaximizedWindows)) {
         if (w->isDock()) {
             // Only round floating panels. If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0)
             // for vertical panels doesn't belong to the blur region, the panel is most likely floating. The (0,0)
