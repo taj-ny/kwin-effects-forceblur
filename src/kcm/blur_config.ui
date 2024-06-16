@@ -326,7 +326,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="kcfg_TopCornerRadius">
+          <widget class="QSpinBox" name="kcfg_TopCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -344,7 +344,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="kcfg_BottomCornerRadius">
+          <widget class="QSpinBox" name="kcfg_BottomCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
