@@ -382,7 +382,7 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     }
 
     if (m_blurWhenTransformed.contains(w)) {
-        m_blurWhenTransformed.erase(w);
+        m_blurWhenTransformed.removeOne(w);
     }
 }
 
@@ -586,20 +586,21 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
     bool translated = data.xTranslation() || data.yTranslation();
     if (!(scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED)))) {
         if (m_blurWhenTransformed.contains(w)) {
-            m_blurWhenTransformed.erase(w);
+            m_blurWhenTransformed.removeOne(w);
         }
 
         return true;
     }
 
     // The force blur role may be removed while the window is still transformed, causing the blur to disappear for
-    // a short time. To avoid that, we allow the window to be blurred until it's not transformed anymore.'
-    if (hasForceBlurRole || m_blurWhenTransformed.contains(w)) {
-        m_blurWhenTransformed[w] = true;
+    // a short time. To avoid that, we allow the window to be blurred until it's not transformed anymore.
+    if (m_blurWhenTransformed.contains(w)) {
         return true;
+    } else if (hasForceBlurRole) {
+        m_blurWhenTransformed.append(w);
     }
 
-    return false;
+    return hasForceBlurRole;
 }
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const

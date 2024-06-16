@@ -176,10 +176,12 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
+    // Windows to blur even when transformed.
+    QList<const EffectWindow*> m_blurWhenTransformed;
+
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
-    std::unordered_map<const EffectWindow *, bool> m_blurWhenTransformed;
 
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;
