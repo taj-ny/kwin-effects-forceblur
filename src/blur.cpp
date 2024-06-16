@@ -1150,13 +1150,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                     projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
                 }
 
-                const QVector2D textureStartPosition = hasAntialiasedRoundedCorners
-                    ? QVector2D(deviceBackgroundRect.x() * 2, std::abs(deviceBackgroundRect.height() - deviceBackgroundRect.y() * 2))
-                    : QVector2D(deviceBackgroundRect.topLeft());
-
                 m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
                 m_noisePass.shader->setUniform(m_noisePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
-                m_noisePass.shader->setUniform(m_noisePass.texStartPosLocation, textureStartPosition);
+                m_noisePass.shader->setUniform(m_noisePass.texStartPosLocation, QVector2D(deviceBackgroundRect.topLeft()));
 
                 noiseTexture->bind();
 
