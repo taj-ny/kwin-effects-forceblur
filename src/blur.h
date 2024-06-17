@@ -88,14 +88,14 @@ private:
     GLTexture *ensureNoiseTexture();
 
     /*
-     * @returns An array containing rounded corner masks for the given screen scale. If no masks exist for the given screen scale,
-     * they will be generated.
+     * @returns An array containing rounded corner masks for the given screen scale and radii. If no masks exist, they
+     * will be generated.
      */
     std::array<QRegion, 4> roundedCorners(int topCornerRadius, int bottomCornerRadius, qreal scale);
 
     /*
-     * Generates rounded corner masks for the left and right corner for the given radius.
-     * @param top Whether TODO
+     * Generates rounded corner masks for the left and right corner of the given radius.
+     * @param top Whether the corners belong to the top part of the window.
      */
     void generateRoundedCornerMasks(int radius, QRegion &left, QRegion &right, bool top) const;
 

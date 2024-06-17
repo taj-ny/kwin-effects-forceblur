@@ -418,7 +418,7 @@ void BlurEffect::generateRoundedCornerMasks(int radius, QRegion &left, QRegion &
     m_roundedCorners.shader->setUniform(m_roundedCorners.roundTopRightCornerLocation, false);
     m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomLeftCornerLocation, true);
     m_roundedCorners.shader->setUniform(m_roundedCorners.roundBottomRightCornerLocation, true);
-    m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, 0);
+    m_roundedCorners.shader->setUniform(m_roundedCorners.topCornerRadiusLocation, static_cast<float>(0));
     m_roundedCorners.shader->setUniform(m_roundedCorners.bottomCornerRadiusLocation, radius);
     m_roundedCorners.shader->setUniform(m_roundedCorners.antialiasingLocation, static_cast<float>(0));
     m_roundedCorners.shader->setUniform(m_roundedCorners.regionSizeLocation, QVector2D(size, size));
