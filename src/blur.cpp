@@ -251,8 +251,10 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_blurDecorations = BlurConfig::blurDecorations();
     m_windowClasses = BlurConfig::windowClasses().split("\n");
     m_transparentBlur = BlurConfig::transparentBlur();
-    m_topCornerRadius = BlurConfig::topCornerRadius();
-    m_bottomCornerRadius = BlurConfig::bottomCornerRadius();
+    m_windowTopCornerRadius = BlurConfig::topCornerRadius();
+    m_windowBottomCornerRadius = BlurConfig::bottomCornerRadius();
+    m_menuCornerRadius = BlurConfig::menuCornerRadius();
+    m_dockCornerRadius = BlurConfig::dockCornerRadius();
     m_roundedCornersAntialiasing = BlurConfig::roundedCornersAntialiasing();
     m_roundCornersOfMaximizedWindows = BlurConfig::roundCornersOfMaximizedWindows();
     m_blurMenus = BlurConfig::blurMenus();
@@ -437,16 +439,17 @@ void BlurEffect::generateRoundedCornerMasks(int radius, QRegion &left, QRegion &
     right = QRegion(QBitmap::fromImage(img.mirrored(true, false).createMaskFromColor(QColor(Qt::black).rgb(), Qt::MaskOutColor), Qt::DiffuseAlphaDither));;
 }
 
-std::array<QRegion, 4> BlurEffect::roundedCorners(qreal scale)
+std::array<QRegion, 4> BlurEffect::roundedCorners(int topCornerRadius, int bottomCornerRadius, qreal scale)
 {
-    if (m_corners.contains(scale)) {
-        return m_corners[scale];
+    const auto key = std::make_tuple(topCornerRadius, bottomCornerRadius, scale);
+    if (m_corners.contains(key)) {
+        return m_corners[key];
     }
 
     std::array<QRegion, 4> corners;
-    generateRoundedCornerMasks(std::max(0, (int)std::round(m_topCornerRadius * scale) - m_cornerRadiusOffset), corners[0], corners[1], true);
-    generateRoundedCornerMasks(std::max(0, (int)std::round(m_bottomCornerRadius * scale) - m_cornerRadiusOffset), corners[2], corners[3], false);
-    return m_corners[scale] = corners;
+    generateRoundedCornerMasks(topCornerRadius, corners[0], corners[1], true);
+    generateRoundedCornerMasks(bottomCornerRadius, corners[2], corners[3], false);
+    return m_corners[key] = corners;
 }
 
 void BlurEffect::slotWindowAdded(EffectWindow *w)
@@ -635,14 +638,23 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     if (hasFakeBlur) {
         data.opaque += blurArea;
 
-        const auto windowGeometry = w->frameGeometry();
-        if (m_topCornerRadius) {
-            data.opaque -= QRect(windowGeometry.x(), windowGeometry.y(), m_topCornerRadius, m_topCornerRadius);
-            data.opaque -= QRect(windowGeometry.x() + windowGeometry.width() - m_topCornerRadius, windowGeometry.y(), m_topCornerRadius, m_topCornerRadius);
+        int topCornerRadius;
+        int bottomCornerRadius;
+        if (isMenu(w)) {
+            topCornerRadius = bottomCornerRadius = m_menuCornerRadius;
+        } else if (w->isDock()) {
+            topCornerRadius = bottomCornerRadius = m_dockCornerRadius;
+        } else {
+            topCornerRadius = m_windowTopCornerRadius;
+            bottomCornerRadius = m_windowBottomCornerRadius;
         }
-        if (m_bottomCornerRadius) {
-            data.opaque -= QRect(windowGeometry.x(), windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
-            data.opaque -= QRect(windowGeometry.x() + windowGeometry.width() - m_bottomCornerRadius, windowGeometry.y() + windowGeometry.height() - m_bottomCornerRadius, m_bottomCornerRadius, m_bottomCornerRadius);
+
+        if (!w->isDock() || (w->isDock() && isDockFloating(w, blurArea))) {
+            const QRect blurRect = blurArea.boundingRect();
+            data.opaque -= QRect(blurRect.x(), blurRect.y(), topCornerRadius, topCornerRadius);
+            data.opaque -= QRect(blurRect.x() + blurRect.width() - topCornerRadius, blurRect.y(), topCornerRadius, topCornerRadius);
+            data.opaque -= QRect(blurRect.x(), blurRect.y() + blurRect.height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius);
+            data.opaque -= QRect(blurRect.x() + blurRect.width() - bottomCornerRadius, blurRect.y() + blurRect.height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius);
         }
     }
 
@@ -724,7 +736,7 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
-    if ((!m_blurDocks && w->isDock()) || (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow()))) {
+    if ((!m_blurDocks && w->isDock()) || (!m_blurMenus && isMenu(w))) {
         return false;
     }
 
@@ -790,9 +802,20 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     }
 
-    int topCornerRadius = std::max(0, (int)std::round(m_topCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
-    int bottomCornerRadius = std::max(0, (int)std::round(m_bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
-    bool hasRoundedCorners = m_topCornerRadius || m_bottomCornerRadius;
+    int topCornerRadius;
+    int bottomCornerRadius;
+    if (isMenu(w)) {
+        topCornerRadius = bottomCornerRadius = m_menuCornerRadius;
+    } else if (w->isDock()) {
+        topCornerRadius = bottomCornerRadius = m_dockCornerRadius;
+    } else {
+        topCornerRadius = m_windowTopCornerRadius;
+        bottomCornerRadius = m_windowBottomCornerRadius;
+    }
+    topCornerRadius = std::max(0, (int)std::round(topCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
+    bottomCornerRadius = std::max(0, (int)std::round(bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
+
+    bool hasRoundedCorners = topCornerRadius || bottomCornerRadius;
 
     const QRegion rawBlurRegion = blurRegion(w);
     const QRegion blurShape = transformedBlurRegion(rawBlurRegion.translated(w->pos().toPoint()), data);
@@ -809,10 +832,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
     if (hasRoundedCorners && ((!w->isFullScreen() && !isMaximized) || m_roundCornersOfMaximizedWindows)) {
         if (w->isDock()) {
-            // Only round floating panels. If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0)
-            // for vertical panels doesn't belong to the blur region, the panel is most likely floating. The (0,0)
-            // pixel may be outside the blur region if the panel can float but isn't at the moment.
-            if (!rawBlurRegion.intersects(QRect(0, w->height() / 2, 1, 1)) && !rawBlurRegion.intersects(QRect(w->width() / 2, 0, 1, 1))) {
+            if (isDockFloating(w, rawBlurRegion)) {
                 roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
                 roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
             }
@@ -829,7 +849,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
         }
 
-        const auto corners = roundedCorners(viewport.scale());
+        const auto corners = roundedCorners(topCornerRadius, bottomCornerRadius, viewport.scale());
         const QRect blurRect = scaledBlurShape.boundingRect();
 
         if (roundTopLeftCorner) {

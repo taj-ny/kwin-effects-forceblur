@@ -34,6 +34,12 @@ class3</default>
         <entry name="BottomCornerRadius" type="Int">
             <default>0</default>
         </entry>
+        <entry name="MenuCornerRadius" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="DockCornerRadius" type="Int">
+            <default>0</default>
+        </entry>
         <entry name="RoundedCornersAntialiasing" type="Double">
             <default>1.0</default>
         </entry>

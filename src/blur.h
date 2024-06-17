@@ -88,16 +88,10 @@ private:
     GLTexture *ensureNoiseTexture();
 
     /*
-     * @param regionScale How much to scale the blur region. This parameter should be 1 if the region is rounded.
-     * @returns The area to be blurred. It's possible that all of it will be clipped.
-     */
-    QList<QRectF> effectiveBlurShape(const QRect &backgroundRect, const QRect &deviceBackgroundRect, const QRegion &paintRegion, const QRegion &blurRegion, qreal screenScale, qreal regionScale) const;
-
-    /*
      * @returns An array containing rounded corner masks for the given screen scale. If no masks exist for the given screen scale,
      * they will be generated.
      */
-    std::array<QRegion, 4> roundedCorners(qreal scale);
+    std::array<QRegion, 4> roundedCorners(int topCornerRadius, int bottomCornerRadius, qreal scale);
 
     /*
      * Generates rounded corner masks for the left and right corner for the given radius.
@@ -182,10 +176,6 @@ private:
     bool m_blurNonMatching;
     bool m_blurDecorations;
     bool m_transparentBlur;
-    int m_topCornerRadius;
-    int m_bottomCornerRadius;
-    float m_roundedCornersAntialiasing;
-    bool m_roundCornersOfMaximizedWindows;
     bool m_blurMenus;
     bool m_blurDocks;
     bool m_paintAsTranslucent;
@@ -194,11 +184,17 @@ private:
 
     bool m_hasValidFakeBlurTexture;
 
+    int m_windowTopCornerRadius;
+    int m_windowBottomCornerRadius;
+    int m_menuCornerRadius;
+    int m_dockCornerRadius;
+    float m_roundedCornersAntialiasing;
+    bool m_roundCornersOfMaximizedWindows;
     int m_cornerRadiusOffset;
 
     // Corner masks where the key is the screen scale and the value is an array of the masks
     // (top left, top right, bottom left, bottom right). Used for rounding the blur region.
-    std::unordered_map<qreal, std::array<QRegion, 4>> m_corners;
+    std::map<const std::tuple<int, int, qreal>, std::array<QRegion, 4>> m_corners;
 
     struct OffsetStruct
     {

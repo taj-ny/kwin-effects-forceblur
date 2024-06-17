@@ -321,7 +321,7 @@
          <item>
           <widget class="QLabel">
            <property name="text">
-            <string>Top corner radius</string>
+            <string>Window top corner radius</string>
            </property>
           </widget>
          </item>
@@ -339,7 +339,7 @@
          <item>
           <widget class="QLabel">
            <property name="text">
-            <string>Bottom corner radius</string>
+            <string>Window bottom corner radius</string>
            </property>
           </widget>
          </item>
@@ -357,7 +357,43 @@
          <item>
           <widget class="QLabel">
            <property name="text">
-            <string>Antialiasing</string>
+            <string>Menu corner radius</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="kcfg_MenuCornerRadius">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Dock corner radius</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="kcfg_DockCornerRadius">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Anti-aliasing</string>
            </property>
           </widget>
          </item>
