@@ -269,7 +269,10 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 
     m_corners.clear();
 
-    m_texturePass.texture.reset(nullptr);
+    for (auto texture : m_fakeBlurTextures.values()) {
+        delete texture;
+    }
+    m_fakeBlurTextures.clear();
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -763,17 +766,22 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
 }
 
-GLTexture *BlurEffect::ensureFakeBlurTexture()
+GLTexture *BlurEffect::ensureFakeBlurTexture(const QSize &size)
 {
-    if (!m_texturePass.texture) {
-        QImage fakeBlurImage(m_fakeBlurImage);
-        m_hasValidFakeBlurTexture = !fakeBlurImage.isNull();
-        if (m_hasValidFakeBlurTexture) {
-            m_texturePass.texture = blur(fakeBlurImage);
-        }
+    if (m_fakeBlurTextures.contains(size)) {
+        return m_fakeBlurTextures[size];
     }
 
-    return m_texturePass.texture.get();
+    QImage fakeBlurImage(m_fakeBlurImage);
+    if (fakeBlurImage.isNull()) {
+        return nullptr;
+    }
+
+    if (size != QSize()) {
+        fakeBlurImage = fakeBlurImage.scaled(size);
+    }
+
+    return m_fakeBlurTextures[size] = blur(fakeBlurImage);
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
@@ -952,7 +960,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     // reset.
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
-        fakeBlurTexture = ensureFakeBlurTexture();
+        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen ? m_currentScreen->pixelSize() : QSize());
     }
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
@@ -1090,9 +1098,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
         }
 
-        const QSize textureSize = m_currentScreen ? m_currentScreen->pixelSize() : fakeBlurTexture->size();
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
-        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(textureSize.width(), textureSize.height()));
+        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(fakeBlurTexture->size().width(), fakeBlurTexture->size().height()));
         m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
         m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_texturePass.shader->setUniform(m_texturePass.scaleLocation, (float)viewport.scale());
@@ -1291,7 +1298,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     vbo->unbindArrays();
 }
 
-std::unique_ptr<GLTexture> BlurEffect::blur(const QImage &image)
+GLTexture *BlurEffect::blur(const QImage &image)
 {
     auto imageTexture = GLTexture::upload(image);
     auto imageFramebuffer = std::make_unique<GLFramebuffer>(imageTexture.get());
@@ -1305,7 +1312,7 @@ std::unique_ptr<GLTexture> BlurEffect::blur(const QImage &image)
     blur(renderData, renderTarget, renderViewport, nullptr, 0, image.rect(), data);
     GLFramebuffer::popFramebuffer();
 
-    return std::move(imageTexture);
+    return imageTexture.release();
 }
 
 bool BlurEffect::isActive() const
