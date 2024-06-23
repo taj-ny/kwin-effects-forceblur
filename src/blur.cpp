@@ -949,18 +949,20 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         }
     }
 
-    // Fetch the pixels behind the shape that is going to be blurred.
-    // This framebuffer is left unchanged, so we can use that for rounding corners.
-    const QRegion dirtyRegion = region & backgroundRect;
-    for (const QRect &dirtyRect : dirtyRegion) {
-        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
-    }
-
     // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
     // reset.
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
         fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen ? m_currentScreen->pixelSize() : QSize());
+    }
+
+    // Fetch the pixels behind the shape that is going to be blurred.
+    // This framebuffer is left unchanged, so we can use that for rounding corners.
+    const QRegion dirtyRegion = region & backgroundRect;
+    if (hasAntialiasedRoundedCorners || !fakeBlurTexture) {
+        for (const QRect &dirtyRect: dirtyRegion) {
+            renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
+        }
     }
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
