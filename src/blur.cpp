@@ -1085,8 +1085,9 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
         }
 
+        const QSize textureSize = m_currentScreen ? m_currentScreen->pixelSize() : fakeBlurTexture->size();
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
-        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(fakeBlurTexture->width(), fakeBlurTexture->height()));
+        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(textureSize.width(), textureSize.height()));
         m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
         m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_texturePass.shader->setUniform(m_texturePass.scaleLocation, (float)viewport.scale());
