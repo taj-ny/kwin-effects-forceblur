@@ -84,6 +84,7 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
+    bool hasFakeBlur(const EffectWindow *w) const;
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.

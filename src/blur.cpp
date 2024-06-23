@@ -338,6 +338,11 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     }
 }
 
+bool BlurEffect::hasFakeBlur(const EffectWindow *w) const
+{
+    return m_fakeBlur && !isMenu(w) && m_hasValidFakeBlurTexture;
+}
+
 void BlurEffect::generateRoundedCornerMasks(int radius, QRegion &left, QRegion &right, bool top) const
 {
     // This method uses OpenGL to draw circles, since the ones drawn by Qt are terrible.
@@ -631,8 +636,8 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     // in case this window has regions to be blurred
     const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
 
-    bool hasFakeBlur = m_fakeBlur && m_hasValidFakeBlurTexture && !blurArea.isEmpty();
-    if (hasFakeBlur) {
+    bool fakeBlur = hasFakeBlur(w) && !blurArea.isEmpty();
+    if (fakeBlur) {
         data.opaque += blurArea;
 
         int topCornerRadius;
@@ -661,7 +666,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 
     effects->prePaintWindow(w, data, presentTime);
 
-    if (!hasFakeBlur) {
+    if (!fakeBlur) {
         const QRegion oldOpaque = data.opaque;
         if (data.opaque.intersects(m_currentBlur)) {
             // to blur an area partially we have to shrink the opaque area of a window
@@ -946,7 +951,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
     // reset.
     GLTexture *fakeBlurTexture = nullptr;
-    if (w && m_fakeBlur) {
+    if (w && hasFakeBlur(w)) {
         fakeBlurTexture = ensureFakeBlurTexture();
     }
 
