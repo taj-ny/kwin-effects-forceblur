@@ -84,7 +84,14 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
-    void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
+
+    /*
+     * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
+     */
+    void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
+    std::unique_ptr<GLTexture> blur(const QImage &image);
+
+    GLTexture *ensureFakeBlurTexture();
     GLTexture *ensureNoiseTexture();
 
     /*

@@ -266,13 +266,9 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     // Antialiasing does take up a bit of space, so the corner radius will be reduced by the offset in order to leave some space.
     m_cornerRadiusOffset = m_roundedCornersAntialiasing == 0 ? 0 : std::round(m_roundedCornersAntialiasing) + 2;
 
-    QImage fakeBlurImage(m_fakeBlurImage);
-    m_hasValidFakeBlurTexture = !fakeBlurImage.isNull();
-    if (m_hasValidFakeBlurTexture) {
-        m_texturePass.texture = GLTexture::upload(fakeBlurImage);
-    }
-
     m_corners.clear();
+
+    m_texturePass.texture.reset(nullptr);
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -748,10 +744,30 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 
 void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
 {
-    blur(renderTarget, viewport, w, mask, region, data);
+    auto it = m_windows.find(w);
+    if (it != m_windows.end()) {
+        BlurEffectData &blurInfo = it->second;
+        BlurRenderData &renderInfo = blurInfo.render[m_currentScreen];
+        if (shouldBlur(w, mask, data)) {
+            blur(renderInfo, renderTarget, viewport, w, mask, region, data);
+        }
+    }
 
     // Draw the window over the blurred area
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
+}
+
+GLTexture *BlurEffect::ensureFakeBlurTexture()
+{
+    if (!m_texturePass.texture) {
+        QImage fakeBlurImage(m_fakeBlurImage);
+        m_hasValidFakeBlurTexture = !fakeBlurImage.isNull();
+        if (m_hasValidFakeBlurTexture) {
+            m_texturePass.texture = blur(fakeBlurImage);
+        }
+    }
+
+    return m_texturePass.texture.get();
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
@@ -790,36 +806,27 @@ GLTexture *BlurEffect::ensureNoiseTexture()
     return m_noisePass.noiseTexture.get();
 }
 
-void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
+void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
 {
-    auto it = m_windows.find(w);
-    if (it == m_windows.end()) {
-        return;
+    int topCornerRadius = 0;
+    int bottomCornerRadius = 0;
+    if (w) {
+        if (isMenu(w)) {
+            topCornerRadius = bottomCornerRadius = m_menuCornerRadius;
+        } else if (w->isDock()) {
+            topCornerRadius = bottomCornerRadius = m_dockCornerRadius;
+        } else {
+            topCornerRadius = m_windowTopCornerRadius;
+            bottomCornerRadius = m_windowBottomCornerRadius;
+        }
+        topCornerRadius = std::max(0, (int) std::round(topCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
+        bottomCornerRadius = std::max(0, (int) std::round(bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
     }
-
-    BlurEffectData &blurInfo = it->second;
-    BlurRenderData &renderInfo = blurInfo.render[m_currentScreen];
-    if (!shouldBlur(w, mask, data)) {
-        return;
-    }
-
-    int topCornerRadius;
-    int bottomCornerRadius;
-    if (isMenu(w)) {
-        topCornerRadius = bottomCornerRadius = m_menuCornerRadius;
-    } else if (w->isDock()) {
-        topCornerRadius = bottomCornerRadius = m_dockCornerRadius;
-    } else {
-        topCornerRadius = m_windowTopCornerRadius;
-        bottomCornerRadius = m_windowBottomCornerRadius;
-    }
-    topCornerRadius = std::max(0, (int)std::round(topCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
-    bottomCornerRadius = std::max(0, (int)std::round(bottomCornerRadius * viewport.scale()) - m_cornerRadiusOffset);
 
     bool hasRoundedCorners = topCornerRadius || bottomCornerRadius;
 
-    const QRegion rawBlurRegion = blurRegion(w);
-    const QRegion blurShape = transformedBlurRegion(rawBlurRegion.translated(w->pos().toPoint()), data);
+    const QRegion rawBlurRegion = w ? blurRegion(w) : region;
+    const QRegion blurShape = w ? transformedBlurRegion(rawBlurRegion.translated(w->pos().toPoint()), data) : region;
     const QRect backgroundRect = blurShape.boundingRect();
 
     // The blur shape has to be moved to 0,0 before being scaled, otherwise the size may end up being off by 1 pixel.
@@ -830,45 +837,47 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     bool roundTopRightCorner = false;
     bool roundBottomLeftCorner = false;
     bool roundBottomRightCorner = false;
-    const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-    if (hasRoundedCorners && ((!w->isFullScreen() && !isMaximized) || m_roundCornersOfMaximizedWindows)) {
-        if (w->isDock()) {
-            if (isDockFloating(w, rawBlurRegion)) {
-                roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
-                roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
+    if (w) {
+        const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
+        if (hasRoundedCorners && ((!w->isFullScreen() && !isMaximized) || m_roundCornersOfMaximizedWindows)) {
+            if (w->isDock()) {
+                if (isDockFloating(w, rawBlurRegion)) {
+                    roundTopLeftCorner = roundTopRightCorner = topCornerRadius;
+                    roundBottomLeftCorner = roundBottomRightCorner = bottomCornerRadius;
+                }
+            } else {
+                // Ensure the blur region corners touch the window corners before rounding them.
+                if (topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
+                    roundTopLeftCorner = rawBlurRegion.intersects(QRect(0, 0, topCornerRadius, topCornerRadius));
+                    roundTopRightCorner = rawBlurRegion.intersects(QRect(w->width() - topCornerRadius, 0, topCornerRadius, topCornerRadius));
+                }
+                if (bottomCornerRadius) {
+                    roundBottomLeftCorner = rawBlurRegion.intersects(QRect(0, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
+                    roundBottomRightCorner = rawBlurRegion.intersects(QRect(w->width() - bottomCornerRadius, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
+                }
+                hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
             }
-        } else {
-            // Ensure the blur region corners touch the window corners before rounding them.
-            if (topCornerRadius && (!w->decoration() || (w->decoration() && m_blurDecorations))) {
-                roundTopLeftCorner = rawBlurRegion.intersects(QRect(0, 0, topCornerRadius, topCornerRadius));
-                roundTopRightCorner = rawBlurRegion.intersects(QRect(w->width() - topCornerRadius, 0, topCornerRadius, topCornerRadius));
+
+            const auto corners = roundedCorners(topCornerRadius, bottomCornerRadius, viewport.scale());
+            const QRect blurRect = scaledBlurShape.boundingRect();
+
+            if (roundTopLeftCorner) {
+                scaledBlurShape -= corners[0];
             }
-            if (bottomCornerRadius) {
-                roundBottomLeftCorner = rawBlurRegion.intersects(QRect(0, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
-                roundBottomRightCorner = rawBlurRegion.intersects(QRect(w->width() - bottomCornerRadius, w->height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius));
+            if (roundTopRightCorner) {
+                scaledBlurShape -= corners[1].translated(blurRect.width() - topCornerRadius, 0);
             }
-            hasRoundedCorners = roundTopLeftCorner || roundTopRightCorner || roundBottomLeftCorner || roundBottomRightCorner;
-        }
 
-        const auto corners = roundedCorners(topCornerRadius, bottomCornerRadius, viewport.scale());
-        const QRect blurRect = scaledBlurShape.boundingRect();
-
-        if (roundTopLeftCorner) {
-            scaledBlurShape -= corners[0];
-        }
-        if (roundTopRightCorner) {
-            scaledBlurShape -= corners[1].translated(blurRect.width() - topCornerRadius, 0);
-        }
-
-        if (roundBottomLeftCorner) {
-            scaledBlurShape -= corners[2].translated(0, blurRect.height() - bottomCornerRadius);
-        }
-        if (roundBottomRightCorner) {
-            scaledBlurShape -= corners[3].translated(blurRect.width() - bottomCornerRadius, blurRect.height() - bottomCornerRadius);
+            if (roundBottomLeftCorner) {
+                scaledBlurShape -= corners[2].translated(0, blurRect.height() - bottomCornerRadius);
+            }
+            if (roundBottomRightCorner) {
+                scaledBlurShape -= corners[3].translated(blurRect.width() - bottomCornerRadius, blurRect.height() - bottomCornerRadius);
+            }
         }
     }
 
-    const auto opacity = m_transparentBlur
+    const auto opacity = w && m_transparentBlur
         ? w->opacity() * data.opacity()
         : data.opacity();
 
@@ -931,6 +940,13 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     const QRegion dirtyRegion = region & backgroundRect;
     for (const QRect &dirtyRect : dirtyRegion) {
         renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
+    }
+
+    // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
+    // reset.
+    GLTexture *fakeBlurTexture = nullptr;
+    if (w && m_fakeBlur) {
+        fakeBlurTexture = ensureFakeBlurTexture();
     }
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
@@ -1056,7 +1072,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     finalBlurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
     const auto finalBlurFramebuffer = std::make_unique<GLFramebuffer>(finalBlurTexture.get());
 
-    if (m_fakeBlur && m_hasValidFakeBlurTexture) {
+    if (fakeBlurTexture) {
         ShaderManager::instance()->pushShader(m_texturePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
@@ -1069,11 +1085,11 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
 
         m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
-        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(m_texturePass.texture.get()->width(), m_texturePass.texture.get()->height()));
+        m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(fakeBlurTexture->width(), fakeBlurTexture->height()));
         m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
         m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
 
-        m_texturePass.texture.get()->bind();
+        fakeBlurTexture->bind();
 
         if (!hasAntialiasedRoundedCorners) {
             glEnable(GL_BLEND);
@@ -1265,6 +1281,23 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     vbo->unbindArrays();
+}
+
+std::unique_ptr<GLTexture> BlurEffect::blur(const QImage &image)
+{
+    auto imageTexture = GLTexture::upload(image);
+    auto imageFramebuffer = std::make_unique<GLFramebuffer>(imageTexture.get());
+
+    BlurRenderData renderData;
+    const RenderTarget renderTarget(imageFramebuffer.get());
+    const RenderViewport renderViewport(image.rect(), 1.0, renderTarget);
+    WindowPaintData data;
+
+    GLFramebuffer::pushFramebuffer(imageFramebuffer.get());
+    blur(renderData, renderTarget, renderViewport, nullptr, 0, image.rect(), data);
+    GLFramebuffer::popFramebuffer();
+
+    return std::move(imageTexture);
 }
 
 bool BlurEffect::isActive() const
