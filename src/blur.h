@@ -142,6 +142,7 @@ private:
         int textureSizeLocation;
         int texStartPosLocation;
         int regionSizeLocation;
+        int scaleLocation;
 
         std::unique_ptr<GLTexture> texture;
     } m_texturePass;

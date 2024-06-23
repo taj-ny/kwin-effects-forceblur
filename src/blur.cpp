@@ -105,6 +105,7 @@ BlurEffect::BlurEffect()
         m_texturePass.textureSizeLocation = m_texturePass.shader->uniformLocation("textureSize");
         m_texturePass.texStartPosLocation = m_texturePass.shader->uniformLocation("texStartPos");
         m_texturePass.regionSizeLocation = m_texturePass.shader->uniformLocation("regionSize");
+        m_texturePass.scaleLocation = m_texturePass.shader->uniformLocation("scale");
     }
 
     m_roundedCorners.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -1088,6 +1089,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         m_texturePass.shader->setUniform(m_texturePass.textureSizeLocation, QVector2D(fakeBlurTexture->width(), fakeBlurTexture->height()));
         m_texturePass.shader->setUniform(m_texturePass.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
         m_texturePass.shader->setUniform(m_texturePass.regionSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
+        m_texturePass.shader->setUniform(m_texturePass.scaleLocation, (float)viewport.scale());
 
         fakeBlurTexture->bind();
 
