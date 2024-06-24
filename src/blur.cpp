@@ -1051,10 +1051,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
      * Since only a fragment of the window may be painted, the shader allows to toggle rounding for each corner.
     */
 
-    const auto finalBlurTexture = GLTexture::allocate(textureFormat, backgroundRect.size());
-    finalBlurTexture->setFilter(GL_LINEAR);
-    finalBlurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
-    const auto finalBlurFramebuffer = std::make_unique<GLFramebuffer>(finalBlurTexture.get());
+    std::unique_ptr<GLTexture> finalBlurTexture;
+    std::unique_ptr<GLFramebuffer> finalBlurFramebuffer;
 
     if (m_fakeBlur && m_hasValidFakeBlurTexture) {
         ShaderManager::instance()->pushShader(m_texturePass.shader.get());
