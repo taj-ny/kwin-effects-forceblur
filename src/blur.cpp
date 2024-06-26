@@ -737,7 +737,7 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
-    if ((!m_blurDocks && w->isDock()) || (!m_blurMenus && isMenu(w))) {
+    if (w->isDesktop() || (!m_blurDocks && w->isDock()) || (!m_blurMenus && isMenu(w))) {
         return false;
     }
 
