@@ -1083,10 +1083,12 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
      * Since only a fragment of the window may be painted, the shader allows to toggle rounding for each corner.
     */
 
-    const auto finalBlurTexture = GLTexture::allocate(textureFormat, backgroundRect.size());
-    finalBlurTexture->setFilter(GL_LINEAR);
-    finalBlurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
-    const auto finalBlurFramebuffer = std::make_unique<GLFramebuffer>(finalBlurTexture.get());
+    if (hasAntialiasedRoundedCorners && (!renderInfo.blurTexture || renderInfo.blurTexture->size() != backgroundRect.size())) {
+        renderInfo.blurTexture = GLTexture::allocate(textureFormat, backgroundRect.size());
+        renderInfo.blurTexture->setFilter(GL_LINEAR);
+        renderInfo.blurTexture->setWrapMode(GL_CLAMP_TO_EDGE);
+        renderInfo.blurFramebuffer = std::make_unique<GLFramebuffer>(renderInfo.blurTexture.get());
+    }
 
     if (fakeBlurTexture) {
         ShaderManager::instance()->pushShader(m_texturePass.shader.get());
@@ -1094,7 +1096,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         QMatrix4x4 projectionMatrix;
         if (hasAntialiasedRoundedCorners) {
             projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
-            GLFramebuffer::pushFramebuffer(finalBlurFramebuffer.get());
+            GLFramebuffer::pushFramebuffer(renderInfo.blurFramebuffer.get());
         } else {
             projectionMatrix = viewport.projectionMatrix();
             projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
@@ -1181,7 +1183,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const auto &read = renderInfo.framebuffers[1];
 
         if (hasAntialiasedRoundedCorners) {
-            GLFramebuffer::pushFramebuffer(finalBlurFramebuffer.get());
+            GLFramebuffer::pushFramebuffer(renderInfo.blurFramebuffer.get());
             projectionMatrix = QMatrix4x4();
             projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
         } else {
@@ -1277,7 +1279,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
         glUniform1i(m_roundedCorners.afterBlurTextureLocation, 1);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, finalBlurTexture->texture());
+        glBindTexture(GL_TEXTURE_2D, renderInfo.blurTexture->texture());
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1293,7 +1295,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         glDisable(GL_BLEND);
         glActiveTexture(GL_TEXTURE0);
         renderInfo.textures[0]->unbind();
-        finalBlurTexture->unbind();
+        renderInfo.blurTexture->unbind();
         ShaderManager::instance()->popShader();
     }
 
