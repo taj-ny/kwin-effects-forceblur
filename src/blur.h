@@ -27,10 +27,6 @@ struct BlurRenderData
     /// contains not blurred background behind the window, it's cached.
     std::vector<std::unique_ptr<GLTexture>> textures;
     std::vector<std::unique_ptr<GLFramebuffer>> framebuffers;
-
-    // Contains the blurred background behind the window. Used for corner anti-aliasing.
-    std::unique_ptr<GLTexture> blurTexture;
-    std::unique_ptr<GLFramebuffer> blurFramebuffer;
 };
 
 struct BlurEffectData
@@ -86,7 +82,6 @@ private:
     void initBlurStrengthValues();
     QRegion blurRegion(EffectWindow *w) const;
     QRegion decorationBlurRegion(const EffectWindow *w) const;
-    QRegion transformedBlurRegion(QRegion blurRegion, const WindowPaintData &data) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
@@ -101,19 +96,6 @@ private:
 
     GLTexture *ensureFakeBlurTexture(const QSize &size = QSize());
     GLTexture *ensureNoiseTexture();
-
-    /*
-     * @returns An array containing rounded corner masks for the given screen scale and radii. If no masks exist, they
-     * will be generated.
-     */
-    std::array<QRegion, 4> roundedCorners(int topCornerRadius, int bottomCornerRadius, qreal scale);
-
-    /*
-     * Generates rounded corner masks for the left and right corner of the given radius.
-     * @param top Whether the corners belong to the top part of the window.
-     */
-    void generateRoundedCornerMasks(int radius, QRegion &left, QRegion &right, bool top) const;
-
 private:
     struct
     {
@@ -129,19 +111,21 @@ private:
         int mvpMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
-    } m_upsamplePass;
+        int textureLocation;
 
-    struct
-    {
-        std::unique_ptr<GLShader> shader;
-        int mvpMatrixLocation;
+        int noiseLocation;
+        int noiseTextureLocation;
         int noiseTextureSizeLocation;
-        int texStartPosLocation;
+        int noiseTextureStartPositionLocation;
 
-        std::unique_ptr<GLTexture> noiseTexture;
-        qreal noiseTextureScale = 1.0;
-        int noiseTextureStength = 0;
-    } m_noisePass;
+        int topCornerRadiusLocation;
+        int bottomCornerRadiusLocation;
+        int antialiasingLocation;
+        int blurSizeLocation;
+        int opacityLocation;
+
+
+    } m_upsamplePass;
 
     struct
     {
@@ -149,31 +133,14 @@ private:
         int mvpMatrixLocation;
         int textureSizeLocation;
         int texStartPosLocation;
-        int regionSizeLocation;
         int scaleLocation;
-    } m_texturePass;
-
-    struct
-    {
-        std::unique_ptr<GLShader> shader;
-
-        int roundTopLeftCornerLocation;
-        int roundTopRightCornerLocation;
-        int roundBottomLeftCornerLocation;
-        int roundBottomRightCornerLocation;
 
         int topCornerRadiusLocation;
         int bottomCornerRadiusLocation;
-
         int antialiasingLocation;
-
-        int regionSizeLocation;
-
-        int beforeBlurTextureLocation;
-        int afterBlurTextureLocation;
-
-        int mvpMatrixLocation;
-    } m_roundedCorners;
+        int blurSizeLocation;
+        int opacityLocation;
+    } m_texture;
 
     bool m_valid = false;
     long net_wm_blur_region = 0;
@@ -185,14 +152,11 @@ private:
     int m_offset;
     int m_expandSize;
 
-    int m_cornerRadiusOffset;
+    std::unique_ptr<GLTexture> noiseTexture;
+    qreal noiseTextureScale = 1.0;
+    int noiseTextureStength = 0;
 
     BlurSettings m_settings;
-
-
-    // Corner masks where the key is the screen scale and the value is an array of the masks
-    // (top left, top right, bottom left, bottom right). Used for rounding the blur region.
-    std::map<const std::tuple<int, int, qreal>, std::array<QRegion, 4>> m_corners;
 
     struct OffsetStruct
     {
