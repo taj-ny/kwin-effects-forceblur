@@ -137,5 +137,3 @@ Intel GPUs use software cursor by default due to [this bug](https://gitlab.freed
 
 # Credits
 - [a-parhom/LightlyShaders](https://github.com/a-parhom/LightlyShaders) - CMakeLists.txt files
-- [Alban-Boissard/kwin-effects-blur-respect-rounded-decorations](https://github.com/Alban-Boissard/kwin-effects-blur-respect-rounded-decorations) - Rounded corners
-- [thegeekywanderer/kwin-effects-blur-respect-rounded-decorations](https://github.com/thegeekywanderer/kwin-effects-blur-respect-rounded-decorations) - Fix for bottom corners
