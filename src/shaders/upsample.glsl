@@ -3,7 +3,6 @@
 uniform sampler2D texUnit;
 uniform float offset;
 uniform vec2 halfpixel;
-uniform bool isFinalPass;
 
 uniform bool noise;
 uniform sampler2D noiseTexture;
