@@ -4,6 +4,7 @@ set(forceblur_SOURCES
     blur.cpp
     blur.qrc
     main.cpp
+    settings.cpp
 )
 
 kconfig_add_kcfg_files(forceblur_SOURCES

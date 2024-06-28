@@ -61,5 +61,17 @@ class3</default>
         <entry name="FakeBlurImage" type="String">
             <default></default>
         </entry>
+        <entry name="FakeBlurImageSourceNone" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="FakeBlurImageSourceCustom" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="FakeBlurCustomImageBlur" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="FakeBlurDisableWhenWindowBehind" type="Bool">
+            <default>false</default>
+        </entry>
     </group>
 </kcfg>

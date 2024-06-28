@@ -9,6 +9,7 @@
 
 #include "effect/effect.h"
 #include "opengl/glutils.h"
+#include "settings.h"
 #include "window.h"
 
 #include <QList>
@@ -42,6 +43,8 @@ struct BlurEffectData
 
     /// The render data per screen. Screens can have different color spaces.
     std::unordered_map<Output *, BlurRenderData> render;
+
+    bool hasWindowBehind;
 };
 
 class BlurEffect : public KWin::Effect
@@ -88,7 +91,7 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w);
-    bool hasFakeBlur(const EffectWindow *w) const;
+    bool hasFakeBlur(EffectWindow *w);
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
@@ -181,27 +184,11 @@ private:
     size_t m_iterationCount; // number of times the texture will be downsized to half size
     int m_offset;
     int m_expandSize;
-    int m_noiseStrength;
-    QStringList m_windowClasses;
-    bool m_blurMatching;
-    bool m_blurNonMatching;
-    bool m_blurDecorations;
-    bool m_transparentBlur;
-    bool m_blurMenus;
-    bool m_blurDocks;
-    bool m_paintAsTranslucent;
-    bool m_fakeBlur;
-    QString m_fakeBlurImage;
 
-    bool m_hasValidFakeBlurTexture;
-
-    int m_windowTopCornerRadius;
-    int m_windowBottomCornerRadius;
-    int m_menuCornerRadius;
-    int m_dockCornerRadius;
-    float m_roundedCornersAntialiasing;
-    bool m_roundCornersOfMaximizedWindows;
     int m_cornerRadiusOffset;
+
+    BlurSettings m_settings;
+
 
     // Corner masks where the key is the screen scale and the value is an array of the masks
     // (top left, top right, bottom left, bottom right). Used for rounding the blur region.
