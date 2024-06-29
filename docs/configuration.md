@@ -15,7 +15,7 @@ Whether to blur window decorations, including borders. Enable this if your windo
 This option will override the blur region specified by the decorations.
 
 ### Paint windows as non-opaque
-Fixes transparency for some applications by marking their windows as opaque. This will only be done for force-blurred windows.
+Fixes transparency for some applications by marking their windows as transparent. This will only be done for force-blurred windows.
 
 # Fake blur
 > [!NOTE]  
