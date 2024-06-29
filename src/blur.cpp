@@ -663,11 +663,7 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
         effects->drawWindow(renderTarget, renderViewport, desktop, PAINT_WINDOW_TRANSFORMED | PAINT_WINDOW_TRANSLUCENT, infiniteRegion(), data);
         GLFramebuffer::popFramebuffer();
 
-        image = desktopTexture->toImage();
-        if (effects->waylandDisplay()) {
-            image.mirror();
-        }
-
+        image = desktopTexture->toImage().mirrored();
     } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
         image = m_settings.fakeBlur.customImage;
         if (image.isNull()) {
