@@ -117,7 +117,7 @@ Since kwin-effects-forceblur is a fork, you need to disable the stock blur effec
 3. Disable any blur effects.
 4. Enable the *Force Blur* effect.
 
-For more detailed descriptions of some options, check out [this wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
+For more detailed descriptions of some options, check out [configuration.md](docs/configuration.md).
    
 ### Window transparency
 The window needs to be translucent in order for the blur to be visible. This can be done in multiple ways:
