@@ -406,7 +406,7 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-#if KWIN_6_0
+#ifdef KWIN_6_0
     return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
 #else
     return effects->openglContext() && effects->openglContext()->supportsBlits();
@@ -650,9 +650,13 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
         const RenderTarget renderTarget(desktopFramebuffer.get());
         const RenderViewport renderViewport(geometry, output ? output->scale() : 1, renderTarget);
         WindowPaintData data;
+
+        // TODO Test on 6.1
+#ifdef KWIN_6_0
         QMatrix4x4 projectionMatrix;
         projectionMatrix.ortho(geometry);
         data.setProjectionMatrix(projectionMatrix);
+#endif
 
         GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
 
