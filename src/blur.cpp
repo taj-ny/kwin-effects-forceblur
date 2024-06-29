@@ -670,9 +670,8 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
             return nullptr;
         }
 
-        if (output) {
-            image = image.scaled(output->pixelSize(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation);
-        }
+        const QSize screenResolution = output ? output->pixelSize() : QGuiApplication::primaryScreen()->size();
+        image = image.scaled(screenResolution, Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation);
     }
 
     if (image.isNull()) {
