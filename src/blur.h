@@ -116,7 +116,6 @@ private:
         int noiseLocation;
         int noiseTextureLocation;
         int noiseTextureSizeLocation;
-        int noiseTextureStartPositionLocation;
 
         int topCornerRadiusLocation;
         int bottomCornerRadiusLocation;

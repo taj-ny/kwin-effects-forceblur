@@ -84,7 +84,6 @@ BlurEffect::BlurEffect()
         m_upsamplePass.noiseLocation = m_upsamplePass.shader->uniformLocation("noise");
         m_upsamplePass.noiseTextureLocation = m_upsamplePass.shader->uniformLocation("noiseTexture");
         m_upsamplePass.noiseTextureSizeLocation = m_upsamplePass.shader->uniformLocation("noiseTextureSize");
-        m_upsamplePass.noiseTextureStartPositionLocation = m_upsamplePass.shader->uniformLocation("noiseTextureStartPosition");
         m_upsamplePass.topCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("topCornerRadius");
         m_upsamplePass.bottomCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("bottomCornerRadius");
         m_upsamplePass.antialiasingLocation = m_upsamplePass.shader->uniformLocation("antialiasing");
@@ -1022,7 +1021,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             if (GLTexture *noiseTexture = ensureNoiseTexture()) {
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, true);
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
-                m_upsamplePass.shader->setUniform(m_upsamplePass.noiseTextureStartPositionLocation, QVector2D(deviceBackgroundRect.topLeft()));
                 glUniform1i(m_upsamplePass.noiseTextureLocation, 1);
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, noiseTexture->texture());

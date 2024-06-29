@@ -7,7 +7,6 @@ uniform vec2 halfpixel;
 uniform bool noise;
 uniform sampler2D noiseTexture;
 uniform vec2 noiseTextureSize;
-uniform vec2 noiseTextureStartPosition;
 
 varying vec2 uv;
 
@@ -24,7 +23,7 @@ void main(void)
     sum /= 12.0;
 
     if (noise) {
-        sum += vec4(texture2D(noiseTexture, (noiseTextureStartPosition.xy + gl_FragCoord.xy) / noiseTextureSize).rrr, 0.0);
+        sum += vec4(texture2D(noiseTexture, vec2(uv.x, 1.0 - uv.y) * blurSize / noiseTextureSize).rrr, 0.0);
     }
 
     gl_FragColor = roundedRectangle(uv * blurSize, sum.rgb);
