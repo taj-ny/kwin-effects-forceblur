@@ -8,9 +8,8 @@ namespace KWin
 
 enum class FakeBlurImageSource
 {
-    None,
     Custom,
-    Wallpaper
+    DesktopWallpaper
 };
 
 enum class WindowClassMatchingMode

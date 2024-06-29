@@ -29,9 +29,9 @@ void BlurSettings::read()
     fakeBlur.enable = BlurConfig::fakeBlur();
     fakeBlur.disableWhenWindowBehind = BlurConfig::fakeBlurDisableWhenWindowBehind();
     fakeBlur.customImage = QImage(BlurConfig::fakeBlurImage());
-    if (BlurConfig::fakeBlurImageSourceNone()) {
-        fakeBlur.imageSource = FakeBlurImageSource::None;
-    } else if (BlurConfig::fakeBlurImageSourceCustom()) {
+    if (BlurConfig::fakeBlurImageSourceDesktopWallpaper()) {
+        fakeBlur.imageSource = FakeBlurImageSource::DesktopWallpaper;
+    } else {
         fakeBlur.imageSource = FakeBlurImageSource::Custom;
     }
     fakeBlur.blurCustomImage = BlurConfig::fakeBlurCustomImageBlur();

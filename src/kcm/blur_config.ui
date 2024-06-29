@@ -398,7 +398,7 @@
         <widget class="QLabel">
          <property name="text">
           <string>When fake blur is enabled, an image will be painted behind windows instead of blurring the background,
-resulting in much lower resource and power usage.</string>
+resulting in much lower resource and power usage. X11 with multiple screens is not supported.</string>
          </property>
         </widget>
        </item>
@@ -452,12 +452,9 @@ resulting in much lower resource and power usage.</string>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceWallpaper">
+          <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceDesktopWallpaper">
            <property name="text">
-            <string>Wallpaper (coming soon)</string>
-           </property>
-           <property name="enabled">
-            <bool>false</bool>
+            <string>Desktop wallpaper (experimental)</string>
            </property>
           </widget>
          </item>

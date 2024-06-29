@@ -94,7 +94,7 @@ private:
     void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *blur(const QImage &image);
 
-    GLTexture *ensureFakeBlurTexture(const QSize &size = QSize());
+    GLTexture *ensureFakeBlurTexture(const Output *output);
     GLTexture *ensureNoiseTexture();
 private:
     struct
@@ -175,7 +175,7 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    QHash<const QSize, GLTexture*> m_fakeBlurTextures;
+    QHash<const Output*, GLTexture*> m_fakeBlurTextures;
 
     // Windows to blur even when transformed.
     QList<const EffectWindow*> m_blurWhenTransformed;

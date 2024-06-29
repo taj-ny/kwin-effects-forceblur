@@ -565,12 +565,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data)
 {
     const bool hasForceBlurRole = w->data(WindowForceBlurRole).toBool();
-
-    if (effects->activeFullScreenEffect() && !hasForceBlurRole) {
-        return false;
-    }
-
-    if (w->isDesktop()) {
+    if ((effects->activeFullScreenEffect() && !hasForceBlurRole) || w->isDesktop()) {
         return false;
     }
 
@@ -622,21 +617,70 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
 }
 
-GLTexture *BlurEffect::ensureFakeBlurTexture(const QSize &size)
+GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
 {
-    if (m_fakeBlurTextures.contains(size)) {
-        return m_fakeBlurTextures[size];
+    if (m_fakeBlurTextures.contains(output)) {
+        return m_fakeBlurTextures[output];
     }
 
-    QImage image = m_settings.fakeBlur.customImage;
+    QImage image;
+    if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
+        EffectWindow *desktop;
+        for (EffectWindow *w : effects->stackingOrder()) {
+            if (w && w->isDesktop() && (!output || w->window()->output() == output)) {
+                desktop = w;
+                break;
+            }
+        }
+        if (!desktop) {
+            return nullptr;
+        }
+
+        std::unique_ptr<GLTexture> desktopTexture = GLTexture::allocate(GL_RGBA8, desktop->size().toSize());
+        desktopTexture->setFilter(GL_LINEAR);
+        desktopTexture->setWrapMode(GL_CLAMP_TO_EDGE);
+        if (!desktopTexture) {
+            return nullptr;
+        }
+        std::unique_ptr<GLFramebuffer> desktopFramebuffer = std::make_unique<GLFramebuffer>(desktopTexture.get());
+        if (!desktopFramebuffer->valid()) {
+            return nullptr;
+        }
+
+        const QRect geometry = QRect(0, 0, desktop->width(), desktop->height());
+        const RenderTarget renderTarget(desktopFramebuffer.get());
+        const RenderViewport renderViewport(geometry, output ? output->scale() : 1, renderTarget);
+        WindowPaintData data;
+        QMatrix4x4 projectionMatrix;
+        projectionMatrix.ortho(geometry);
+        data.setProjectionMatrix(projectionMatrix);
+
+        GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
+
+        effects->drawWindow(renderTarget, renderViewport, desktop, PAINT_WINDOW_TRANSFORMED | PAINT_WINDOW_TRANSLUCENT, infiniteRegion(), data);
+        GLFramebuffer::popFramebuffer();
+
+        image = desktopTexture->toImage();
+        if (effects->waylandDisplay()) {
+            image.mirror();
+        }
+
+    } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
+        image = m_settings.fakeBlur.customImage;
+        if (image.isNull()) {
+            return nullptr;
+        }
+
+        if (output) {
+            image = image.scaled(output->pixelSize(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation);
+        }
+    }
+
     if (image.isNull()) {
         return nullptr;
     }
-    if (size != QSize()) {
-        image = image.scaled(size, Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation);
-    }
 
-    return m_fakeBlurTextures[size] = (m_settings.fakeBlur.blurCustomImage
+    return m_fakeBlurTextures[output] = (m_settings.fakeBlur.blurCustomImage
         ? blur(image)
         : GLTexture::upload(image).release());
 }
@@ -776,7 +820,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     // reset.
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
-        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen ? m_currentScreen->pixelSize() : QSize());
+        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen);
     }
 
     // Fetch the pixels behind the shape that is going to be blurred.
