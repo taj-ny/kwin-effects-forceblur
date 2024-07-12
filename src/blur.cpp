@@ -235,7 +235,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     effects->addRepaintFull();
 }
 
-void BlurEffect::updateBlurRegion(EffectWindow *w)
+void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
 {
     std::optional<QRegion> content;
     std::optional<QRegion> frame;
@@ -286,7 +286,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
-    } else {
+    } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
             m_windows.erase(it);
@@ -323,7 +323,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
 
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
         if (w) {
-            updateBlurRegion(w);
+            updateBlurRegion(w, true);
         }
     });
 

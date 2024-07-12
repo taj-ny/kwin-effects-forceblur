@@ -85,7 +85,7 @@ private:
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
-    void updateBlurRegion(EffectWindow *w);
+    void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
     bool hasFakeBlur(EffectWindow *w);
 
     /*
