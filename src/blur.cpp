@@ -276,7 +276,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     }
 
     // Don't override blur region for menus that already have one. The window geometry could include shadows.
-    if (shouldForceBlur(w) && !(isMenu(w) && (content.has_value() || geometryChanged))) {
+    if (shouldForceBlur(w) && !((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
         content = w->expandedGeometry().toRect().translated(-w->x(), -w->y());
         if (m_settings.forceBlur.blurDecorations && w->decoration()) {
             frame = w->frameGeometry().toRect().translated(-w->x(), -w->y());
