@@ -299,12 +299,12 @@ bool BlurEffect::hasFakeBlur(EffectWindow *w)
 {
     if (!m_settings.fakeBlur.enable) {
         return false;
-    } else if (!m_settings.fakeBlur.disableWhenWindowBehind) {
-        return true;
     }
 
-    if (auto it = m_windows.find(w); it != m_windows.end()) {
-        return !it->second.hasWindowBehind;
+    if (m_settings.fakeBlur.disableWhenWindowBehind) {
+        if (auto it = m_windows.find(w); it != m_windows.end()) {
+            return !it->second.hasWindowBehind;
+        }
     }
 
     return true;
@@ -472,7 +472,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     // in case this window has regions to be blurred
     const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
 
-    bool fakeBlur = hasFakeBlur(w) && !blurArea.isEmpty();
+    bool fakeBlur = hasFakeBlur(w) && m_fakeBlurTextures.contains(m_currentScreen) && !blurArea.isEmpty();
     if (fakeBlur) {
         data.opaque += blurArea;
 
