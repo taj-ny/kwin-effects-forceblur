@@ -479,12 +479,12 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         int topCornerRadius;
         int bottomCornerRadius;
         if (isMenu(w)) {
-            topCornerRadius = bottomCornerRadius = m_settings.roundedCorners.menuRadius;
+            topCornerRadius = bottomCornerRadius = std::ceil(m_settings.roundedCorners.menuRadius);
         } else if (w->isDock()) {
-            topCornerRadius = bottomCornerRadius = m_settings.roundedCorners.dockRadius;
+            topCornerRadius = bottomCornerRadius = std::ceil(m_settings.roundedCorners.dockRadius);
         } else {
-            topCornerRadius = m_settings.roundedCorners.windowTopRadius;
-            bottomCornerRadius = m_settings.roundedCorners.windowBottomRadius;
+            topCornerRadius = std::ceil(m_settings.roundedCorners.windowTopRadius);
+            bottomCornerRadius = std::ceil(m_settings.roundedCorners.windowBottomRadius);
         }
 
         if (!w->isDock() || (w->isDock() && isDockFloating(w, blurArea))) {
@@ -767,8 +767,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         return;
     }
 
-    int topCornerRadius = 0;
-    int bottomCornerRadius = 0;
+    float topCornerRadius = 0;
+    float bottomCornerRadius = 0;
     if (w && !(w->isDock() && !isDockFloating(w, blurShape))) {
         const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
         if (isMenu(w)) {
@@ -781,8 +781,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             }
             bottomCornerRadius = m_settings.roundedCorners.windowBottomRadius;
         }
-        topCornerRadius = std::round(topCornerRadius * viewport.scale());
-        bottomCornerRadius = std::round(bottomCornerRadius * viewport.scale());
+        topCornerRadius = topCornerRadius * viewport.scale();
+        bottomCornerRadius = bottomCornerRadius * viewport.scale();
     }
 
     // Maybe reallocate offscreen render targets. Keep in mind that the first one contains
@@ -994,8 +994,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         QMatrix4x4 projectionMatrix;
         projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
-        m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, 0);
-        m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, 0);
+        m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, static_cast<float>(0));
+        m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, static_cast<float>(0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
         m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, false);
         m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));

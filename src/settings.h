@@ -38,10 +38,10 @@ struct ForceBlurSettings
 
 struct RoundedCornersSettings
 {
-    int windowTopRadius;
-    int windowBottomRadius;
-    int menuRadius;
-    int dockRadius;
+    float windowTopRadius;
+    float windowBottomRadius;
+    float menuRadius;
+    float dockRadius;
     float antialiasing;
     bool roundMaximized;
 };

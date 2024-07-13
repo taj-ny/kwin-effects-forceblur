@@ -1,5 +1,5 @@
-uniform int topCornerRadius;
-uniform int bottomCornerRadius;
+uniform float topCornerRadius;
+uniform float bottomCornerRadius;
 uniform float antialiasing;
 
 uniform vec2 blurSize;

@@ -290,7 +290,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_TopCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_TopCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -308,7 +308,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_BottomCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_BottomCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -326,7 +326,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_MenuCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_MenuCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -344,7 +344,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_DockCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_DockCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -443,6 +443,19 @@ resulting in much lower resource and power usage. X11 with multiple screens is n
         </spacer>
        </item>
        <item>
+        <widget class="QCheckBox" name="kcfg_FakeBlurCustomImageBlur">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Blur image</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QVBoxLayout">
          <item>
           <widget class="QLabel">
@@ -501,19 +514,6 @@ resulting in much lower resource and power usage. X11 with multiple screens is n
                   </widget>
                  </item>
                 </layout>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="kcfg_FakeBlurCustomImageBlur">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Blur image</string>
-                 </property>
-                </widget>
                </item>
               </layout>
              </item>
