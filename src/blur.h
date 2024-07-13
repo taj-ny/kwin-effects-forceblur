@@ -96,6 +96,8 @@ private:
 
     GLTexture *ensureFakeBlurTexture(const Output *output);
     GLTexture *ensureNoiseTexture();
+
+    void invalidateFakeBlurTextureCache();
 private:
     struct
     {
@@ -173,6 +175,8 @@ private:
     };
 
     QList<BlurValuesStruct> blurStrengthValues;
+
+    int m_desktopPaints = 0;
 
     QHash<const Output*, GLTexture*> m_fakeBlurTextures;
 
