@@ -518,7 +518,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         }
     }
 
-    if (shouldForceBlur(w) && m_settings.forceBlur.markWindowAsTranslucent) {
+    if (m_settings.forceBlur.markWindowAsTranslucent && !fakeBlur && shouldForceBlur(w)) {
         data.setTranslucent();
     }
 
