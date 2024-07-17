@@ -222,7 +222,10 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_offset = blurStrengthValues[m_settings.general.blurStrength].offset;
     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
 
-    invalidateFakeBlurTextureCache();
+    for (auto texture : m_fakeBlurTextures.values()) {
+        delete texture;
+    }
+    m_fakeBlurTextures.clear();
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -612,15 +615,6 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
 
     // Draw the window over the blurred area
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
-
-    // If a window (usually the dock) is blurred before the desktop appears, the fake blur texture will be entirely
-    // black. I couldn't find a way to detect whether the wallpaper is there, so for now the texture cache will be
-    // invalidated up to 15 times when a desktop is painted. The number may need to be increased. This workaround
-    // is still more reliable than a timer.
-    if (m_settings.fakeBlur.enable && w->isDesktop() && m_desktopPaints < 15) {
-        invalidateFakeBlurTextureCache();
-        m_desktopPaints++;
-    }
 }
 
 GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
@@ -724,14 +718,6 @@ GLTexture *BlurEffect::ensureNoiseTexture()
     }
 
     return noiseTexture.get();
-}
-
-void BlurEffect::invalidateFakeBlurTextureCache()
-{
-    for (auto texture : m_fakeBlurTextures.values()) {
-        delete texture;
-    }
-    m_fakeBlurTextures.clear();
 }
 
 void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
