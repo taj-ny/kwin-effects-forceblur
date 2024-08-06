@@ -549,7 +549,7 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-#if KWIN_6_0
+#ifdef KWIN_6_0
     return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
 #else
     return effects->openglContext() && effects->openglContext()->supportsBlits();
