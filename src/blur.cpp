@@ -1051,10 +1051,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         vbo->draw(GL_TRIANGLES, 6, vertexCount);
 
         glDisable(GL_BLEND);
-
         ShaderManager::instance()->popShader();
     }
-
 
     vbo->unbindArrays();
 }
