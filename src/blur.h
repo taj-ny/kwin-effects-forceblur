@@ -27,10 +27,6 @@ struct BlurRenderData
     /// contains not blurred background behind the window, it's cached.
     std::vector<std::unique_ptr<GLTexture>> textures;
     std::vector<std::unique_ptr<GLFramebuffer>> framebuffers;
-
-    // Contains the blurred background behind the window. Used for corner anti-aliasing.
-    std::unique_ptr<GLTexture> blurTexture;
-    std::unique_ptr<GLFramebuffer> blurFramebuffer;
 };
 
 struct BlurEffectData
