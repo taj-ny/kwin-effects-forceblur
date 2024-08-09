@@ -1,0 +1,26 @@
+name: NixOS (nixpkgs stable)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ '**.md', '**.png' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ '**', '!**/**.md', '!**/**.png', '!**/**.yml', '**/nixos-stable.yml' ]
+  schedule:
+    - cron: "0 0 * * *"
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v27
+      with:
+        nix_path: nixpkgs=channel:nixos-24.05
+    - run: sed -i 's/nixos-unstable/nixos-24.05/g' flake.nix
+    - run: nix flake update
+    - run: nix build
