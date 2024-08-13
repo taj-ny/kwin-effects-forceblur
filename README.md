@@ -1,5 +1,5 @@
-# kwin-effects-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Kwin-effects-forceblur (name subject to change) is a fork of the KWin Blur effect for KDE Plasma 6 with several improvements and bug fixes.
+# KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+Better Blur (formerly kwin-effects-forceblur) is a fork of the KWin Blur effect with several improvements and bug fixes.
 
 Latest features are available on the ``develop`` branch.
 
@@ -110,7 +110,7 @@ Remove the *build* directory when rebuilding the effect.
 > [!NOTE]  
 > If the effect stops working after a system upgrade, you will need to rebuild it.
 
-Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using.
+This effect will conflict with the stock blur effect and any other forks of it.
 
 1. Install the plugin.
 2. Open the *Desktop Effects* page in *System Settings*.
