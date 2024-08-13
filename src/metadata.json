@@ -9,7 +9,7 @@
             }
         ],
         "Category": "Appearance",
-        "Description": "Blurs the background behind user-specified windows",
+        "Description": "Fork of the KWin Blur effect for KDE Plasma 6 with force blur and more",
         "EnabledByDefault": false,
         "License": "GPL",
         "Name": "Better Blur (formerly Force Blur)"
