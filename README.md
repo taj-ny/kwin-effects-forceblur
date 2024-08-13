@@ -1,5 +1,5 @@
-# kwin-effects-forceblur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Kwin-effects-forceblur (name subject to change) is a fork of the KWin Blur effect for KDE Plasma 6 with several improvements and bug fixes.
+# KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
 
 Latest features are available on the ``develop`` branch.
 
@@ -22,13 +22,13 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 <details>
   <summary>NixOS (flakes)</summary>
   <br>
-  
+
   ``flake.nix``:
   ```nix
   {
     inputs = {
       nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  
+
       kwin-effects-forceblur = {
         url = "github:taj-ny/kwin-effects-forceblur";
         inputs.nixpkgs.follows = "nixpkgs";
@@ -36,10 +36,10 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
     };
   }
   ```
-  
+
   ```nix
   { inputs, pkgs, ... }:
-  
+
   {
     environment.systemPackages = [
       inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
@@ -107,18 +107,18 @@ sudo make install
 Remove the *build* directory when rebuilding the effect.
 
 # Usage
-> [!NOTE]  
+> [!NOTE]
 > If the effect stops working after a system upgrade, you will need to rebuild it.
 
-Since kwin-effects-forceblur is a fork, you need to disable the stock blur effect and any other blur effects you may be using.
+This effect will conflict with the stock blur effect and any other forks of it.
 
 1. Install the plugin.
 2. Open the *Desktop Effects* page in *System Settings*.
 3. Disable any blur effects.
-4. Enable the *Force Blur* effect.
+4. Enable the *Better Blur* effect.
 
 For more detailed descriptions of some options, check out [this wiki page](https://github.com/taj-ny/kwin-effects-forceblur/wiki/Configuration).
-   
+
 ### Window transparency
 The window needs to be translucent in order for the blur to be visible. This can be done in multiple ways:
 - Use a transparent theme for the program if it supports it
