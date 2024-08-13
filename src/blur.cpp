@@ -37,7 +37,7 @@
 
 #include <KDecoration2/Decoration>
 
-Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur_forceblur", QtWarningMsg)
+Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur", QtWarningMsg)
 
 static void ensureResources()
 {
