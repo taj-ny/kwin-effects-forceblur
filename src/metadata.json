@@ -12,7 +12,7 @@
         "Description": "Blurs the background behind user-specified windows",
         "EnabledByDefault": false,
         "License": "GPL",
-        "Name": "Force Blur"
+        "Name": "Better Blur (formerly Force Blur)"
     },
-    "X-KDE-ConfigModule": "kwin_forceblur_config"
+    "X-KDE-ConfigModule": "kwin_better_blur_config"
 }
