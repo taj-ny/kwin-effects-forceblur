@@ -1,5 +1,5 @@
 # KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Better Blur (formerly kwin-effects-forceblur) is a fork of the KWin Blur effect with several improvements and bug fixes.
+Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
 
 Latest features are available on the ``develop`` branch.
 
