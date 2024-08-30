@@ -8,7 +8,7 @@
 }:
 
 stdenv.mkDerivation rec {
-  pname = "kwin-effects-forceblur";
+  pname = "kwin-better-blur";
   version = "1.3.1";
 
   src = ./.;
@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
   ];
 
   meta = with lib; {
-    description = "A fork of the KWin Blur effect for KDE Plasma 6 with the ability to blur any window on Wayland and X11";
+    description = "Fork of the KWin Blur effect for KDE Plasma 6 with additional features (including force blur) and bug fixes";
     license = licenses.gpl3;
     homepage = "https://github.com/taj-ny/kwin-effects-forceblur";
   };
