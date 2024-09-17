@@ -36,6 +36,7 @@
 #include <KSharedConfig>
 
 #include <KDecoration2/Decoration>
+#include <utility>
 
 Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur", QtWarningMsg)
 
@@ -617,10 +618,15 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
 }
 
-GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
+GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget)
 {
     if (m_fakeBlurTextures.contains(output)) {
         return m_fakeBlurTextures[output];
+    }
+
+    GLenum textureFormat = GL_RGBA8;
+    if (renderTarget.texture()) {
+        textureFormat = renderTarget.texture()->internalFormat();
     }
 
     QImage image;
@@ -636,7 +642,7 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
             return nullptr;
         }
 
-        std::unique_ptr<GLTexture> desktopTexture = GLTexture::allocate(GL_RGBA8, desktop->size().toSize());
+        std::unique_ptr<GLTexture> desktopTexture = GLTexture::allocate(textureFormat, desktop->size().toSize());
         desktopTexture->setFilter(GL_LINEAR);
         desktopTexture->setWrapMode(GL_CLAMP_TO_EDGE);
         if (!desktopTexture) {
@@ -679,9 +685,29 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output)
         return nullptr;
     }
 
+    std::unique_ptr<GLTexture> imageTexture = GLTexture::upload(image);
+
+    // Transform image colorspace
+    std::unique_ptr<GLTexture> imageTransformedColorspaceTexture = GLTexture::allocate(textureFormat, image.size());
+    std::unique_ptr<GLFramebuffer> imageTransformedColorspaceFramebuffer = std::make_unique<GLFramebuffer>(imageTransformedColorspaceTexture.get());
+
+    GLShader *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
+    shader->setColorspaceUniforms(ColorDescription::sRGB, renderTarget.colorDescription());
+    QMatrix4x4 projectionMatrix;
+    projectionMatrix.scale(1, -1);
+    projectionMatrix.ortho(QRect(0, 0, image.width(), image.height()));
+    shader->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, projectionMatrix);
+    GLFramebuffer::pushFramebuffer(imageTransformedColorspaceFramebuffer.get());
+
+    imageTexture->render(image.size());
+    imageTexture = std::move(imageTransformedColorspaceTexture);
+
+    GLFramebuffer::popFramebuffer();
+    ShaderManager::instance()->popShader();
+
     return m_fakeBlurTextures[output] = (m_settings.fakeBlur.blurCustomImage
-        ? blur(image)
-        : GLTexture::upload(image).release());
+        ? blur(std::move(imageTexture))
+        : imageTexture.release());
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
@@ -819,7 +845,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     // reset.
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
-        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen);
+        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
     }
 
     // Fetch the pixels behind the shape that is going to be blurred.
@@ -1057,21 +1083,21 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     vbo->unbindArrays();
 }
 
-GLTexture *BlurEffect::blur(const QImage &image)
+GLTexture *BlurEffect::blur(std::unique_ptr<GLTexture> texture)
 {
-    auto imageTexture = GLTexture::upload(image);
-    auto imageFramebuffer = std::make_unique<GLFramebuffer>(imageTexture.get());
+    const QRect textureRect = QRect(0, 0, texture->width(), texture->height());
+    auto blurredFramebuffer = std::make_unique<GLFramebuffer>(texture.get());
 
     BlurRenderData renderData;
-    const RenderTarget renderTarget(imageFramebuffer.get());
-    const RenderViewport renderViewport(image.rect(), 1.0, renderTarget);
+    const RenderTarget renderTarget(blurredFramebuffer.get());
+    const RenderViewport renderViewport(textureRect, 1.0, renderTarget);
     WindowPaintData data;
 
-    GLFramebuffer::pushFramebuffer(imageFramebuffer.get());
-    blur(renderData, renderTarget, renderViewport, nullptr, 0, image.rect(), data);
+    GLFramebuffer::pushFramebuffer(blurredFramebuffer.get());
+    blur(renderData, renderTarget, renderViewport, nullptr, 0, textureRect, data);
     GLFramebuffer::popFramebuffer();
 
-    return imageTexture.release();
+    return texture.release();
 }
 
 bool BlurEffect::isActive() const

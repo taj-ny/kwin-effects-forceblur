@@ -92,9 +92,9 @@ private:
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
      */
     void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
-    GLTexture *blur(const QImage &image);
+    GLTexture *blur(std::unique_ptr<GLTexture> texture);
 
-    GLTexture *ensureFakeBlurTexture(const Output *output);
+    GLTexture *ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
 private:
     struct
