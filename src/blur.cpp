@@ -692,7 +692,12 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
     std::unique_ptr<GLFramebuffer> imageTransformedColorspaceFramebuffer = std::make_unique<GLFramebuffer>(imageTransformedColorspaceTexture.get());
 
     GLShader *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
-    shader->setColorspaceUniforms(ColorDescription::sRGB, renderTarget.colorDescription());
+    shader->setColorspaceUniforms(
+        ColorDescription::sRGB, renderTarget.colorDescription()
+#if !(defined(KWIN_6_1) || defined(KWIN_6_0))
+        , RenderingIntent::RelativeColorimetricWithBPC
+#endif
+    );
     QMatrix4x4 projectionMatrix;
     projectionMatrix.scale(1, -1);
     projectionMatrix.ortho(QRect(0, 0, image.width(), image.height()));
