@@ -567,7 +567,7 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
         return QRegion();
     }
 
-    QRegion decorationRegion = QRegion(w->decoration()->rect()) - w->decorationInnerRect().toRect();
+    QRegion decorationRegion = QRegion(w->decoration()->rect()) - w->contentsRect().toRect();
     //! we return only blurred regions that belong to decoration region
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
@@ -588,7 +588,7 @@ QRegion BlurEffect::blurRegion(EffectWindow *w) const
                 if (frame.has_value()) {
                     region = frame.value();
                 }
-                region += content->translated(w->contentsRect().topLeft().toPoint()) & w->decorationInnerRect().toRect();
+                region += content->translated(w->contentsRect().topLeft().toPoint()) & w->contentsRect().toRect();
             }
         } else if (frame.has_value()) {
             region = frame.value();
