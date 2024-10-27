@@ -505,7 +505,8 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
                 if (!other
                     || !other->isOnCurrentDesktop()
                     || other->isDesktop()
-                    || other->window()->resourceClass() == "xwaylandvideobridge") {
+                    || other->window()->resourceClass() == "xwaylandvideobridge"
+                    || other->isMinimized()) {
                     continue;
                 }
 
