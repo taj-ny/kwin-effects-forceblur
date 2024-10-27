@@ -508,8 +508,9 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
             it->second.hasWindowBehind = false;
             for (EffectWindow *other : m_allWindows) {
                 if (w->window()->stackingOrder() <= other->window()->stackingOrder()
-                    || !other->isOnCurrentDesktop()
                     || other->isDesktop()
+                    || !other->isOnCurrentDesktop()
+                    || !other->isOnCurrentActivity()
                     || other->window()->resourceClass() == "xwaylandvideobridge"
                     || other->isMinimized()) {
                     continue;
