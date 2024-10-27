@@ -175,57 +175,8 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Apply window opacity to the blur</string>
+          <string>Window opacity affects blur</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <spacer>
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>15</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="kcfg_FakeBlur">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Draw image behind windows instead of blurring</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QWidget">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <layout class="QHBoxLayout">
-          <item>
-           <widget class="QLabel">
-            <property name="text">
-             <string>Path to image</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="kcfg_FakeBlurImage">
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
        <item>
@@ -312,9 +263,22 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>The corner radius only applies to the blurred region, not to the window.</string>
+          <string>The corner radius only applies to the blur region.</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <layout class="QHBoxLayout">
@@ -326,7 +290,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_TopCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_TopCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -344,7 +308,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_BottomCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_BottomCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -362,7 +326,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_MenuCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_MenuCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -380,7 +344,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="kcfg_DockCornerRadius">
+          <widget class="QDoubleSpinBox" name="kcfg_DockCornerRadius">
            <property name="minimum">
             <number>0</number>
            </property>
@@ -409,8 +373,180 @@
        <item>
         <widget class="QCheckBox" name="kcfg_RoundCornersOfMaximizedWindows">
          <property name="text">
-          <string>Round corners of maximized windows</string>
+          <string>Round maximized windows</string>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>Fake Blur</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QLabel">
+         <property name="text">
+          <string>When fake blur is enabled, an image will be painted behind windows instead of blurring the background,
+resulting in much lower resource and power usage. X11 with multiple screens is not supported.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_FakeBlur">
+         <property name="text">
+          <string>Enable</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_FakeBlurDisableWhenWindowBehind">
+         <property name="text">
+          <string>Use real blur for windows that are in front of other windows</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_FakeBlurCustomImageBlur">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Blur image</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Image source:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceDesktopWallpaper">
+           <property name="text">
+            <string>Desktop wallpaper (experimental)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceCustom">
+             <property name="text">
+              <string>Custom image</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout">
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>30</width>
+                 <height>1</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QVBoxLayout">
+               <item>
+                <layout class="QHBoxLayout">
+                 <item>
+                  <widget class="QLabel">
+                   <property name="text">
+                    <string>Path to image</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="kcfg_FakeBlurImage">
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>15</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+
+       <item>
+        <widget class="QWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+
         </widget>
        </item>
        <item>

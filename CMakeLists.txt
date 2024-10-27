@@ -68,6 +68,8 @@ find_package(KWin REQUIRED COMPONENTS
 
 if(${KWin_VERSION} VERSION_LESS_EQUAL 6.0.5)
     add_compile_definitions(KWIN_6_0)
+elseif(${KWin_VERSION} VERSION_LESS_EQUAL 6.1.5)
+    add_compile_definitions(KWIN_6_1)
 endif()
 
 find_package(KDecoration2 REQUIRED)
