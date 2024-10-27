@@ -467,7 +467,7 @@ resulting in much lower resource and power usage. X11 with multiple screens is n
          <item>
           <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceDesktopWallpaper">
            <property name="text">
-            <string>Desktop wallpaper (experimental)</string>
+            <string>Desktop wallpaper</string>
            </property>
           </widget>
          </item>

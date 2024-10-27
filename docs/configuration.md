@@ -38,7 +38,7 @@ https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/7bae6a16-6c78-4
 ### Image source
 The image to use for fake blur.
 
-- Desktop wallpaper - A screenshot of the desktop is taken for every screen. This option is currently experimental. You may run into issues.
+- Desktop wallpaper - A screenshot of the desktop is taken for every screen.
 - Custom - The image is read from a file and scaled for every screen without respecting the aspect ratio. Supported formats are JPEG and PNG.
 
 ### Blur image
