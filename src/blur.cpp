@@ -333,6 +333,8 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
     setupDecorationConnections(w);
 
     updateBlurRegion(w);
+
+    m_allWindows.push_back(w);
 }
 
 void BlurEffect::slotWindowDeleted(EffectWindow *w)
@@ -348,6 +350,9 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
         disconnect(*it);
         windowExpandedGeometryChangedConnections.erase(it);
+    }
+    if (auto it = std::find(m_allWindows.begin(), m_allWindows.end(), w); it != m_allWindows.end()) {
+        m_allWindows.erase(it);
     }
 
     if (m_blurWhenTransformed.contains(w)) {
@@ -498,8 +503,13 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
             if (auto it = m_windows.find(w); it != m_windows.end()) {
                 const bool hadWindowBehind = it->second.hasWindowBehind;
                 it->second.hasWindowBehind = false;
-                for (const EffectWindow *other: effects->stackingOrder().first(w->window()->stackingOrder())) {
-                    if (!other || !other->isOnCurrentDesktop() || other->isDesktop()) {
+                for (EffectWindow *other : m_allWindows) {
+                    if (w->window()->stackingOrder() <= other->window()->stackingOrder()
+                        || other->isDesktop()
+                        || !other->isOnCurrentDesktop()
+                        || !other->isOnCurrentActivity()
+                        || other->window()->resourceClass() == "xwaylandvideobridge"
+                        || other->isMinimized()) {
                         continue;
                     }
 

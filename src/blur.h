@@ -183,6 +183,15 @@ private:
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
+    /**
+     * Stores all currently open windows, even those that aren't blurred. Used for determining whether windows are
+     * overlapping.
+     *
+     * Objects retrieved from effects->stackingOrder() and workspace()->stackingOrder() appear to be deleted when
+     * BlurEffect::prePaintWindow is running, so that can't be used.
+     */
+    std::vector<EffectWindow *> m_allWindows;
+
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;
 };
