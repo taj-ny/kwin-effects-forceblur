@@ -642,7 +642,9 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
             return nullptr;
         }
 
-        std::unique_ptr<GLTexture> desktopTexture = GLTexture::allocate(textureFormat, desktop->size().toSize());
+        const auto scale = output ? output->scale() : 1;
+        const auto geometry = snapToPixelGrid(scaledRect(desktop->rect(), scale));
+        std::unique_ptr<GLTexture> desktopTexture = GLTexture::allocate(textureFormat, geometry.size());
         desktopTexture->setFilter(GL_LINEAR);
         desktopTexture->setWrapMode(GL_CLAMP_TO_EDGE);
         if (!desktopTexture) {
@@ -653,12 +655,10 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
             return nullptr;
         }
 
-        const QRect geometry = QRect(desktop->x(), desktop->y(), desktop->width(), desktop->height());
         const RenderTarget renderTarget(desktopFramebuffer.get());
-        const RenderViewport renderViewport(geometry, output ? output->scale() : 1, renderTarget);
+        const RenderViewport renderViewport(desktop->rect(), scale, renderTarget);
         WindowPaintData data;
 
-        // TODO Test on 6.1
 #ifdef KWIN_6_0
         QMatrix4x4 projectionMatrix;
         projectionMatrix.ortho(geometry);
