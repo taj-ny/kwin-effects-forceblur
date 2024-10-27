@@ -643,7 +643,7 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
 
     std::unique_ptr<GLTexture> imageTexture;
     if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
-        EffectWindow *desktop;
+        EffectWindow *desktop = nullptr;
         for (EffectWindow *w : effects->stackingOrder()) {
             if (w && w->isDesktop() && (!output || w->window()->output() == output)) {
                 desktop = w;
