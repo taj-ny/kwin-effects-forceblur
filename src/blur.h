@@ -92,7 +92,7 @@ private:
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
      */
     void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
-    GLTexture *blur(std::unique_ptr<GLTexture> texture);
+    void blur(GLTexture *texture);
 
     GLTexture *ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
@@ -174,7 +174,7 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    QHash<const Output*, GLTexture*> m_fakeBlurTextures;
+    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_fakeBlurTextures;
 
     // Windows to blur even when transformed.
     QList<const EffectWindow*> m_blurWhenTransformed;
