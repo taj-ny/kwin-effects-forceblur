@@ -653,7 +653,7 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
             return nullptr;
         }
 
-        const QRect geometry = QRect(0, 0, desktop->width(), desktop->height());
+        const QRect geometry = QRect(desktop->x(), desktop->y(), desktop->width(), desktop->height());
         const RenderTarget renderTarget(desktopFramebuffer.get());
         const RenderViewport renderViewport(geometry, output ? output->scale() : 1, renderTarget);
         WindowPaintData data;
