@@ -371,7 +371,7 @@ void BlurEffect::slotScreenAdded(KWin::Output *screen)
             return;
         }
 
-        m_fakeBlurTextures.remove(screen);
+        m_fakeBlurTextures.erase(screen);
         effects->addRepaintFull();
     });
 }
