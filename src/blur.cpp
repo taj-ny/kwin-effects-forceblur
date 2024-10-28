@@ -134,6 +134,7 @@ BlurEffect::BlurEffect()
 
     connect(effects, &EffectsHandler::windowAdded, this, &BlurEffect::slotWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &BlurEffect::slotWindowDeleted);
+    connect(effects, &EffectsHandler::screenAdded, this, &BlurEffect::slotScreenAdded);
     connect(effects, &EffectsHandler::screenRemoved, this, &BlurEffect::slotScreenRemoved);
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
@@ -144,6 +145,9 @@ BlurEffect::BlurEffect()
     const auto stackingOrder = effects->stackingOrder();
     for (EffectWindow *window : stackingOrder) {
         slotWindowAdded(window);
+    }
+    for (const auto &screen : effects->screens()) {
+        slotScreenAdded(screen);
     }
 
     m_valid = true;
@@ -364,6 +368,18 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     }
 }
 
+void BlurEffect::slotScreenAdded(KWin::Output *screen)
+{
+    screenChangedConnections[screen] = connect(screen, &Output::changed, this, [this, screen]() {
+        if (!m_settings.fakeBlur.enable) {
+            return;
+        }
+
+        m_fakeBlurTextures.remove(screen);
+        effects->addRepaintFull();
+    });
+}
+
 void BlurEffect::slotScreenRemoved(KWin::Output *screen)
 {
     for (auto &[window, data] : m_windows) {
@@ -371,6 +387,11 @@ void BlurEffect::slotScreenRemoved(KWin::Output *screen)
             effects->makeOpenGLContextCurrent();
             data.render.erase(it);
         }
+    }
+
+    if (auto it = screenChangedConnections.find(screen); it != screenChangedConnections.end()) {
+        disconnect(*it);
+        screenChangedConnections.erase(it);
     }
 }
 

@@ -74,6 +74,7 @@ public:
 public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
+    void slotScreenAdded(KWin::Output *screen);
     void slotScreenRemoved(KWin::Output *screen);
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
     void setupDecorationConnections(EffectWindow *w);
@@ -181,6 +182,7 @@ private:
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
+    QMap<Output *, QMetaObject::Connection> screenChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     /**
