@@ -18,9 +18,6 @@ This option will override the blur region specified by the decorations.
 Fixes transparency for some applications by marking their windows as transparent. This will only be done for force-blurred windows.
 
 # Fake blur
-> [!NOTE]  
-> Fake blur doesn't support multiple screens on X11.
-
 Fake blur is mainly intended for laptop users who want longer battery life.
 
 If a window is entirely in front of the wallpaper, why keep blurring the same image over and over? That's a massive waste of resources.

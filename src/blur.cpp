@@ -324,7 +324,11 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
     }
 
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
-        if (w) {
+        if (!w) {
+            return;
+        } else if (w->isDesktop() && !effects->waylandDisplay()) {
+            m_fakeBlurTextures.erase(nullptr);
+        } else {
             updateBlurRegion(w, true);
         }
     });
@@ -547,7 +551,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
             }
         }
 
-        if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper && w->isDesktop() && w->rect() == data.paint.boundingRect()) {
+        if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper && w->isDesktop() && w->frameGeometry() == data.paint.boundingRect()) {
             m_fakeBlurTextures.erase(m_currentScreen);
         }
     }
@@ -657,92 +661,22 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
         return m_fakeBlurTextures[output].get();
     }
 
+    if (effects->waylandDisplay() && !output) {
+        return nullptr;
+    }
+
     GLenum textureFormat = GL_RGBA8;
     if (renderTarget.texture()) {
         textureFormat = renderTarget.texture()->internalFormat();
     }
-
-    std::unique_ptr<GLTexture> imageTexture;
-    if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
-        EffectWindow *desktop = nullptr;
-        for (EffectWindow *w : effects->stackingOrder()) {
-            if (w && w->isDesktop() && (!output || w->window()->output() == output)) {
-                desktop = w;
-                break;
-            }
-        }
-        if (!desktop) {
-            return nullptr;
-        }
-
-        const auto scale = output ? output->scale() : 1;
-        const auto geometry = snapToPixelGrid(scaledRect(desktop->rect(), scale));
-
-        imageTexture = GLTexture::allocate(textureFormat, geometry.size());
-        imageTexture->setFilter(GL_LINEAR);
-        imageTexture->setWrapMode(GL_CLAMP_TO_EDGE);
-        if (!imageTexture) {
-            return nullptr;
-        }
-        std::unique_ptr<GLFramebuffer> desktopFramebuffer = std::make_unique<GLFramebuffer>(imageTexture.get());
-        if (!desktopFramebuffer->valid()) {
-            return nullptr;
-        }
-
-        const RenderTarget renderTarget(desktopFramebuffer.get());
-        const RenderViewport renderViewport(desktop->rect(), scale, renderTarget);
-        WindowPaintData data;
-
-#ifdef KWIN_6_0
-        QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(geometry);
-        data.setProjectionMatrix(projectionMatrix);
-#endif
-
-        GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
-
-        effects->drawWindow(renderTarget, renderViewport, desktop, PAINT_WINDOW_TRANSFORMED | PAINT_WINDOW_TRANSLUCENT, infiniteRegion(), data);
-        GLFramebuffer::popFramebuffer();
-    } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
-        if (m_settings.fakeBlur.customImage.isNull()) {
-            return nullptr;
-        }
-
-        const QSize screenResolution = output ? output->pixelSize() : QGuiApplication::primaryScreen()->size();
-        imageTexture = GLTexture::upload(m_settings.fakeBlur.customImage.scaled(screenResolution, Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
-    }
-
-    if (!imageTexture)
+    GLTexture *texture = effects->waylandDisplay()
+        ? createFakeBlurTextureWayland(output, renderTarget, textureFormat)
+        : createFakeBlurTextureX11(textureFormat);
+    if (!texture) {
         return nullptr;
-
-    // Transform image colorspace
-    std::unique_ptr<GLTexture> imageTransformedColorspaceTexture = GLTexture::allocate(textureFormat, imageTexture->size());
-    std::unique_ptr<GLFramebuffer> imageTransformedColorspaceFramebuffer = std::make_unique<GLFramebuffer>(imageTransformedColorspaceTexture.get());
-
-    GLShader *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
-    shader->setColorspaceUniforms(
-        ColorDescription::sRGB, renderTarget.colorDescription()
-#if !(defined(KWIN_6_1) || defined(KWIN_6_0))
-        , RenderingIntent::RelativeColorimetricWithBPC
-#endif
-    );
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.scale(1, -1);
-    projectionMatrix.ortho(QRect(0, 0, imageTexture->width(), imageTexture->height()));
-    shader->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, projectionMatrix);
-    GLFramebuffer::pushFramebuffer(imageTransformedColorspaceFramebuffer.get());
-
-    imageTexture->render(imageTexture->size());
-    imageTexture = std::move(imageTransformedColorspaceTexture);
-
-    GLFramebuffer::popFramebuffer();
-    ShaderManager::instance()->popShader();
-
-    if (m_settings.fakeBlur.blurCustomImage) {
-        blur(imageTexture.get());
     }
 
-    return (m_fakeBlurTextures[output] = std::move(imageTexture)).get();
+    return (m_fakeBlurTextures[output] = std::unique_ptr<GLTexture>(texture)).get();
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
@@ -1054,7 +988,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         ShaderManager::instance()->pushShader(m_upsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0, backgroundRect.width(), backgroundRect.height()));
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, static_cast<float>(0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, static_cast<float>(0));
@@ -1132,6 +1066,150 @@ void BlurEffect::blur(GLTexture *texture)
     GLFramebuffer::pushFramebuffer(blurredFramebuffer.get());
     blur(renderData, renderTarget, renderViewport, nullptr, 0, textureRect, data);
     GLFramebuffer::popFramebuffer();
+}
+
+GLTexture *BlurEffect::wallpaper(EffectWindow *desktop, const qreal &scale, const GLenum &textureFormat)
+{
+    const auto geometry = snapToPixelGrid(scaledRect(desktop->rect(), scale));
+
+    auto texture = GLTexture::allocate(textureFormat, geometry.size());
+    texture->setFilter(GL_LINEAR);
+    texture->setWrapMode(GL_CLAMP_TO_EDGE);
+    if (!texture) {
+        return nullptr;
+    }
+    std::unique_ptr<GLFramebuffer> desktopFramebuffer = std::make_unique<GLFramebuffer>(texture.get());
+    if (!desktopFramebuffer->valid()) {
+        return nullptr;
+    }
+
+    const RenderTarget renderTarget(desktopFramebuffer.get());
+    const RenderViewport renderViewport(desktop->frameGeometry(), scale, renderTarget);
+    WindowPaintData data;
+
+#ifdef KWIN_6_0
+    QMatrix4x4 projectionMatrix;
+        projectionMatrix.ortho(geometry);
+        data.setProjectionMatrix(projectionMatrix);
+#endif
+
+    GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
+
+    effects->drawWindow(renderTarget, renderViewport, desktop, PAINT_WINDOW_TRANSFORMED | PAINT_WINDOW_TRANSLUCENT, infiniteRegion(), data);
+    GLFramebuffer::popFramebuffer();
+    return texture.release();
+}
+
+GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat)
+{
+    EffectWindow *desktop = nullptr;
+    for (EffectWindow *w : effects->stackingOrder()) {
+        if (w && w->isDesktop() && (w->window()->output() == output)) {
+            desktop = w;
+            break;
+        }
+    }
+    if (!desktop) {
+        return nullptr;
+    }
+
+    std::unique_ptr<GLTexture> texture;
+    if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
+        texture.reset(wallpaper(desktop, output->scale(), textureFormat));
+    } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
+        texture = GLTexture::upload(m_settings.fakeBlur.customImage.scaled(output->pixelSize(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+    }
+    if (!texture) {
+        return nullptr;
+    }
+
+    // Transform image colorspace
+    auto imageTransformedColorspaceTexture = GLTexture::allocate(textureFormat, texture->size());
+    if (!imageTransformedColorspaceTexture) {
+        return nullptr;
+    }
+    auto imageTransformedColorspaceFramebuffer = std::make_unique<GLFramebuffer>(imageTransformedColorspaceTexture.get());
+    if (!imageTransformedColorspaceFramebuffer->valid()) {
+        return nullptr;
+    }
+
+    auto *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
+    shader->setColorspaceUniforms(
+        ColorDescription::sRGB, renderTarget.colorDescription()
+#if !(defined(KWIN_6_1) || defined(KWIN_6_0))
+        , RenderingIntent::RelativeColorimetricWithBPC
+#endif
+    );
+    QMatrix4x4 projectionMatrix;
+    projectionMatrix.scale(1, -1);
+    projectionMatrix.ortho(QRect(0, 0, texture->width(), texture->height()));
+    shader->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, projectionMatrix);
+    GLFramebuffer::pushFramebuffer(imageTransformedColorspaceFramebuffer.get());
+
+    texture->render(texture->size());
+    texture = std::move(imageTransformedColorspaceTexture);
+
+    GLFramebuffer::popFramebuffer();
+    ShaderManager::instance()->popShader();
+
+    if (m_settings.fakeBlur.blurCustomImage) {
+        blur(texture.get());
+    }
+
+    return texture.release();
+}
+
+GLTexture *BlurEffect::createFakeBlurTextureX11(const GLenum &textureFormat)
+{
+    std::vector<EffectWindow *> desktops;
+    QRegion desktopGeometries;
+    for (auto *w : effects->stackingOrder()) {
+        if (!w || !w->isDesktop())
+            continue;
+
+        desktops.push_back(w);
+        desktopGeometries += w->frameGeometry().toRect();
+    }
+
+    auto compositeTexture = GLTexture::allocate(textureFormat, desktopGeometries.boundingRect().size());
+    if (!compositeTexture) {
+        return nullptr;
+    }
+    auto compositeTextureFramebuffer = std::make_unique<GLFramebuffer>(compositeTexture.get());
+    if (!compositeTextureFramebuffer->valid()) {
+        return nullptr;
+    }
+
+    GLFramebuffer::pushFramebuffer(compositeTextureFramebuffer.get());
+    ShaderBinder binder(ShaderTrait::MapTexture);
+    for (auto *desktop : desktops) {
+        const auto geometry = desktop->frameGeometry();
+
+        std::unique_ptr<GLTexture> texture;
+        if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
+            texture.reset(wallpaper(desktop, 1, textureFormat));
+        } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
+            texture = GLTexture::upload(m_settings.fakeBlur.customImage.scaled(geometry.width(), geometry.height(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+        }
+        if (!texture) {
+            return nullptr;
+        }
+
+        if (m_settings.fakeBlur.blurCustomImage) {
+            blur(texture.get());
+        }
+
+        QMatrix4x4 projectionMatrix;
+        projectionMatrix.scale(1, -1);
+        projectionMatrix.ortho(QRectF(QPointF(), compositeTexture->size()));
+        projectionMatrix.translate(geometry.x(), geometry.y());
+        binder.shader()->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, projectionMatrix);
+
+        texture->render(geometry.toRect(), desktop->size());
+    }
+    GLFramebuffer::popFramebuffer();
+
+    return compositeTexture.release();
 }
 
 bool BlurEffect::isActive() const
