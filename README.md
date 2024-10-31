@@ -5,10 +5,10 @@ Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for
 <sup>Window opacity has been set to 85% for System Settings, Dolphin and VSCodium, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
 
 # Features
-- Wayland support
+- X11 and Wayland support
 - Force blur
 - Rounded corners with optional anti-aliasing
-- Draw image behind windows instead of blurring (can be used with a blurred image of the wallpaper in order to achieve a very similar effect to blur but with **much** lower GPU usage)
+- Optional blur texture caching for much lower GPU usage, works best with tiling
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.

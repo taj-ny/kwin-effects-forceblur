@@ -93,10 +93,36 @@ private:
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
      */
     void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
-    GLTexture *blur(std::unique_ptr<GLTexture> texture);
+    void blur(GLTexture *texture);
 
+    /**
+     * @param output Can be nullptr.
+     * @remark This method shall not be called outside of BlurEffect::blur.
+     * @return The cached fake blur texture. The texture will be created if it doesn't exist.
+     */
     GLTexture *ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
+
+    /**
+     * @remark This method shall not be called outside of BlurEffect::blur.
+     * @return A pointer to a texture containing the wallpaper of the specified desktop, or nullptr if an error
+     * occurred. The texture will contain icons and widgets, if there are any.
+     */
+    GLTexture *wallpaper(EffectWindow *desktop, const qreal &scale, const GLenum &textureFormat);
+
+    /**
+     * Creates a fake blur texture for the specified screen.
+     * @remark This method shall not be called outside of BlurEffect::blur.
+     * @return A pointer to the texture, or nullptr if an error occurred.
+     */
+    GLTexture *createFakeBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
+
+    /**
+     * Creates a composite fake blur texture containing images for all screens.
+     * @return A pointer to the texture, or nullptr if an error occurred.
+     */
+    GLTexture *createFakeBlurTextureX11(const GLenum &textureFormat);
+
 private:
     struct
     {
@@ -175,7 +201,7 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    QHash<const Output*, GLTexture*> m_fakeBlurTextures;
+    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_fakeBlurTextures;
 
     // Windows to blur even when transformed.
     QList<const EffectWindow*> m_blurWhenTransformed;
