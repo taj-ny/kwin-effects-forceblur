@@ -10,33 +10,33 @@ Disabled:
 
 # Force blur
 ### Blur window decorations
-Whether to blur window decorations, including borders. Enable this if your window decoration doesn't support blur or you want rounded corners.
+Whether to blur window decorations, including borders. Enable this if your window decoration doesn't support blur, or you want rounded top corners.
 
-This option will override the blur region specified by the decorations.
+This option will override the blur region specified by the decoration.
 
 ### Paint windows as non-opaque
 Fixes transparency for some applications by marking their windows as transparent. This will only be done for force-blurred windows.
 
 # Fake blur
-Fake blur is mainly intended for laptop users who want longer battery life.
+When enabled, the blur texture will be cached and reused. The blurred areas of the window will be marked as opaque, resulting in KWin not painting anything behind them.
+Only one image per screen is cached at a time.
 
-If a window is entirely in front of the wallpaper, why keep blurring the same image over and over? That's a massive waste of resources.
-The effect can blur the wallpaper only once, store it in memory and paint it behind windows instead of actually blurring them.
-Because the window isn't transparent anymore, there's also no need to paint anything behind it.
+Fake blur is mainly intended for laptop users who want longer battery life while still having blur everywhere.
 
 ### Use real blur for windows that are in front of other windows
-When two windows overlap, you won't be able to see the window behind.
+By default, when two windows overlap, you won't be able to see the window behind.
 ![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/e581b5c1-7b2c-41c4-b180-4da5306747e1)
 
-If this option is enabled, the effect will switch to real blur when necessary.
+If this option is enabled, the effect will automatically switch to real blur when necessary. At very high blur strengths, there may be a slight difference in the texture.
 
 https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/7bae6a16-6c78-4889-8df1-feb24005dabc
 
 ### Image source
 The image to use for fake blur.
 
-- Desktop wallpaper - A screenshot of the desktop is taken for every screen.
-- Custom - The image is read from a file and scaled for every screen without respecting the aspect ratio. Supported formats are JPEG and PNG.
+- Desktop wallpaper - A screenshot of the desktop is taken for every screen. Icons and widgets will be included. The cached texture is invalidated when the entire desktop is repainted,
+which can happen when the wallpaper changes, icons are interacted with or when widgets update.
+- Custom - The specified image is scaled for every screen without respecting the aspect ratio. Supported formats are JPEG and PNG.
 
 ### Blur image
 Whether to blur the image used for fake blur. This is only done once.
