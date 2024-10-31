@@ -326,11 +326,14 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
         if (!w) {
             return;
-        } else if (w->isDesktop() && !effects->waylandDisplay()) {
-            m_fakeBlurTextures.erase(nullptr);
-        } else {
-            updateBlurRegion(w, true);
         }
+
+        if (w->isDesktop() && !effects->waylandDisplay()) {
+            m_fakeBlurTextures.erase(nullptr);
+            return;
+        }
+
+        updateBlurRegion(w, true);
     });
 
     if (auto internal = w->internalWindow()) {
@@ -812,7 +815,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
     // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
     // reset.
-
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
         fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
@@ -993,7 +995,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         ShaderManager::instance()->pushShader(m_upsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0, backgroundRect.width(), backgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, static_cast<float>(0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, static_cast<float>(0));
@@ -1019,7 +1021,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const auto &read = renderInfo.framebuffers[1];
 
         if (m_settings.general.noiseStrength > 0) {
-            if (const auto &noiseTexture = ensureNoiseTexture()) {
+            if (const auto *noiseTexture = ensureNoiseTexture()) {
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, true);
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
                 glUniform1i(m_upsamplePass.noiseTextureLocation, 1);
