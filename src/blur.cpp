@@ -937,9 +937,14 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
+        QRectF screenGeometry;
+        if (m_currentScreen) {
+            screenGeometry = m_currentScreen->geometryF();
+        }
+
         m_texture.shader->setUniform(m_texture.mvpMatrixLocation, projectionMatrix);
         m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(fakeBlurTexture->size().width(), fakeBlurTexture->size().height()));
-        m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(backgroundRect.x(), backgroundRect.y()));
+        m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(backgroundRect.x() - screenGeometry.x(), backgroundRect.y() - screenGeometry.y()));
         m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_texture.shader->setUniform(m_texture.scaleLocation, (float)viewport.scale());
         m_texture.shader->setUniform(m_texture.topCornerRadiusLocation, topCornerRadius);
