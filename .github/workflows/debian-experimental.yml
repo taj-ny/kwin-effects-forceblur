@@ -25,7 +25,7 @@ jobs:
         run: apt-get update
 
       - name: Install Dependencies
-        run: apt-get install -y -f --no-install-recommends git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations2-dev
+        run: apt-get install -y -f git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations2-dev
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build
