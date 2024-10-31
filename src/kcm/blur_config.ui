@@ -397,8 +397,8 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When fake blur is enabled, an image will be painted behind windows instead of blurring the background,
-resulting in much lower resource and power usage.</string>
+          <string>When enabled, the blur texture will be cached and reused, resulting in much lower GPU usage.
+Works best with tiling.</string>
          </property>
         </widget>
        </item>
