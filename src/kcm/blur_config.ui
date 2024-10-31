@@ -563,6 +563,16 @@ Works best with tiling.</string>
      </widget>
     </widget>
    </item>
+   <item alignment="Qt::AlignCenter">
+    <widget class="QLabel">
+     <property name="text">
+      <string>&lt;a href="https://github.com/taj-ny/kwin-effects-forceblur/blob/main/docs/configuration.md"&gt;Configuration documentation&lt;/a&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
