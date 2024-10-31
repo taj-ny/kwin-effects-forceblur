@@ -6,7 +6,7 @@ on:
     paths-ignore: [ "**.md" ]
   pull_request:
     branches: [ main ]
-    paths: [ "**/fedora40.yml" ]
+    paths: [ "**/fedora-40.yml" ]
   schedule:
     - cron: "0 0 * * *"
 
