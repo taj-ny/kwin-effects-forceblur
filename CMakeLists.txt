@@ -66,10 +66,8 @@ find_package(KWin REQUIRED COMPONENTS
     kwineffects
 )
 
-if(${KWin_VERSION} VERSION_LESS_EQUAL 6.0.5)
-    add_compile_definitions(KWIN_6_0)
-elseif(${KWin_VERSION} VERSION_LESS_EQUAL 6.1.5)
-    add_compile_definitions(KWIN_6_1)
+if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.0.90)
+    add_compile_definitions(KWIN_6_1_OR_GREATER)
 endif()
 
 find_package(KDecoration2 REQUIRED)
