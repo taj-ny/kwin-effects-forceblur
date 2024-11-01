@@ -790,7 +790,17 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         textureFormat = renderTarget.texture()->internalFormat();
     }
 
-    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != backgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
+    // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
+    // reset.
+    GLTexture *fakeBlurTexture = nullptr;
+    if (w && hasFakeBlur(w)) {
+        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
+    }
+
+    if (!fakeBlurTexture
+        && (renderInfo.framebuffers.size() != (m_iterationCount + 1)
+            || renderInfo.textures[0]->size() != backgroundRect.size()
+            || renderInfo.textures[0]->internalFormat() != textureFormat)) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
 
@@ -811,13 +821,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             renderInfo.textures.push_back(std::move(texture));
             renderInfo.framebuffers.push_back(std::move(framebuffer));
         }
-    }
-
-    // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
-    // reset.
-    GLTexture *fakeBlurTexture = nullptr;
-    if (w && hasFakeBlur(w)) {
-        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
     }
 
     // Fetch the pixels behind the shape that is going to be blurred.
