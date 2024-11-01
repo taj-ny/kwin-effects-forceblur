@@ -22,6 +22,12 @@
 #include "wayland/display.h"
 #include "wayland/surface.h"
 
+#ifdef KWIN_6_2_OR_GREATER
+#include "scene/decorationitem.h"
+#include "scene/surfaceitem.h"
+#include "scene/windowitem.h"
+#endif
+
 #include <QGuiApplication>
 #include <QImage>
 #include <QMatrix4x4>
@@ -288,6 +294,9 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
+#ifdef KWIN_6_2_OR_GREATER
+        data.windowEffect = ItemEffect(w->windowItem());
+#endif
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
