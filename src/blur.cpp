@@ -440,7 +440,7 @@ bool BlurEffect::supported()
 #ifdef KWIN_6_0
     return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
 #else
-    return effects->openglContext() && effects->openglContext()->supportsBlits();
+    return effects->openglContext() && (effects->openglContext()->supportsBlits() || effects->waylandDisplay());
 #endif
 }
 
