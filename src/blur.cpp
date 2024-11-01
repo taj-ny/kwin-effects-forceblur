@@ -1155,7 +1155,7 @@ GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const 
     auto *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
     shader->setColorspaceUniforms(
         ColorDescription::sRGB, renderTarget.colorDescription()
-#ifdef KWIN_6_1_OR_GREATER
+#ifdef KWIN_6_2_OR_GREATER
         , RenderingIntent::RelativeColorimetricWithBPC
 #endif
     );
