@@ -22,6 +22,12 @@
 #include "wayland/display.h"
 #include "wayland/surface.h"
 
+#ifdef KWIN_6_2_OR_GREATER
+#include "scene/decorationitem.h"
+#include "scene/surfaceitem.h"
+#include "scene/windowitem.h"
+#endif
+
 #include <QGuiApplication>
 #include <QImage>
 #include <QMatrix4x4>
@@ -288,6 +294,9 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
+#ifdef KWIN_6_2_OR_GREATER
+        data.windowEffect = ItemEffect(w->windowItem());
+#endif
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
@@ -437,10 +446,10 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-#ifdef KWIN_6_0
-    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
-#else
+#ifdef KWIN_6_1_OR_GREATER
     return effects->openglContext() && (effects->openglContext()->supportsBlits() || effects->waylandDisplay());
+#else
+    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
 #endif
 }
 
@@ -1097,10 +1106,10 @@ GLTexture *BlurEffect::wallpaper(EffectWindow *desktop, const qreal &scale, cons
     const RenderViewport renderViewport(desktop->frameGeometry(), scale, renderTarget);
     WindowPaintData data;
 
-#ifdef KWIN_6_0
+#ifndef KWIN_6_1_OR_GREATER
     QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(geometry);
-        data.setProjectionMatrix(projectionMatrix);
+    projectionMatrix.ortho(geometry);
+    data.setProjectionMatrix(projectionMatrix);
 #endif
 
     GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
@@ -1146,7 +1155,7 @@ GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const 
     auto *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
     shader->setColorspaceUniforms(
         ColorDescription::sRGB, renderTarget.colorDescription()
-#if !(defined(KWIN_6_1) || defined(KWIN_6_0))
+#ifdef KWIN_6_2_OR_GREATER
         , RenderingIntent::RelativeColorimetricWithBPC
 #endif
     );
