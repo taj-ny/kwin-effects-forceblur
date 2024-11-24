@@ -1,0 +1,5 @@
+File=config.kcfg
+ClassName=Config
+NameSpace=BetterBlur
+Singleton=true
+Mutators=true

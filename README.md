@@ -8,7 +8,7 @@ Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for
 - X11 and Wayland support
 - Force blur
 - Rounded corners with optional anti-aliasing
-- Optional blur texture caching for much lower GPU usage, works best with tiling
+- Static blur for much lower GPU usage, works best with tiling
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.

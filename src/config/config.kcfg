@@ -17,7 +17,7 @@
         <entry name="WindowClasses" type="String">
             <default>class1
 class2
-class3</default>
+$regex:class3</default>
         </entry>
         <entry name="BlurMatching" type="Bool">
             <default>true</default>
@@ -71,6 +71,9 @@ class3</default>
             <default>true</default>
         </entry>
         <entry name="FakeBlurDisableWhenWindowBehind" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="ConvertSimpleConfigToRules" type="Bool">
             <default>true</default>
         </entry>
     </group>

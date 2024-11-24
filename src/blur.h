@@ -7,10 +7,11 @@
 
 #pragma once
 
+#include "windowrules/windowrulelist.h"
+
 #include "effect/effect.h"
 #include "opengl/glutils.h"
-#include "settings.h"
-#include "window.h"
+#include "blurwindow.h"
 
 #include <QList>
 
@@ -20,28 +21,6 @@ namespace KWin
 {
 
 class BlurManagerInterface;
-
-struct BlurRenderData
-{
-    /// Temporary render targets needed for the Dual Kawase algorithm, the first texture
-    /// contains not blurred background behind the window, it's cached.
-    std::vector<std::unique_ptr<GLTexture>> textures;
-    std::vector<std::unique_ptr<GLFramebuffer>> framebuffers;
-};
-
-struct BlurEffectData
-{
-    /// The region that should be blurred behind the window
-    std::optional<QRegion> content;
-
-    /// The region that should be blurred behind the frame
-    std::optional<QRegion> frame;
-
-    /// The render data per screen. Screens can have different color spaces.
-    std::unordered_map<Output *, BlurRenderData> render;
-
-    bool hasWindowBehind;
-};
 
 class BlurEffect : public KWin::Effect
 {
@@ -53,6 +32,8 @@ public:
 
     static bool supported();
     static bool enabledByDefault();
+
+    static const std::vector<EffectWindow *> allWindows();
 
     void reconfigure(ReconfigureFlags flags) override;
     void prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
@@ -77,30 +58,22 @@ public Q_SLOTS:
     void slotScreenAdded(KWin::Output *screen);
     void slotScreenRemoved(KWin::Output *screen);
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
-    void setupDecorationConnections(EffectWindow *w);
 
 private:
     void initBlurStrengthValues();
-    QRegion blurRegion(EffectWindow *w) const;
-    QRegion decorationBlurRegion(const EffectWindow *w) const;
-    bool decorationSupportsBlurBehind(const EffectWindow *w) const;
-    bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
-    bool shouldForceBlur(const EffectWindow *w) const;
-    void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
-    bool hasFakeBlur(EffectWindow *w);
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
      */
-    void blur(BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
+    void blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const QRegion &region, WindowPaintData &data);
     void blur(GLTexture *texture);
 
     /**
      * @param output Can be nullptr.
      * @remark This method shall not be called outside of BlurEffect::blur.
-     * @return The cached fake blur texture. The texture will be created if it doesn't exist.
+     * @return The cached static blur texture. The texture will be created if it doesn't exist.
      */
-    GLTexture *ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget);
+    GLTexture *ensureStaticBlurTexture(const Output *output, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
 
     /**
@@ -111,17 +84,17 @@ private:
     GLTexture *wallpaper(EffectWindow *desktop, const qreal &scale, const GLenum &textureFormat);
 
     /**
-     * Creates a fake blur texture for the specified screen.
+     * Creates a static blur texture for the specified screen.
      * @remark This method shall not be called outside of BlurEffect::blur.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createFakeBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
 
     /**
-     * Creates a composite fake blur texture containing images for all screens.
+     * Creates a composite static blur texture containing images for all screens.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createFakeBlurTextureX11(const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureX11(const GLenum &textureFormat);
 
 private:
     struct
@@ -173,16 +146,16 @@ private:
     QRegion m_paintedArea; // keeps track of all painted areas (from bottom to top)
     QRegion m_currentBlur; // keeps track of the currently blured area of the windows(from bottom to top)
     Output *m_currentScreen = nullptr;
+    QRegion m_windowGeometriesSum;
 
     size_t m_iterationCount; // number of times the texture will be downsized to half size
     int m_offset;
     int m_expandSize;
+    int m_noiseStrength;
 
     std::unique_ptr<GLTexture> noiseTexture;
     qreal noiseTextureScale = 1.0;
     int noiseTextureStength = 0;
-
-    BlurSettings m_settings;
 
     struct OffsetStruct
     {
@@ -201,15 +174,14 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_fakeBlurTextures;
+    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_staticBlurTextures;
+    QImage m_staticBlurImage;
 
-    // Windows to blur even when transformed.
-    QList<const EffectWindow*> m_blurWhenTransformed;
-
-    QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
     QMap<Output *, QMetaObject::Connection> screenChangedConnections;
-    std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
+    std::unordered_map<EffectWindow *, std::unique_ptr<BetterBlur::Window>> m_windows;
+
+    std::unique_ptr<BetterBlur::WindowRuleList> m_config;
 
     /**
      * Stores all currently open windows, even those that aren't blurred. Used for determining whether windows are
@@ -218,7 +190,7 @@ private:
      * Objects retrieved from effects->stackingOrder() and workspace()->stackingOrder() appear to be deleted when
      * BlurEffect::prePaintWindow is running, so that can't be used.
      */
-    std::vector<EffectWindow *> m_allWindows;
+    static std::vector<EffectWindow *> s_allWindows;
 
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;

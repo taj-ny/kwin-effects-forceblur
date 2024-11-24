@@ -199,7 +199,8 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>Classes of windows to force blur (one per line):</string>
+          <string>Classes of windows to force blur (one per line).
+Use the "$regex:" prefix to specify regular expressions.</string>
          </property>
         </widget>
        </item>
@@ -391,14 +392,14 @@
      </widget>
      <widget class="QWidget">
       <attribute name="title">
-       <string>Fake Blur</string>
+       <string>Static Blur</string>
       </attribute>
       <layout class="QVBoxLayout">
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When enabled, the blur texture will be cached and reused, resulting in much lower GPU usage.
-Works best with tiling.</string>
+          <string>When enabled, a cached texture will be painted behind the window instead of
+actually blurring the background, resulting in much lower resource usage. Works best with tiling.</string>
          </property>
         </widget>
        </item>
@@ -425,7 +426,7 @@ Works best with tiling.</string>
        <item>
         <widget class="QCheckBox" name="kcfg_FakeBlurDisableWhenWindowBehind">
          <property name="text">
-          <string>Use real blur for windows that are in front of other windows</string>
+          <string>Use dynamic blur for windows with another window behind</string>
          </property>
         </widget>
        </item>
@@ -451,7 +452,7 @@ Works best with tiling.</string>
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Blur image</string>
+          <string>Blur texture (only done once)</string>
          </property>
         </widget>
        </item>
@@ -460,14 +461,14 @@ Works best with tiling.</string>
          <item>
           <widget class="QLabel">
            <property name="text">
-            <string>Image source:</string>
+            <string>Texture source:</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceDesktopWallpaper">
            <property name="text">
-            <string>Desktop wallpaper</string>
+            <string>Desktop wallpaper (do not use with frequently-changing wallpapers)</string>
            </property>
           </widget>
          </item>
@@ -547,6 +548,45 @@ Works best with tiling.</string>
           </sizepolicy>
          </property>
 
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>Window Rules</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QLabel">
+         <property name="text">
+          <string>There is currently no configuration UI for window rules.
+See the configuration documentation for more information.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_ConvertSimpleConfigToRules">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Convert simple config to window rules (if disabled, most options won't have an effect
+anymore and will need to be manually specified in window rules)</string>
+         </property>
         </widget>
        </item>
        <item>
