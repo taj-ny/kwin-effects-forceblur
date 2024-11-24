@@ -58,6 +58,7 @@ public:
     void setNegateWindowTypes(const bool &negate);
 
     void setHasWindowBehind(const bool &hasWindowBehind);
+    void setInternal(const bool &internal);
     void setWindowClass(const QRegularExpression &windowClass);
     void setWindowStates(const WindowStates &windowStates);
     void setWindowTypes(const WindowTypes &windowTypes);
@@ -79,12 +80,13 @@ public:
 private:
 #ifdef CONFIG_KWIN
     bool isHasWindowBehindSubConditionSatisfied(const Window *w) const;
+    bool isInternalSubConditionSatisfied(const Window *w) const;
     bool isWindowClassSubConditionSatisfied(const Window *w) const;
     bool isWindowStateSubConditionSatisfied(const Window *w) const;
     bool isWindowTypeSubConditionSatisfied(const Window *w) const;
 #endif
-
     std::optional<bool> m_hasWindowBehind;
+    std::optional<bool> m_internal;
 
     std::optional<QRegularExpression> m_windowClass;
     bool m_negateWindowClasses = false;

@@ -14,6 +14,7 @@
 #include "core/rendertarget.h"
 #include "core/renderviewport.h"
 #include "effect/effecthandler.h"
+#include "internalwindow.h"
 #include "opengl/glutils.h"
 #include "opengl/glplatform.h"
 #include "scene/windowitem.h"

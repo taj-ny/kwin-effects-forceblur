@@ -43,6 +43,10 @@ void WindowRuleList::load()
                 condition->setHasWindowBehind(conditionGroup.readEntry("HasWindowBehind", false));
             }
 
+            if (conditionGroup.hasKey("Internal")) {
+                condition->setInternal(conditionGroup.readEntry("Internal", false));
+            }
+
             if (conditionGroup.hasKey("WindowClass")) {
                 condition->setWindowClass(QRegularExpression(conditionGroup.readEntry("WindowClass", "")));
             }

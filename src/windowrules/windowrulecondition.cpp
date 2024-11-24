@@ -2,6 +2,8 @@
 
 #ifdef CONFIG_KWIN
 #include "blur.h"
+
+#include "internalwindow.h"
 #include "window.h"
 #endif
 
@@ -12,6 +14,7 @@ namespace BetterBlur
 bool WindowRuleCondition::isSatisfied(const Window *w) const
 {
     return isHasWindowBehindSubConditionSatisfied(w)
+        && isInternalSubConditionSatisfied(w)
         && isWindowClassSubConditionSatisfied(w)
         && isWindowStateSubConditionSatisfied(w)
         && isWindowTypeSubConditionSatisfied(w);
@@ -24,6 +27,15 @@ bool WindowRuleCondition::isHasWindowBehindSubConditionSatisfied(const Window *w
     }
 
     return w->hasWindowBehind() == *m_hasWindowBehind;
+}
+
+bool WindowRuleCondition::isInternalSubConditionSatisfied(const Window *w) const
+{
+    if (!m_internal.has_value()) {
+        return true;
+    }
+
+    return static_cast<bool>(qobject_cast<KWin::InternalWindow *>(w->window()->window())) == *m_internal;
 }
 
 bool WindowRuleCondition::isWindowClassSubConditionSatisfied(const Window *w) const
@@ -87,6 +99,11 @@ void WindowRuleCondition::setNegateWindowTypes(const bool &negate)
 void WindowRuleCondition::setHasWindowBehind(const bool &hasWindowBehind)
 {
     m_hasWindowBehind = hasWindowBehind;
+}
+
+void WindowRuleCondition::setInternal(const bool &internal)
+{
+    m_internal = internal;
 }
 
 void WindowRuleCondition::setWindowClass(const QRegularExpression &windowClass)
