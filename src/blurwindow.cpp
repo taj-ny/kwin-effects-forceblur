@@ -1,4 +1,3 @@
-#include "utils.h"
 #include "blurwindow.h"
 
 #include "effect/effecthandler.h"
@@ -8,6 +7,10 @@
 #include "wayland/blur.h"
 #include "wayland/surface.h"
 #include "window.h"
+
+#ifdef KWIN_6_2_OR_GREATER
+#include "scene/windowitem.h"
+#endif
 
 #include <KDecoration2/Decoration>
 
@@ -104,10 +107,16 @@ void Window::updateBlurRegion(bool geometryChanged)
     if (content.has_value() || frame.has_value()) {
         m_contentBlurRegion = content;
         m_frameBlurRegion = frame;
+#ifdef KWIN_6_2_OR_GREATER
+        m_windowEffect = std::make_unique<KWin::ItemEffect>(w->windowItem());
+#endif
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         m_contentBlurRegion = {};
         m_frameBlurRegion = {};
         render.clear();
+#ifdef KWIN_6_2_OR_GREATER
+        m_windowEffect.reset();
+#endif
     }
 }
 

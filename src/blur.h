@@ -7,15 +7,16 @@
 
 #pragma once
 
+#include "blurwindow.h"
 #include "windowrules/windowrulelist.h"
 
 #include "effect/effect.h"
 #include "opengl/glutils.h"
-#include "blurwindow.h"
 
 #include <QList>
 
 #include <unordered_map>
+
 
 namespace KWin
 {

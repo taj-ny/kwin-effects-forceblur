@@ -7,6 +7,10 @@
 #include "effect/effectwindow.h"
 #include "opengl/glutils.h"
 
+#ifdef KWIN_6_2_OR_GREATER
+#include "scene/item.h"
+#endif
+
 namespace BetterBlur
 {
 
@@ -71,6 +75,10 @@ private:
     std::optional<QRegion> m_frameBlurRegion;
     long net_wm_blur_region = 0;
     bool m_blurWhenTransformed = false;
+
+#ifdef KWIN_6_2_OR_GREATER
+    std::unique_ptr<KWin::ItemEffect> m_windowEffect;
+#endif
 
     QSizeF m_size;
     bool m_hasWindowBehind = false;
