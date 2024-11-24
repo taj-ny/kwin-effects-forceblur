@@ -97,7 +97,7 @@ void Window::updateBlurRegion(bool geometryChanged)
     // Don't override blur region for menus that already have one. The window geometry could include shadows.
     if (!((isMenu() || w->isTooltip()) && (content.has_value() || geometryChanged))) {
         if (m_properties->blurContent()) {
-            content = w->contentsRect().toRect();
+            content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
         }
         if (m_properties->blurDecorations() && w->decoration()) {
             frame = QRegion(w->frameGeometry().translated(-w->x(), -w->y()).toRect()) - w->contentsRect().toRect();
