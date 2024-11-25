@@ -1033,18 +1033,19 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const auto &read = renderInfo.framebuffers[1];
 
         if (m_settings.general.noiseStrength > 0) {
-            if (const auto *noiseTexture = ensureNoiseTexture()) {
+            if (auto *noiseTexture = ensureNoiseTexture()) {
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, true);
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
+
                 glUniform1i(m_upsamplePass.noiseTextureLocation, 1);
                 glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, noiseTexture->texture());
+                noiseTexture->bind();
             }
         }
 
         glUniform1i(m_upsamplePass.textureLocation, 0);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, read->colorAttachment()->texture());
+        read->colorAttachment()->bind();
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, topCornerRadius);
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, bottomCornerRadius);
