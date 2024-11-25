@@ -149,9 +149,6 @@ private:
     Output *m_currentScreen = nullptr;
     QRegion m_windowGeometriesSum;
 
-    size_t m_iterationCount; // number of times the texture will be downsized to half size
-    int m_offset;
-    int m_expandSize;
     int m_noiseStrength;
 
     std::unique_ptr<GLTexture> noiseTexture;

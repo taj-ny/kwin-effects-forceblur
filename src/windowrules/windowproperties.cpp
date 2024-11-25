@@ -3,6 +3,11 @@
 namespace BetterBlur
 {
 
+void WindowProperties::setBlurStrength(const uint8_t &blurStrength)
+{
+    m_blurStrength = blurStrength;
+}
+
 void WindowProperties::setWindowOpacityAffectsBlur(const bool &windowOpacityAffectsBlur)
 {
     m_windowOpacityAffectsBlur = windowOpacityAffectsBlur;

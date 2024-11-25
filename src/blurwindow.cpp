@@ -209,8 +209,10 @@ void Window::updateProperties()
     // TODO Rule evaluation needs to be optimized. Sometimes it's not necessary to evaluate a rule.
 
     auto staticBlur = false;
+    uint8_t blurStrength = 0;
     if (m_properties) {
         staticBlur = m_properties->staticBlur();
+        blurStrength = m_properties->blurStrength();
     }
 
     m_properties = std::make_unique<WindowProperties>();
@@ -222,6 +224,9 @@ void Window::updateProperties()
         auto ruleProperties = rule->properties();
         if (ruleProperties->m_blurContent) {
             m_properties->setBlurContent(*ruleProperties->m_blurContent);
+        }
+        if (ruleProperties->m_blurStrength) {
+            m_properties->setBlurStrength(*ruleProperties->m_blurStrength);
         }
         if (ruleProperties->m_blurDecorations) {
             m_properties->setBlurDecorations(*ruleProperties->m_blurDecorations);
@@ -246,7 +251,7 @@ void Window::updateProperties()
         }
     }
 
-    if (staticBlur != m_properties->staticBlur()) {
+    if (staticBlur != m_properties->staticBlur() || blurStrength != m_properties->blurStrength()) {
         w->addRepaintFull();
     }
 }

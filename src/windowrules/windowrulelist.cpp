@@ -95,6 +95,9 @@ void WindowRuleList::load()
         if (propertiesGroup.hasKey("BlurDecorations")) {
             ruleProperties->setBlurDecorations(propertiesGroup.readEntry("BlurDecorations", false));
         }
+        if (propertiesGroup.hasKey("BlurStrength")) {
+            ruleProperties->setBlurStrength(propertiesGroup.readEntry("BlurStrength", 15));
+        }
         if (propertiesGroup.hasKey("CornerRadius")) {
             float topCornerRadius = 0;
             float bottomCornerRadius = 0;
@@ -144,6 +147,10 @@ void WindowRuleList::loadSimple()
 
     KConfig kwinrc("kwinrc", KConfig::SimpleConfig);
     auto betterBlurV1Group = kwinrc.group("Effect-blurplus");
+
+    auto blurStrengthRule = std::make_unique<WindowRule>(-1);
+    blurStrengthRule->properties()->setBlurStrength(betterBlurV1Group.readEntry("BlurStrength", 15));
+    m_windowRules.push_back(std::move(blurStrengthRule));
 
     // Force blur
     auto forceBlurRule = std::make_unique<WindowRule>(-1);

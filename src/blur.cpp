@@ -237,10 +237,6 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     BetterBlur::Config::self()->read();
     m_config->load();
 
-    int blurStrength = BetterBlur::Config::blurStrength() - 1;
-    m_iterationCount = blurStrengthValues[blurStrength].iteration;
-    m_offset = blurStrengthValues[blurStrength].offset;
-    m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
     m_noiseStrength = BetterBlur::Config::noiseStrength();
     m_staticBlurImage = QImage(BetterBlur::Config::fakeBlurImage());
     m_staticBlurTextures.clear();
@@ -407,8 +403,10 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         if (data.opaque.intersects(m_currentBlur)) {
             // to blur an area partially we have to shrink the opaque area of a window
             QRegion newOpaque;
+            auto iterationCount = blurStrengthValues[blurWindow->properties()->blurStrength() - 1].iteration;
+            auto expandSize = blurOffsets[iterationCount - 1].expandSize;
             for (const QRect &rect : data.opaque) {
-                newOpaque += rect.adjusted(m_expandSize, m_expandSize, -m_expandSize, -m_expandSize);
+                newOpaque += rect.adjusted(expandSize, expandSize, -expandSize, -expandSize);
             }
             data.opaque = newOpaque;
 
@@ -586,14 +584,18 @@ void BlurEffect::blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderI
         staticBlurTexture = ensureStaticBlurTexture(m_currentScreen, renderTarget);
     }
 
+    auto blurStrength = (w ? w->properties()->blurStrength() : BetterBlur::Config::blurStrength()) - 1;
+    size_t iterationCount = blurStrengthValues[blurStrength].iteration;
+    auto offset = blurStrengthValues[blurStrength].offset;
+
     if (!staticBlurTexture
-        && (renderInfo.framebuffers.size() != (m_iterationCount + 1)
+        && (renderInfo.framebuffers.size() != (iterationCount + 1)
             || renderInfo.textures[0]->size() != backgroundRect.size()
             || renderInfo.textures[0]->internalFormat() != textureFormat)) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
 
-        for (size_t i = 0; i <= m_iterationCount; ++i) {
+        for (size_t i = 0; i <= iterationCount; ++i) {
             auto texture = GLTexture::allocate(textureFormat, backgroundRect.size() / (1 << i));
             if (!texture) {
                 qCWarning(KWIN_BLUR) << "Failed to allocate an offscreen texture";
@@ -764,7 +766,7 @@ void BlurEffect::blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderI
             projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
             m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
-            m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
+            m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, offset);
 
             for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
                 const auto &read = renderInfo.framebuffers[i - 1];
@@ -793,7 +795,7 @@ void BlurEffect::blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderI
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, static_cast<float>(0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
         m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, false);
-        m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));
+        m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, offset);
 
         for (size_t i = renderInfo.framebuffers.size() - 1; i > 1; --i) {
             GLFramebuffer::popFramebuffer();

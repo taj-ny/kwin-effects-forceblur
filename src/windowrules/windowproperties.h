@@ -19,6 +19,12 @@ class WindowProperties
     Q_PROPERTY(float topCornerRadius READ topCornerRadius WRITE setTopCornerRadius)
     Q_PROPERTY(float cornerAntialiasing READ cornerAntialiasing WRITE setCornerAntialiasing)
 public:
+    uint8_t blurStrength() const
+    {
+        return m_blurStrength.value_or(1);
+    }
+    void setBlurStrength(const uint8_t &blurStrength);
+
     bool windowOpacityAffectsBlur() const
     {
         return m_windowOpacityAffectsBlur.value_or(false);
@@ -68,6 +74,7 @@ public:
     void setStaticBlur(const bool &staticBlur);
 
 private:
+    std::optional<uint8_t> m_blurStrength;
     std::optional<bool> m_windowOpacityAffectsBlur;
 
     std::optional<bool> m_blurContent;
