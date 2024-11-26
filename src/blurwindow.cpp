@@ -19,7 +19,7 @@
 namespace BetterBlur
 {
 
-Window::Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long net_wm_blur_region)
+Window::Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long *net_wm_blur_region)
     : w(w),
       m_windowRules(windowRules),
       net_wm_blur_region(net_wm_blur_region)
@@ -61,8 +61,8 @@ void Window::updateBlurRegion(bool geometryChanged)
     std::optional<QRegion> content;
     std::optional<QRegion> frame;
 
-    if (net_wm_blur_region != XCB_ATOM_NONE) {
-        const QByteArray value = w->readProperty(net_wm_blur_region, XCB_ATOM_CARDINAL, 32);
+    if (*net_wm_blur_region != XCB_ATOM_NONE) {
+        const QByteArray value = w->readProperty(*net_wm_blur_region, XCB_ATOM_CARDINAL, 32);
         QRegion region;
         if (value.size() > 0 && !(value.size() % (4 * sizeof(uint32_t)))) {
             const uint32_t *cardinals = reinterpret_cast<const uint32_t *>(value.constData());

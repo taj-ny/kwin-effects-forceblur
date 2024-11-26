@@ -28,7 +28,7 @@ class Window : public QObject
 {
     Q_OBJECT
 public:
-    Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long net_wm_blur_region);
+    Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long *net_wm_blur_region);
     ~Window() override;
 
     bool isMaximized() const;
@@ -85,7 +85,7 @@ private:
 
     KWin::EffectWindow *w;
     const WindowRuleList *m_windowRules;
-    long net_wm_blur_region = 0;
+    long *net_wm_blur_region;
 };
 
 }

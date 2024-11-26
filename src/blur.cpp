@@ -252,7 +252,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 void BlurEffect::slotWindowAdded(EffectWindow *w)
 {
     s_allWindows.push_back(w);
-    m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_config.get(), net_wm_blur_region);
+    m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_config.get(), &net_wm_blur_region);
 
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
         if (w && w->isDesktop() && !effects->waylandDisplay()) {
