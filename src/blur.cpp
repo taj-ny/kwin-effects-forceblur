@@ -17,7 +17,6 @@
 #include "internalwindow.h"
 #include "opengl/glutils.h"
 #include "opengl/glplatform.h"
-#include "scene/windowitem.h"
 #include "utils.h"
 #include "utils/xcbutils.h"
 #include "wayland/blur.h"
@@ -365,7 +364,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         const auto hadWindowBehind = blurWindow->hasWindowBehind();
         blurWindow->setHasWindowBehind(m_windowGeometriesSum.intersects(w->frameGeometry().toRect()));
         if (hadWindowBehind != blurWindow->hasWindowBehind()) {
-            data.paint += w->windowItem()->boundingRect().toRect();
+            data.paint += w->expandedGeometry().toRect();
         }
     }
 
@@ -831,7 +830,7 @@ void BlurEffect::blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderI
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, topCornerRadius);
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, bottomCornerRadius);
-        m_upsamplePass.shader->setUniform(m_upsamplePass.antialiasingLocation, w ? w->properties()->cornerAntialiasing() : 0.0);
+        m_upsamplePass.shader->setUniform(m_upsamplePass.antialiasingLocation, static_cast<float>(w ? w->properties()->cornerAntialiasing() : 0.0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.blurSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_upsamplePass.shader->setUniform(m_upsamplePass.opacityLocation, static_cast<float>(opacity));
 
