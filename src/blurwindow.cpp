@@ -14,6 +14,8 @@
 
 #include <KDecoration2/Decoration>
 
+#include <QWindow>
+
 namespace BetterBlur
 {
 
