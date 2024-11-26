@@ -28,7 +28,7 @@ class Window : public QObject
 {
     Q_OBJECT
 public:
-    Window(const WindowRuleList *windowRules, KWin::EffectWindow *w, long net_wm_blur_region);
+    Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long net_wm_blur_region);
     ~Window() override;
 
     bool isMaximized() const;
@@ -73,7 +73,6 @@ private:
 
     std::optional<QRegion> m_contentBlurRegion;
     std::optional<QRegion> m_frameBlurRegion;
-    long net_wm_blur_region = 0;
     bool m_blurWhenTransformed = false;
 
 #ifdef KWIN_6_2_OR_GREATER
@@ -83,9 +82,10 @@ private:
     QSizeF m_size;
     bool m_hasWindowBehind = false;
     std::unique_ptr<WindowProperties> m_properties;
-    KWin::EffectWindow *w;
 
+    KWin::EffectWindow *w;
     const WindowRuleList *m_windowRules;
+    long net_wm_blur_region = 0;
 };
 
 }

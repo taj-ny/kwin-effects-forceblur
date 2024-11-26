@@ -19,9 +19,9 @@
 namespace BetterBlur
 {
 
-Window::Window(const WindowRuleList *windowRules, KWin::EffectWindow *w, long net_wm_blur_region)
-    : m_windowRules(windowRules),
-      w(w),
+Window::Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long net_wm_blur_region)
+    : w(w),
+      m_windowRules(windowRules),
       net_wm_blur_region(net_wm_blur_region)
 {
     connect(w, &KWin::EffectWindow::windowDecorationChanged, this, [this]() {
