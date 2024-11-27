@@ -17,7 +17,6 @@
 
 #include <unordered_map>
 
-
 namespace KWin
 {
 
@@ -66,15 +65,15 @@ private:
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
      */
-    void blur(BetterBlur::Window *w, BetterBlur::BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const QRegion &region, WindowPaintData &data);
-    void blur(GLTexture *texture);
+    void blur(BetterBlur::Window *w, const int &strength, BetterBlur::BlurRenderData &renderInfo, const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const QRegion &region, WindowPaintData &data);
+    void blur(GLTexture *texture, const int &strength);
 
     /**
      * @param output Can be nullptr.
      * @remark This method shall not be called outside of BlurEffect::blur.
      * @return The cached static blur texture. The texture will be created if it doesn't exist.
      */
-    GLTexture *ensureStaticBlurTexture(const Output *output, const RenderTarget &renderTarget);
+    GLTexture *ensureStaticBlurTexture(const Output *output, const int &strength, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
 
     /**
@@ -89,13 +88,13 @@ private:
      * @remark This method shall not be called outside of BlurEffect::blur.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createStaticBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureWayland(const Output *output, const int &strength, const RenderTarget &renderTarget, const GLenum &textureFormat);
 
     /**
      * Creates a composite static blur texture containing images for all screens.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createStaticBlurTextureX11(const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureX11(const int &strength, const GLenum &textureFormat);
 
 private:
     struct
@@ -172,7 +171,7 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_staticBlurTextures;
+    std::unordered_map<const Output *, std::unordered_map<int, std::unique_ptr<GLTexture>>> m_staticBlurTextures;
     QImage m_staticBlurImage;
 
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
