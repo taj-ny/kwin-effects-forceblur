@@ -91,7 +91,8 @@ Properties don't have default values. Unset properties don't override properties
 
 ## Example
 ```
-[WindowRules][AllWindows][Properties]
+[WindowRules][Global][Properties]
+BlurStrength = 9
 CornerAntialiasing = true
 WindowOpacityAffectsBlur = false
 
@@ -114,6 +115,20 @@ HasWindowBehind = false
 
 [WindowRules][StaticBlur][Properties]
 StaticBlur = true
+
+
+# Reduce blur strength for windows on top of other windows and panels
+[WindowRules][LowBlurStrength]
+Priority = 1
+
+[WindowRules][LowBlurStrength][Conditions][0]
+HasWindowBehind = true
+
+[WindowRules][LowBlurStrength][Conditions][1]
+WindowType = Dock
+
+[WindowRules][LowBlurStrength][Properties]
+BlurStrength = 3
 
 
 [WindowRules][WindowCorners][Conditions][0]
