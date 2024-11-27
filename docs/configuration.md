@@ -93,7 +93,7 @@ Properties don't have default values. Unset properties don't override properties
 ```
 [WindowRules][Global][Properties]
 BlurStrength = 9
-CornerAntialiasing = true
+CornerAntialiasing = 1
 WindowOpacityAffectsBlur = false
 
 
