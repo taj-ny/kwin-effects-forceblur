@@ -64,7 +64,7 @@ QTimer *BlurEffect::s_blurManagerRemoveTimer = nullptr;
 
 BlurEffect::BlurEffect()
 {
-    m_config = std::make_unique<BetterBlur::WindowRuleList>();
+    m_windowRules = std::make_unique<BetterBlur::WindowRuleList>();
     BetterBlur::Config::instance(effects->config());
     ensureResources();
 
@@ -233,7 +233,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     Q_UNUSED(flags)
 
     BetterBlur::Config::self()->read();
-    m_config->load();
+    m_windowRules->load();
 
     m_noiseStrength = BetterBlur::Config::noiseStrength();
     m_staticBlurImage = QImage(BetterBlur::Config::fakeBlurImage());
@@ -250,7 +250,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 
 void BlurEffect::slotWindowAdded(EffectWindow *w)
 {
-    m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_config.get(), &net_wm_blur_region);
+    m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_windowRules.get(), &net_wm_blur_region);
 
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
         if (w && w->isDesktop() && !effects->waylandDisplay()) {

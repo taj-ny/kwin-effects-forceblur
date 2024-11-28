@@ -176,7 +176,7 @@ private:
     QMap<Output *, QMetaObject::Connection> screenChangedConnections;
     std::unordered_map<EffectWindow *, std::unique_ptr<BetterBlur::Window>> m_windows;
 
-    std::unique_ptr<BetterBlur::WindowRuleList> m_config;
+    std::unique_ptr<BetterBlur::WindowRuleList> m_windowRules;
 
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;
