@@ -33,8 +33,6 @@ public:
     static bool supported();
     static bool enabledByDefault();
 
-    static const std::vector<EffectWindow *> allWindows();
-
     void reconfigure(ReconfigureFlags flags) override;
     void prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
     void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
@@ -179,15 +177,6 @@ private:
     std::unordered_map<EffectWindow *, std::unique_ptr<BetterBlur::Window>> m_windows;
 
     std::unique_ptr<BetterBlur::WindowRuleList> m_config;
-
-    /**
-     * Stores all currently open windows, even those that aren't blurred. Used for determining whether windows are
-     * overlapping.
-     *
-     * Objects retrieved from effects->stackingOrder() and workspace()->stackingOrder() appear to be deleted when
-     * BlurEffect::prePaintWindow is running, so that can't be used.
-     */
-    static std::vector<EffectWindow *> s_allWindows;
 
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;

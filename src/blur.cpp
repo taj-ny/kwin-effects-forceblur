@@ -61,7 +61,6 @@ static const QByteArray s_blurAtomName = QByteArrayLiteral("_KDE_NET_WM_BLUR_BEH
 
 BlurManagerInterface *BlurEffect::s_blurManager = nullptr;
 QTimer *BlurEffect::s_blurManagerRemoveTimer = nullptr;
-std::vector<EffectWindow *> BlurEffect::s_allWindows;
 
 BlurEffect::BlurEffect()
 {
@@ -251,7 +250,6 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 
 void BlurEffect::slotWindowAdded(EffectWindow *w)
 {
-    s_allWindows.push_back(w);
     m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_config.get(), &net_wm_blur_region);
 
     windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
@@ -274,9 +272,6 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
         disconnect(*it);
         windowExpandedGeometryChangedConnections.erase(it);
-    }
-    if (auto it = std::find(s_allWindows.begin(), s_allWindows.end(), w); it != s_allWindows.end()) {
-        s_allWindows.erase(it);
     }
 
     m_windows.erase(w);
@@ -1013,11 +1008,6 @@ GLTexture *BlurEffect::createStaticBlurTextureX11(const int &strength, const GLe
     GLFramebuffer::popFramebuffer();
 
     return compositeTexture.release();
-}
-
-const std::vector<EffectWindow *> BlurEffect::allWindows()
-{
-    return BlurEffect::s_allWindows;
 }
 
 bool BlurEffect::isActive() const
