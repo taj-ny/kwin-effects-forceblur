@@ -168,7 +168,7 @@ void WindowRuleList::loadSimple()
     if (!regexes.empty()) {
         forceBlurRuleCondition->setWindowClass(QRegularExpression(regexes.join("|")));
     }
-    WindowTypes types = WindowType::Normal;
+    WindowTypes types = static_cast<WindowTypes>(WindowType::Normal) | WindowType::Dialog;
     if (betterBlurV1Group.readEntry("BlurMenus", false)) {
         types |= WindowType::Menu;
     }
