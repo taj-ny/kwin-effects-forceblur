@@ -47,6 +47,9 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 # Building from source
+> [!NOTE]
+> On Fedora Kinoite and other distributions based on it, the effect must be built in a container.
+
 ### Dependencies
 - CMake
 - Extra CMake Modules
@@ -74,7 +77,7 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 <details>
-  <summary>Fedora</summary>
+  <summary>Fedora 40, 41</summary>
   <br>
 
   ```
@@ -98,9 +101,28 @@ cd kwin-effects-forceblur
 mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
-make
-sudo make install
+make -j
 ```
+
+### Installation
+<details>
+  <summary>Fedora Kinoite</summary>
+  <br>
+
+  ```sh
+  cpack -V -G RPM
+  exit # exit the container
+  sudo rpm-ostree install kwin-effects-forceblur/build/kwin-better-blur.rpm
+  ```
+</details>
+<details>
+  <summary>Other distributions</summary>
+  <br>
+
+  ```sh
+  sudo make install
+  ```
+</details>
 
 Remove the *build* directory when rebuilding the effect.
 
