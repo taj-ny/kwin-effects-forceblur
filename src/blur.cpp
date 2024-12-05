@@ -41,7 +41,12 @@
 #include <KConfigGroup>
 #include <KSharedConfig>
 
+#ifdef KDECORATION3
+#include <KDecoration3/Decoration>
+#else
 #include <KDecoration2/Decoration>
+#endif
+
 #include <utility>
 
 Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur", QtWarningMsg)
@@ -420,7 +425,13 @@ void BlurEffect::setupDecorationConnections(EffectWindow *w)
         return;
     }
 
-    connect(w->decoration(), &KDecoration2::Decoration::blurRegionChanged, this, [this, w]() {
+    connect(w->decoration(),
+#ifdef KDECORATION3
+        &KDecoration3::Decoration::blurRegionChanged
+#else
+        &KDecoration2::Decoration::blurRegionChanged
+#endif
+        , this, [this, w]() {
         updateBlurRegion(w);
     });
 }
@@ -464,7 +475,12 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
         return QRegion();
     }
 
-    QRegion decorationRegion = QRegion(w->decoration()->rect()) - w->contentsRect().toRect();
+    QRect decorationRect = w->decoration()->rect()
+#ifdef KDECORATION3
+        .toAlignedRect()
+#endif
+        ;
+    QRegion decorationRegion = QRegion(decorationRect) - w->contentsRect().toRect();
     //! we return only blurred regions that belong to decoration region
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
