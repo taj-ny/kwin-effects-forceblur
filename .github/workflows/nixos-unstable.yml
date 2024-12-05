@@ -3,10 +3,10 @@ name: NixOS (nixpkgs unstable)
 on:
   push:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/nixos-unstable.yml" ]
   pull_request:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/nixos-unstable.yml" ]
   schedule:
     - cron: "0 0 * * *"
 

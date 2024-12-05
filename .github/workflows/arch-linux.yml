@@ -3,10 +3,10 @@ name: Arch Linux
 on:
   push:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/arch-linux.yml" ]
   pull_request:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/arch-linux.yml" ]
   schedule:
     - cron: "0 0 * * *"
 

@@ -3,10 +3,10 @@ name: NixOS (Plasma 6.0.5)
 on:
   push:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/nixos-plasma-6-0-5.yml" ]
   pull_request:
     branches: [ main ]
-    paths-ignore: [ "**.md" ]
+    paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/nixos-plasma-6-0-5.yml" ]
   schedule:
     - cron: "0 0 * * *"
 
