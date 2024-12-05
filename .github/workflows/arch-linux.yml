@@ -9,7 +9,7 @@ on:
     paths: [ "**", "!**.md", "!.github/workflows/*", ".github/workflows/arch-linux.yml" ]
   schedule:
     - cron: "0 0 * * *"
-
+# test
 jobs:
   build:
     runs-on: ubuntu-latest
