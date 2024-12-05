@@ -70,7 +70,15 @@ if(${KWin_VERSION} VERSION_LESS_EQUAL 6.0.5)
     add_compile_definitions(KWIN_6_0)
 endif()
 
-find_package(KDecoration2 REQUIRED)
+find_package(KDecoration2)
+find_package(KDecoration3)
+if (${KDecoration3_FOUND})
+    add_compile_definitions(KDECORATION3)
+endif()
+if(NOT ${KDecoration3_FOUND} AND NOT ${KDecoration2_FOUND})
+    message(FATAL_ERROR "Could not find KDecoration2 or KDecoration3.")
+endif()
+
 
 find_package(KWinDBusInterface CONFIG REQUIRED)
 
