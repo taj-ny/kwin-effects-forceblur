@@ -385,7 +385,10 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         }
     }
 
-    if (!m_staticBlurTextures.empty() && w->isDesktop() && w->frameGeometry() == data.paint.boundingRect()) {
+    if (BetterBlur::Config::fakeBlurImageSourceDesktopWallpaper()
+        && !m_staticBlurTextures.empty()
+        && w->isDesktop()
+        && w->frameGeometry() == data.paint.boundingRect()) {
         m_staticBlurTextures.erase(m_currentScreen);
     }
 
