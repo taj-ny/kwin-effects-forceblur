@@ -16,11 +16,15 @@ set(forceblur_SOURCES
     blur.cpp
     blur.qrc
     main.cpp
-    settings.cpp
+    windowrules/windowrulecondition.cpp
+    windowrules/windowrule.cpp
+    windowrules/windowrulelist.cpp
+    windowrules/windowproperties.cpp
+    blurwindow.cpp
 )
 
 kconfig_add_kcfg_files(forceblur_SOURCES
-    blurconfig.kcfgc
+    config/config.kcfgc
 )
 
 add_library(forceblur MODULE ${forceblur_SOURCES})
@@ -31,5 +35,6 @@ target_link_libraries(forceblur PRIVATE
 
     KDecoration2::KDecoration
 )
+target_compile_definitions(forceblur PRIVATE CONFIG_KWIN)
 
 install(TARGETS forceblur DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)

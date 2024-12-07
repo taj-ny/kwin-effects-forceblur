@@ -8,7 +8,7 @@
 //#include <config-kwin.h>
 
 // KConfigSkeleton
-#include "blurconfig.h"
+#include "config.h"
 
 #include <KPluginFactory>
 #include "kwineffects_interface.h"
@@ -19,11 +19,11 @@ namespace KWin
 K_PLUGIN_CLASS(BlurEffectConfig)
 
 BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
-    : KCModule(parent, data)
+        : KCModule(parent, data)
 {
     ui.setupUi(widget());
-    BlurConfig::instance("kwinrc");
-    addConfig(BlurConfig::self(), widget());
+    BetterBlur::Config::instance("kwinrc");
+    addConfig(BetterBlur::Config::self(), widget());
 }
 
 BlurEffectConfig::~BlurEffectConfig()
@@ -43,5 +43,4 @@ void BlurEffectConfig::save()
 } // namespace KWin
 
 #include "blur_config.moc"
-
 #include "moc_blur_config.cpp"
