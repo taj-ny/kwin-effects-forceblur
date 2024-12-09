@@ -23,7 +23,6 @@ void BlurSettings::read()
     roundedCorners.windowBottomRadius = BlurConfig::bottomCornerRadius();
     roundedCorners.menuRadius = BlurConfig::menuCornerRadius();
     roundedCorners.dockRadius = BlurConfig::dockCornerRadius();
-    roundedCorners.antialiasing = BlurConfig::roundedCornersAntialiasing();
     roundedCorners.roundMaximized = BlurConfig::roundCornersOfMaximizedWindows();
 
     fakeBlur.enable = BlurConfig::fakeBlur();

@@ -42,7 +42,6 @@ struct RoundedCornersSettings
     float windowBottomRadius;
     float menuRadius;
     float dockRadius;
-    float antialiasing;
     bool roundMaximized;
 };
 
