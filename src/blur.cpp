@@ -289,8 +289,15 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
 
     // Don't override blur region for menus that already have one. The window geometry could include shadows.
     if (shouldForceBlur(w) && !((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
-        content = w->expandedGeometry().translated(-w->x(), -w->y()).toRect();
-        if (m_settings.forceBlur.blurDecorations && w->decoration()) {
+        // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+        // The blur region is later translated by EffectWindow::contentsRect(), causing the blur region to be too large
+        // on X11. To avoid this, only the frame will be blurred, regardless of whether the user enabled frame
+        // blurring.
+        const auto isX11WithCSD = effects->xcbConnection() && (w->frameGeometry() != w->bufferGeometry());
+        if (!isX11WithCSD) {
+            content = w->expandedGeometry().translated(-w->x(), -w->y()).toRect();
+        }
+        if (isX11WithCSD || (m_settings.forceBlur.blurDecorations && w->decoration())) {
             frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
         }
     }
