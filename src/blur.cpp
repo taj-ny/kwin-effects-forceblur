@@ -93,7 +93,6 @@ BlurEffect::BlurEffect()
         m_upsamplePass.noiseTextureSizeLocation = m_upsamplePass.shader->uniformLocation("noiseTextureSize");
         m_upsamplePass.topCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("topCornerRadius");
         m_upsamplePass.bottomCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("bottomCornerRadius");
-        m_upsamplePass.antialiasingLocation = m_upsamplePass.shader->uniformLocation("antialiasing");
         m_upsamplePass.blurSizeLocation = m_upsamplePass.shader->uniformLocation("blurSize");
         m_upsamplePass.opacityLocation = m_upsamplePass.shader->uniformLocation("opacity");
     }
@@ -112,7 +111,6 @@ BlurEffect::BlurEffect()
         m_texture.scaleLocation = m_texture.shader->uniformLocation("scale");
         m_texture.topCornerRadiusLocation = m_texture.shader->uniformLocation("topCornerRadius");
         m_texture.bottomCornerRadiusLocation = m_texture.shader->uniformLocation("bottomCornerRadius");
-        m_texture.antialiasingLocation = m_texture.shader->uniformLocation("antialiasing");
         m_texture.opacityLocation = m_texture.shader->uniformLocation("opacity");
     }
 
@@ -963,7 +961,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         m_texture.shader->setUniform(m_texture.scaleLocation, (float)viewport.scale());
         m_texture.shader->setUniform(m_texture.topCornerRadiusLocation, topCornerRadius);
         m_texture.shader->setUniform(m_texture.bottomCornerRadiusLocation, bottomCornerRadius);
-        m_texture.shader->setUniform(m_texture.antialiasingLocation, m_settings.roundedCorners.antialiasing);
         m_texture.shader->setUniform(m_texture.opacityLocation, static_cast<float>(opacity));
 
         fakeBlurTexture->bind();
@@ -1049,7 +1046,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, topCornerRadius);
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, bottomCornerRadius);
-        m_upsamplePass.shader->setUniform(m_upsamplePass.antialiasingLocation, m_settings.roundedCorners.antialiasing);
         m_upsamplePass.shader->setUniform(m_upsamplePass.blurSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_upsamplePass.shader->setUniform(m_upsamplePass.opacityLocation, static_cast<float>(opacity));
 

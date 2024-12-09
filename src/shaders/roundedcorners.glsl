@@ -2,7 +2,6 @@
 
 uniform float topCornerRadius;
 uniform float bottomCornerRadius;
-uniform float antialiasing;
 
 uniform vec2 blurSize;
 uniform float opacity;

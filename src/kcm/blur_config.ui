@@ -353,24 +353,6 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout">
-         <item>
-          <widget class="QLabel">
-           <property name="text">
-            <string>Anti-aliasing</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QDoubleSpinBox" name="kcfg_RoundedCornersAntialiasing">
-           <property name="minimum">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
         <widget class="QCheckBox" name="kcfg_RoundCornersOfMaximizedWindows">
          <property name="text">
           <string>Round maximized windows</string>
