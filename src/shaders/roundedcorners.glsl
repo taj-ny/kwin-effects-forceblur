@@ -12,9 +12,7 @@ vec4 shapeCorner(vec2 coord0, vec3 tex, vec2 start, float angle, float r) {
     vec2 center = start + r * diagonal_length * vec2(cos(angle), sin(angle));
     float distance_from_center = distance(coord0, center);
 
-    // I don't know exactly where the 0.25 comes from, in the original shader it's 0.5 but doesn't look perfect
-    float antialiasing = clamp(r - distance_from_center + 0.25, 0.0, 1.0);
-    return vec4(tex, mix(0.0, 1.0, antialiasing) * opacity);
+    return vec4(tex, pow(clamp(r - distance_from_center + 0.5, 0.0, 1.0), antialiasing) * opacity);
 }
 
 vec4 roundedRectangle(vec2 fragCoord, vec3 texture)
