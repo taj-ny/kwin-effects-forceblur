@@ -168,7 +168,6 @@ private:
         int mvpMatrixLocation;
         int textureSizeLocation;
         int texStartPosLocation;
-        int scaleLocation;
 
         int topCornerRadiusLocation;
         int bottomCornerRadiusLocation;
