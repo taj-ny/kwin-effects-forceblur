@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>480</width>
-    <height>200</height>
+    <height>240</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -178,6 +178,82 @@
           <string>Window opacity affects blur</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Brightness</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Brightness">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Saturation</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Saturation">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Contrast</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Contrast">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QWidget">

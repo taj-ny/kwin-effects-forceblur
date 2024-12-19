@@ -97,6 +97,7 @@ private:
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
     bool hasFakeBlur(EffectWindow *w);
+    QMatrix4x4 colorMatrix(const float &brightness, const float &saturation, const float &contrast) const;
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
@@ -139,6 +140,8 @@ private:
         int mvpMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
+        int transformColorsLocation;
+        int colorMatrixLocation;
     } m_downsamplePass;
 
     struct
@@ -158,8 +161,6 @@ private:
         int antialiasingLocation;
         int blurSizeLocation;
         int opacityLocation;
-
-
     } m_upsamplePass;
 
     struct
@@ -214,6 +215,8 @@ private:
 
     // Windows to blur even when transformed.
     QList<const EffectWindow*> m_blurWhenTransformed;
+
+    QMatrix4x4 m_colorMatrix;
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;

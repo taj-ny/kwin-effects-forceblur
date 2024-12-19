@@ -73,5 +73,14 @@ class3</default>
         <entry name="FakeBlurDisableWhenWindowBehind" type="Bool">
             <default>true</default>
         </entry>
+        <entry name="Saturation" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="Brightness" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="Contrast" type="Double">
+            <default>1.0</default>
+        </entry>
     </group>
 </kcfg>
