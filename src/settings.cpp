@@ -11,6 +11,9 @@ void BlurSettings::read()
     general.blurStrength = BlurConfig::blurStrength() - 1;
     general.noiseStrength = BlurConfig::noiseStrength();
     general.windowOpacityAffectsBlur = BlurConfig::transparentBlur();
+    general.brightness = BlurConfig::brightness();
+    general.saturation = BlurConfig::saturation();
+    general.contrast = BlurConfig::contrast();
 
     forceBlur.windowClasses = BlurConfig::windowClasses().split("\n");
     forceBlur.windowClassMatchingMode = BlurConfig::blurMatching() ? WindowClassMatchingMode::Whitelist : WindowClassMatchingMode::Blacklist;

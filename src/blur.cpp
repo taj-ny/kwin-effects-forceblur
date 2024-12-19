@@ -80,6 +80,8 @@ BlurEffect::BlurEffect()
         m_downsamplePass.mvpMatrixLocation = m_downsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_downsamplePass.offsetLocation = m_downsamplePass.shader->uniformLocation("offset");
         m_downsamplePass.halfpixelLocation = m_downsamplePass.shader->uniformLocation("halfpixel");
+        m_downsamplePass.transformColorsLocation = m_downsamplePass.shader->uniformLocation("transformColors");
+        m_downsamplePass.colorMatrixLocation = m_downsamplePass.shader->uniformLocation("colorMatrix");
     }
 
     m_upsamplePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -238,6 +240,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_offset = blurStrengthValues[m_settings.general.blurStrength].offset;
     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
     m_fakeBlurTextures.clear();
+    m_colorMatrix = colorMatrix(m_settings.general.brightness, m_settings.general.saturation, m_settings.general.contrast);
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -1005,6 +1008,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
             m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
             m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
+            m_downsamplePass.shader->setUniform(m_downsamplePass.colorMatrixLocation, m_colorMatrix);
+            m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, true);
 
             for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
                 const auto &read = renderInfo.framebuffers[i - 1];
@@ -1018,6 +1023,10 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
                 GLFramebuffer::pushFramebuffer(draw.get());
                 vbo->draw(GL_TRIANGLES, 0, 6);
+
+                if (i == 1) {
+                    m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, false);
+                }
             }
 
             ShaderManager::instance()->popShader();
@@ -1250,6 +1259,38 @@ GLTexture *BlurEffect::createFakeBlurTextureX11(const GLenum &textureFormat)
     GLFramebuffer::popFramebuffer();
 
     return compositeTexture.release();
+}
+
+QMatrix4x4 BlurEffect::colorMatrix(const float &brightness, const float &saturation, const float &contrast) const
+{
+    QMatrix4x4 saturationMatrix;
+    if (saturation != 1.0) {
+        const qreal r = (1.0 - saturation) * .2126;
+        const qreal g = (1.0 - saturation) * .7152;
+        const qreal b = (1.0 - saturation) * .0722;
+
+        saturationMatrix = QMatrix4x4(r + saturation, r, r, 0.0,
+                                      g, g + saturation, g, 0.0,
+                                      b, b, b + saturation, 0.0,
+                                      0, 0, 0, 1.0);
+    }
+
+    QMatrix4x4 brightnessMatrix;
+    if (brightness != 1.0) {
+        brightnessMatrix.scale(brightness, brightness, brightness);
+    }
+
+    QMatrix4x4 contrastMatrix;
+    if (contrast != 1.0) {
+        const float transl = (1.0 - contrast) / 2.0;
+
+        contrastMatrix = QMatrix4x4(contrast, 0, 0, 0.0,
+                                    0, contrast, 0, 0.0,
+                                    0, 0, contrast, 0.0,
+                                    transl, transl, transl, 1.0);
+    }
+
+    return contrastMatrix * saturationMatrix * brightnessMatrix;
 }
 
 bool BlurEffect::isActive() const
