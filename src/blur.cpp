@@ -820,6 +820,10 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
         fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
+        if (fakeBlurTexture) {
+            renderInfo.textures.clear();
+            renderInfo.framebuffers.clear();
+        }
     }
 
     if (!fakeBlurTexture
