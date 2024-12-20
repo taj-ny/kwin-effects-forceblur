@@ -300,7 +300,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
             content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
         }
         if (isX11WithCSD || (m_settings.forceBlur.blurDecorations && w->decoration())) {
-            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();;
+            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
         }
     }
 
