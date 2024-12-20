@@ -323,9 +323,15 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     }
 
     if (shouldForceBlur(w)) {
-        content = w->expandedGeometry().toRect().translated(-w->x(), -w->y());
-        if (m_blurDecorations && w->decoration()) {
-            frame = w->frameGeometry().toRect().translated(-w->x(), -w->y());
+        // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+        // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
+        // blur region to be off on X11. The frame region is not translated, so it is used instead.
+        const auto isX11WithCSD = !effects->waylandDisplay() && (w->frameGeometry() != w->bufferGeometry());
+        if (!isX11WithCSD) {
+            content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
+        }
+        if (isX11WithCSD || (m_blurDecorations && w->decoration())) {
+            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();;
         }
     }
 
@@ -464,7 +470,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         });
     }
 
-    windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
+    windowFrameGeometryChangedConnections[w] = connect(w, &EffectWindow::windowFrameGeometryChanged, this, [this,w]() {
         if (w) {
             updateBlurRegion(w);
         }
@@ -490,9 +496,9 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowBlurChangedConnections.erase(it);
     }
-    if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
+    if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
         disconnect(*it);
-        windowExpandedGeometryChangedConnections.erase(it);
+        windowFrameGeometryChangedConnections.erase(it);
     }
 
     if (m_blurWhenTransformed.contains(w)) {

@@ -221,7 +221,8 @@ private:
     QList<const EffectWindow*> m_blurWhenTransformed;
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
-    QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
+
+    QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     static BlurManagerInterface *s_blurManager;
