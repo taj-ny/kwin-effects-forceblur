@@ -278,9 +278,15 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
 
     // Don't override blur region for menus that already have one. The window geometry could include shadows.
     if (shouldForceBlur(w) && !((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
-        content = w->expandedGeometry().translated(-w->x(), -w->y()).toRect();
-        if (m_settings.forceBlur.blurDecorations && w->decoration()) {
-            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
+        // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+        // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
+        // blur region to be off on X11. The frame region is not translated, so it is used instead.
+        const auto isX11WithCSD = !effects->waylandDisplay() && (w->frameGeometry() != w->bufferGeometry());
+        if (!isX11WithCSD) {
+            content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
+        }
+        if (isX11WithCSD || (m_settings.forceBlur.blurDecorations && w->decoration())) {
+            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();;
         }
     }
 
@@ -323,7 +329,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         });
     }
 
-    windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
+    windowFrameGeometryChangedConnections[w] = connect(w, &EffectWindow::windowFrameGeometryChanged, this, [this,w]() {
         if (!w) {
             return;
         }
@@ -358,9 +364,9 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowBlurChangedConnections.erase(it);
     }
-    if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
+    if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
         disconnect(*it);
-        windowExpandedGeometryChangedConnections.erase(it);
+        windowFrameGeometryChangedConnections.erase(it);
     }
     if (auto it = std::find(m_allWindows.begin(), m_allWindows.end(), w); it != m_allWindows.end()) {
         m_allWindows.erase(it);
