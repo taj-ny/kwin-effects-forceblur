@@ -295,7 +295,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
         // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
         // blur region to be off on X11. The frame region is not translated, so it is used instead.
-        const auto isX11WithCSD = !effects->waylandDisplay() && (w->frameGeometry() != w->bufferGeometry());
+        const auto isX11WithCSD = w->isX11Client() && w->frameGeometry() != w->bufferGeometry();
         if (!isX11WithCSD) {
             content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
         }
