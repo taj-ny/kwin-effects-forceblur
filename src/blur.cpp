@@ -22,6 +22,12 @@
 #include "wayland/display.h"
 #include "wayland/surface.h"
 
+#ifdef KWIN_6_2_OR_GREATER
+#include "scene/decorationitem.h"
+#include "scene/surfaceitem.h"
+#include "scene/windowitem.h"
+#endif
+
 #include <QGuiApplication>
 #include <QImage>
 #include <QMatrix4x4>
@@ -35,7 +41,12 @@
 #include <KConfigGroup>
 #include <KSharedConfig>
 
+#ifdef KDECORATION3
+#include <KDecoration3/Decoration>
+#else
 #include <KDecoration2/Decoration>
+#endif
+
 #include <utility>
 
 Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur", QtWarningMsg)
@@ -69,6 +80,8 @@ BlurEffect::BlurEffect()
         m_downsamplePass.mvpMatrixLocation = m_downsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_downsamplePass.offsetLocation = m_downsamplePass.shader->uniformLocation("offset");
         m_downsamplePass.halfpixelLocation = m_downsamplePass.shader->uniformLocation("halfpixel");
+        m_downsamplePass.transformColorsLocation = m_downsamplePass.shader->uniformLocation("transformColors");
+        m_downsamplePass.colorMatrixLocation = m_downsamplePass.shader->uniformLocation("colorMatrix");
     }
 
     m_upsamplePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -227,6 +240,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_offset = blurStrengthValues[m_settings.general.blurStrength].offset;
     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
     m_fakeBlurTextures.clear();
+    m_colorMatrix = colorMatrix(m_settings.general.brightness, m_settings.general.saturation, m_settings.general.contrast);
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -294,6 +308,9 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
+#ifdef KWIN_6_2_OR_GREATER
+        data.windowEffect = ItemEffect(w->windowItem());
+#endif
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
@@ -417,7 +434,13 @@ void BlurEffect::setupDecorationConnections(EffectWindow *w)
         return;
     }
 
-    connect(w->decoration(), &KDecoration2::Decoration::blurRegionChanged, this, [this, w]() {
+    connect(w->decoration(),
+#ifdef KDECORATION3
+        &KDecoration3::Decoration::blurRegionChanged
+#else
+        &KDecoration2::Decoration::blurRegionChanged
+#endif
+        , this, [this, w]() {
         updateBlurRegion(w);
     });
 }
@@ -443,10 +466,10 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-#ifdef KWIN_6_0
-    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
-#else
+#ifdef KWIN_6_1_OR_GREATER
     return effects->openglContext() && (effects->openglContext()->supportsBlits() || effects->waylandDisplay());
+#else
+    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
 #endif
 }
 
@@ -461,7 +484,12 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
         return QRegion();
     }
 
-    QRegion decorationRegion = QRegion(w->decoration()->rect()) - w->contentsRect().toRect();
+    QRect decorationRect = w->decoration()->rect()
+#ifdef KDECORATION3
+        .toAlignedRect()
+#endif
+        ;
+    QRegion decorationRegion = QRegion(decorationRect) - w->contentsRect().toRect();
     //! we return only blurred regions that belong to decoration region
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
@@ -801,6 +829,10 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     GLTexture *fakeBlurTexture = nullptr;
     if (w && hasFakeBlur(w)) {
         fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
+        if (fakeBlurTexture) {
+            renderInfo.textures.clear();
+            renderInfo.framebuffers.clear();
+        }
     }
 
     if (!fakeBlurTexture
@@ -982,6 +1014,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
             m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
             m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
+            m_downsamplePass.shader->setUniform(m_downsamplePass.colorMatrixLocation, m_colorMatrix);
+            m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, true);
 
             for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
                 const auto &read = renderInfo.framebuffers[i - 1];
@@ -995,6 +1029,10 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
                 GLFramebuffer::pushFramebuffer(draw.get());
                 vbo->draw(GL_TRIANGLES, 0, 6);
+
+                if (i == 1) {
+                    m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, false);
+                }
             }
 
             ShaderManager::instance()->popShader();
@@ -1030,18 +1068,19 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const auto &read = renderInfo.framebuffers[1];
 
         if (m_settings.general.noiseStrength > 0) {
-            if (const auto *noiseTexture = ensureNoiseTexture()) {
+            if (auto *noiseTexture = ensureNoiseTexture()) {
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, true);
                 m_upsamplePass.shader->setUniform(m_upsamplePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
+
                 glUniform1i(m_upsamplePass.noiseTextureLocation, 1);
                 glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, noiseTexture->texture());
+                noiseTexture->bind();
             }
         }
 
         glUniform1i(m_upsamplePass.textureLocation, 0);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, read->colorAttachment()->texture());
+        read->colorAttachment()->bind();
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, topCornerRadius);
         m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, bottomCornerRadius);
@@ -1103,10 +1142,10 @@ GLTexture *BlurEffect::wallpaper(EffectWindow *desktop, const qreal &scale, cons
     const RenderViewport renderViewport(desktop->frameGeometry(), scale, renderTarget);
     WindowPaintData data;
 
-#ifdef KWIN_6_0
+#ifndef KWIN_6_1_OR_GREATER
     QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(geometry);
-        data.setProjectionMatrix(projectionMatrix);
+    projectionMatrix.ortho(geometry);
+    data.setProjectionMatrix(projectionMatrix);
 #endif
 
     GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
@@ -1152,7 +1191,7 @@ GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const 
     auto *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
     shader->setColorspaceUniforms(
         ColorDescription::sRGB, renderTarget.colorDescription()
-#if !(defined(KWIN_6_1) || defined(KWIN_6_0))
+#ifdef KWIN_6_2_OR_GREATER
         , RenderingIntent::RelativeColorimetricWithBPC
 #endif
     );
@@ -1226,6 +1265,38 @@ GLTexture *BlurEffect::createFakeBlurTextureX11(const GLenum &textureFormat)
     GLFramebuffer::popFramebuffer();
 
     return compositeTexture.release();
+}
+
+QMatrix4x4 BlurEffect::colorMatrix(const float &brightness, const float &saturation, const float &contrast) const
+{
+    QMatrix4x4 saturationMatrix;
+    if (saturation != 1.0) {
+        const qreal r = (1.0 - saturation) * .2126;
+        const qreal g = (1.0 - saturation) * .7152;
+        const qreal b = (1.0 - saturation) * .0722;
+
+        saturationMatrix = QMatrix4x4(r + saturation, r, r, 0.0,
+                                      g, g + saturation, g, 0.0,
+                                      b, b, b + saturation, 0.0,
+                                      0, 0, 0, 1.0);
+    }
+
+    QMatrix4x4 brightnessMatrix;
+    if (brightness != 1.0) {
+        brightnessMatrix.scale(brightness, brightness, brightness);
+    }
+
+    QMatrix4x4 contrastMatrix;
+    if (contrast != 1.0) {
+        const float transl = (1.0 - contrast) / 2.0;
+
+        contrastMatrix = QMatrix4x4(contrast, 0, 0, 0.0,
+                                    0, contrast, 0, 0.0,
+                                    0, 0, contrast, 0.0,
+                                    transl, transl, transl, 1.0);
+    }
+
+    return contrastMatrix * saturationMatrix * brightnessMatrix;
 }
 
 bool BlurEffect::isActive() const

@@ -1,0 +1,32 @@
+name: NixOS (Plasma 6.0.5)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ "**.md" ]
+  pull_request:
+    branches: [ main ]
+    paths-ignore: [ "**.md" ]
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v27
+      with:
+        nix_path: nixpkgs=channel:e8c38b73aeb218e27163376a2d617e61a2ad9b59
+
+    - name: Patch flake.nix
+      run: sed -i 's/nixos-unstable/e8c38b73aeb218e27163376a2d617e61a2ad9b59/g' flake.nix
+
+    - name: Update flake.lock
+      run: nix flake update
+
+    - name: Build
+      run: nix build
