@@ -24,6 +24,8 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     ui.setupUi(widget());
     BlurConfig::instance("kwinrc");
     addConfig(BlurConfig::self(), widget());
+
+    ui.versionString->setText(QStringLiteral("Version: ") + ABOUT_VERSION_STRING);
 }
 
 BlurEffectConfig::~BlurEffectConfig()

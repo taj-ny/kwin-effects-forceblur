@@ -637,6 +637,31 @@ Works best with tiling.</string>
        </item>
       </layout>
      </widget>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>About</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <layout class="QHBoxLayout">
+          <item>
+           <widget class="QLabel" name="versionString"/>
+          </item>
+        </layout>
+       </item>
+
+       <item>
+        <widget class="QWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item alignment="Qt::AlignCenter">
