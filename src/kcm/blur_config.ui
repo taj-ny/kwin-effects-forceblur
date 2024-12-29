@@ -644,12 +644,24 @@ Works best with tiling.</string>
       <layout class="QVBoxLayout">
        <item>
         <layout class="QHBoxLayout">
-          <item>
-           <widget class="QLabel" name="versionString"/>
-          </item>
+         <item>
+          <widget class="QLabel">
+           <property name="font">
+            <font>
+             <bold>true</bold>
+             <pointsize>15</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Better Blur</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
-
+       <item>
+        <widget class="QLabel" name="versionString"/>
+       </item>
        <item>
         <widget class="QWidget">
          <property name="sizePolicy">

@@ -15,4 +15,4 @@ target_link_libraries(kwin_better_blur_config
 
 install(TARGETS kwin_better_blur_config DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/configs)
 
-add_compile_definitions(ABOUT_VERSION_STRING="v${PROJECT_VERSION}")
+add_compile_definitions(ABOUT_VERSION_STRING="${PROJECT_VERSION}")
