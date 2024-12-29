@@ -25,7 +25,13 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     BlurConfig::instance("kwinrc");
     addConfig(BlurConfig::self(), widget());
 
-    ui.versionString->setText(QStringLiteral("Version ") + ABOUT_VERSION_STRING);
+    QFile about(":/effects/forceblur/kcm/about.html");
+    if (about.open(QIODevice::ReadOnly)) {
+        const auto html = about.readAll()
+            .replace("${version}", ABOUT_VERSION_STRING)
+            .replace("${repo}", "https://github.com/taj-ny/kwin-effects-forceblur");
+        ui.aboutText->setHtml(html);
+    }
 }
 
 BlurEffectConfig::~BlurEffectConfig()

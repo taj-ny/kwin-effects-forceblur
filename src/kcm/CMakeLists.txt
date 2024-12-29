@@ -1,4 +1,8 @@
-set(kwin_better_blur_config_SRCS blur_config.cpp blur_config.h)
+set(kwin_better_blur_config_SRCS
+    blur_config.cpp
+    blur_config.h
+    blur_config.qrc
+)
 
 ki18n_wrap_ui(kwin_better_blur_config_SRCS blur_config.ui)
 kconfig_add_kcfg_files(kwin_better_blur_config_SRCS ../blurconfig.kcfgc)
