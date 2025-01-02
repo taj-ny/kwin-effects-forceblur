@@ -637,16 +637,26 @@ Works best with tiling.</string>
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item alignment="Qt::AlignCenter">
-    <widget class="QLabel">
-     <property name="text">
-      <string>&lt;a href="https://github.com/taj-ny/kwin-effects-forceblur/blob/main/docs/configuration.md"&gt;Configuration documentation&lt;/a&gt;</string>
-     </property>
-     <property name="openExternalLinks">
-      <bool>true</bool>
-     </property>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>About</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QTextBrowser" name="aboutText">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Failed to load about.html</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
