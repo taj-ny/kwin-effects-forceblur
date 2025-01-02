@@ -6,7 +6,7 @@
 namespace KWin
 {
 
-enum class FakeBlurImageSource
+enum class StaticBlurImageSource
 {
     Custom,
     DesktopWallpaper
@@ -49,11 +49,11 @@ struct RoundedCornersSettings
     bool roundMaximized;
 };
 
-struct FakeBlurSettings
+struct StaticBlurSettings
 {
     bool enable;
     bool disableWhenWindowBehind;
-    FakeBlurImageSource imageSource;
+    StaticBlurImageSource imageSource;
     QImage customImage;
     bool blurCustomImage;
 };
@@ -64,7 +64,7 @@ public:
     GeneralSettings general{};
     ForceBlurSettings forceBlur{};
     RoundedCornersSettings roundedCorners{};
-    FakeBlurSettings fakeBlur{};
+    StaticBlurSettings staticBlur{};
 
     void read();
 };

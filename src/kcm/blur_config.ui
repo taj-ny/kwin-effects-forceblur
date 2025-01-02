@@ -467,14 +467,14 @@
      </widget>
      <widget class="QWidget">
       <attribute name="title">
-       <string>Fake Blur</string>
+       <string>Static blur</string>
       </attribute>
       <layout class="QVBoxLayout">
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When enabled, the blur texture will be cached and reused, resulting in much lower GPU usage.
-Works best with tiling.</string>
+          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring
+the background, resulting in much lower GPU usage.</string>
          </property>
         </widget>
        </item>
@@ -501,7 +501,7 @@ Works best with tiling.</string>
        <item>
         <widget class="QCheckBox" name="kcfg_FakeBlurDisableWhenWindowBehind">
          <property name="text">
-          <string>Use real blur for windows that are in front of other windows</string>
+          <string>Use dynamic blur for windows with other windows behind</string>
          </property>
         </widget>
        </item>

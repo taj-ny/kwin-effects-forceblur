@@ -17,11 +17,11 @@ This option will override the blur region specified by the decoration.
 ### Paint windows as non-opaque
 Fixes transparency for some applications by marking their windows as transparent. This will only be done for force-blurred windows.
 
-# Fake blur
+# Static blur
 When enabled, the blur texture will be cached and reused. The blurred areas of the window will be marked as opaque, resulting in KWin not painting anything behind them.
 Only one image per screen is cached at a time.
 
-Fake blur is mainly intended for laptop users who want longer battery life while still having blur everywhere.
+Static blur is mainly intended for laptop users who want longer battery life while still having blur everywhere.
 
 ### Use real blur for windows that are in front of other windows
 By default, when two windows overlap, you won't be able to see the window behind.
@@ -32,11 +32,11 @@ If this option is enabled, the effect will automatically switch to real blur whe
 https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/7bae6a16-6c78-4889-8df1-feb24005dabc
 
 ### Image source
-The image to use for fake blur.
+The image to use for static blur.
 
 - Desktop wallpaper - A screenshot of the desktop is taken for every screen. Icons and widgets will be included. The cached texture is invalidated when the entire desktop is repainted,
 which can happen when the wallpaper changes, icons are interacted with or when widgets update.
 - Custom - The specified image is scaled for every screen without respecting the aspect ratio. Supported formats are JPEG and PNG.
 
 ### Blur image
-Whether to blur the image used for fake blur. This is only done once.
+Whether to blur the image used for static blur. This is only done once.

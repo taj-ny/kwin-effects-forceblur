@@ -239,7 +239,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_iterationCount = blurStrengthValues[m_settings.general.blurStrength].iteration;
     m_offset = blurStrengthValues[m_settings.general.blurStrength].offset;
     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
-    m_fakeBlurTextures.clear();
+    m_staticBlurTextures.clear();
     m_colorMatrix = colorMatrix(m_settings.general.brightness, m_settings.general.saturation, m_settings.general.contrast);
 
     for (EffectWindow *w : effects->stackingOrder()) {
@@ -319,13 +319,13 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     }
 }
 
-bool BlurEffect::hasFakeBlur(EffectWindow *w)
+bool BlurEffect::hasStaticBlur(EffectWindow *w)
 {
-    if (!m_settings.fakeBlur.enable) {
+    if (!m_settings.staticBlur.enable) {
         return false;
     }
 
-    if (m_settings.fakeBlur.disableWhenWindowBehind) {
+    if (m_settings.staticBlur.disableWhenWindowBehind) {
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             return !it->second.hasWindowBehind;
         }
@@ -352,7 +352,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         }
 
         if (w->isDesktop() && !effects->waylandDisplay()) {
-            m_fakeBlurTextures.erase(nullptr);
+            m_staticBlurTextures.erase(nullptr);
             return;
         }
 
@@ -397,11 +397,11 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
 void BlurEffect::slotScreenAdded(KWin::Output *screen)
 {
     screenChangedConnections[screen] = connect(screen, &Output::changed, this, [this, screen]() {
-        if (!m_settings.fakeBlur.enable) {
+        if (!m_settings.staticBlur.enable) {
             return;
         }
 
-        m_fakeBlurTextures.erase(screen);
+        m_staticBlurTextures.erase(screen);
         effects->addRepaintFull();
     });
 }
@@ -536,8 +536,8 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     // in case this window has regions to be blurred
     const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
 
-    bool fakeBlur = hasFakeBlur(w) && m_fakeBlurTextures.contains(m_currentScreen) && !blurArea.isEmpty();
-    if (fakeBlur) {
+    bool staticBlur = hasStaticBlur(w) && m_staticBlurTextures.contains(m_currentScreen) && !blurArea.isEmpty();
+    if (staticBlur) {
         data.opaque += blurArea;
 
         int topCornerRadius;
@@ -560,8 +560,8 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         }
     }
 
-    if (m_settings.fakeBlur.enable) {
-        if (m_settings.fakeBlur.disableWhenWindowBehind) {
+    if (m_settings.staticBlur.enable) {
+        if (m_settings.staticBlur.disableWhenWindowBehind) {
             if (auto it = m_windows.find(w); it != m_windows.end()) {
                 const bool hadWindowBehind = it->second.hasWindowBehind;
                 it->second.hasWindowBehind = false;
@@ -588,18 +588,18 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
             }
         }
 
-        if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper && w->isDesktop() && w->frameGeometry() == data.paint.boundingRect()) {
-            m_fakeBlurTextures.erase(m_currentScreen);
+        if (m_settings.staticBlur.imageSource == StaticBlurImageSource::DesktopWallpaper && w->isDesktop() && w->frameGeometry() == data.paint.boundingRect()) {
+            m_staticBlurTextures.erase(m_currentScreen);
         }
     }
 
-    if (m_settings.forceBlur.markWindowAsTranslucent && !fakeBlur && shouldForceBlur(w)) {
+    if (m_settings.forceBlur.markWindowAsTranslucent && !staticBlur && shouldForceBlur(w)) {
         data.setTranslucent();
     }
 
     effects->prePaintWindow(w, data, presentTime);
 
-    if (!fakeBlur) {
+    if (!staticBlur) {
         const QRegion oldOpaque = data.opaque;
         if (data.opaque.intersects(m_currentBlur)) {
             // to blur an area partially we have to shrink the opaque area of a window
@@ -692,10 +692,10 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     effects->drawWindow(renderTarget, viewport, w, mask, region, data);
 }
 
-GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget)
+GLTexture *BlurEffect::ensureStaticBlurTexture(const Output *output, const RenderTarget &renderTarget)
 {
-    if (m_fakeBlurTextures.contains(output)) {
-        return m_fakeBlurTextures[output].get();
+    if (m_staticBlurTextures.contains(output)) {
+        return m_staticBlurTextures[output].get();
     }
 
     if (effects->waylandDisplay() && !output) {
@@ -707,13 +707,13 @@ GLTexture *BlurEffect::ensureFakeBlurTexture(const Output *output, const RenderT
         textureFormat = renderTarget.texture()->internalFormat();
     }
     GLTexture *texture = effects->waylandDisplay()
-        ? createFakeBlurTextureWayland(output, renderTarget, textureFormat)
-        : createFakeBlurTextureX11(textureFormat);
+        ? createStaticBlurTextureWayland(output, renderTarget, textureFormat)
+        : createStaticBlurTextureX11(textureFormat);
     if (!texture) {
         return nullptr;
     }
 
-    return (m_fakeBlurTextures[output] = std::unique_ptr<GLTexture>(texture)).get();
+    return (m_staticBlurTextures[output] = std::unique_ptr<GLTexture>(texture)).get();
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
@@ -826,16 +826,16 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
     // Since the VBO is shared, the texture needs to be blurred before the geometry is uploaded, otherwise it will be
     // reset.
-    GLTexture *fakeBlurTexture = nullptr;
-    if (w && hasFakeBlur(w)) {
-        fakeBlurTexture = ensureFakeBlurTexture(m_currentScreen, renderTarget);
-        if (fakeBlurTexture) {
+    GLTexture *staticBlurTexture = nullptr;
+    if (w && hasStaticBlur(w)) {
+        staticBlurTexture = ensureStaticBlurTexture(m_currentScreen, renderTarget);
+        if (staticBlurTexture) {
             renderInfo.textures.clear();
             renderInfo.framebuffers.clear();
         }
     }
 
-    if (!fakeBlurTexture
+    if (!staticBlurTexture
         && (renderInfo.framebuffers.size() != (m_iterationCount + 1)
             || renderInfo.textures[0]->size() != backgroundRect.size()
             || renderInfo.textures[0]->internalFormat() != textureFormat)) {
@@ -862,7 +862,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     }
 
     // Fetch the pixels behind the shape that is going to be blurred.
-    if (!fakeBlurTexture) {
+    if (!staticBlurTexture) {
         const QRegion dirtyRegion = region & backgroundRect;
         for (const QRect &dirtyRect: dirtyRegion) {
             renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
@@ -973,7 +973,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
     vbo->bindArrays();
 
-    if (fakeBlurTexture) {
+    if (staticBlurTexture) {
         ShaderManager::instance()->pushShader(m_texture.shader.get());
 
         QMatrix4x4 projectionMatrix;
@@ -986,7 +986,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         }
 
         m_texture.shader->setUniform(m_texture.mvpMatrixLocation, projectionMatrix);
-        m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(fakeBlurTexture->size().width(), fakeBlurTexture->size().height()));
+        m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(staticBlurTexture->size().width(), staticBlurTexture->size().height()));
         m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(backgroundRect.x() - screenGeometry.x(), backgroundRect.y() - screenGeometry.y()));
         m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
         m_texture.shader->setUniform(m_texture.scaleLocation, (float)viewport.scale());
@@ -995,7 +995,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         m_texture.shader->setUniform(m_texture.antialiasingLocation, m_settings.roundedCorners.antialiasing);
         m_texture.shader->setUniform(m_texture.opacityLocation, static_cast<float>(opacity));
 
-        fakeBlurTexture->bind();
+        staticBlurTexture->bind();
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1155,7 +1155,7 @@ GLTexture *BlurEffect::wallpaper(EffectWindow *desktop, const qreal &scale, cons
     return texture.release();
 }
 
-GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat)
+GLTexture *BlurEffect::createStaticBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat)
 {
     EffectWindow *desktop = nullptr;
     for (EffectWindow *w : effects->stackingOrder()) {
@@ -1169,10 +1169,10 @@ GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const 
     }
 
     std::unique_ptr<GLTexture> texture;
-    if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
+    if (m_settings.staticBlur.imageSource == StaticBlurImageSource::DesktopWallpaper) {
         texture.reset(wallpaper(desktop, output->scale(), textureFormat));
-    } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
-        texture = GLTexture::upload(m_settings.fakeBlur.customImage.scaled(output->pixelSize(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+    } else if (m_settings.staticBlur.imageSource == StaticBlurImageSource::Custom) {
+        texture = GLTexture::upload(m_settings.staticBlur.customImage.scaled(output->pixelSize(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
     }
     if (!texture) {
         return nullptr;
@@ -1207,14 +1207,14 @@ GLTexture *BlurEffect::createFakeBlurTextureWayland(const Output *output, const 
     GLFramebuffer::popFramebuffer();
     ShaderManager::instance()->popShader();
 
-    if (m_settings.fakeBlur.blurCustomImage) {
+    if (m_settings.staticBlur.blurCustomImage) {
         blur(texture.get());
     }
 
     return texture.release();
 }
 
-GLTexture *BlurEffect::createFakeBlurTextureX11(const GLenum &textureFormat)
+GLTexture *BlurEffect::createStaticBlurTextureX11(const GLenum &textureFormat)
 {
     std::vector<EffectWindow *> desktops;
     QRegion desktopGeometries;
@@ -1241,16 +1241,16 @@ GLTexture *BlurEffect::createFakeBlurTextureX11(const GLenum &textureFormat)
         const auto geometry = desktop->frameGeometry();
 
         std::unique_ptr<GLTexture> texture;
-        if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::DesktopWallpaper) {
+        if (m_settings.staticBlur.imageSource == StaticBlurImageSource::DesktopWallpaper) {
             texture.reset(wallpaper(desktop, 1, textureFormat));
-        } else if (m_settings.fakeBlur.imageSource == FakeBlurImageSource::Custom) {
-            texture = GLTexture::upload(m_settings.fakeBlur.customImage.scaled(geometry.width(), geometry.height(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+        } else if (m_settings.staticBlur.imageSource == StaticBlurImageSource::Custom) {
+            texture = GLTexture::upload(m_settings.staticBlur.customImage.scaled(geometry.width(), geometry.height(), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
         }
         if (!texture) {
             return nullptr;
         }
 
-        if (m_settings.fakeBlur.blurCustomImage) {
+        if (m_settings.staticBlur.blurCustomImage) {
             blur(texture.get());
         }
 
