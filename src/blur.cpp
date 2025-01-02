@@ -538,7 +538,9 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 
     bool staticBlur = hasStaticBlur(w) && m_staticBlurTextures.contains(m_currentScreen) && !blurArea.isEmpty();
     if (staticBlur) {
-        data.opaque += blurArea;
+        if (!m_settings.general.windowOpacityAffectsBlur) {
+            data.opaque += blurArea;
+        }
 
         int topCornerRadius;
         int bottomCornerRadius;
