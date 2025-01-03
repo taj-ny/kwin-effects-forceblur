@@ -1,5 +1,5 @@
 # KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
+Better Blur is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
 
 ![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/1078cf12-e6da-43c7-80b4-d90a8b0f3404)
 <sup>Window opacity has been set to 85% for System Settings, Dolphin and VSCodium, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
@@ -8,7 +8,7 @@ Better Blur (formerly kwin-effects-forceblur) is a fork the KWin Blur effect for
 - X11 and Wayland support
 - Force blur
 - Rounded corners with optional anti-aliasing
-- Static blur for much lower GPU usage, works best with tiling
+- Static blur for much lower GPU usage
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.
@@ -47,6 +47,9 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 # Building from source
+> [!NOTE]
+> On Fedora Kinoite and other distributions based on it, the effect must be built in a container.
+
 ### Dependencies
 - CMake
 - Extra CMake Modules
@@ -74,7 +77,7 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 <details>
-  <summary>Fedora</summary>
+  <summary>Fedora 40, 41</summary>
   <br>
 
   ```
@@ -98,9 +101,28 @@ cd kwin-effects-forceblur
 mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
-make
-sudo make install
+make -j
 ```
+
+### Installation
+<details>
+  <summary>Fedora Kinoite</summary>
+  <br>
+
+  ```sh
+  cpack -V -G RPM
+  exit # exit the container
+  sudo rpm-ostree install kwin-effects-forceblur/build/kwin-better-blur.rpm
+  ```
+</details>
+<details>
+  <summary>Other distributions</summary>
+  <br>
+
+  ```sh
+  sudo make install
+  ```
+</details>
 
 Remove the *build* directory when rebuilding the effect.
 

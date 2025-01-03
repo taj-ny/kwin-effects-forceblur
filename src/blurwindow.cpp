@@ -98,11 +98,21 @@ void Window::updateBlurRegion(bool geometryChanged)
 
     // Don't override blur region for menus that already have one. The window geometry could include shadows.
     if (!((isMenu() || w->isTooltip()) && (content.has_value() || geometryChanged))) {
-        if (m_properties->blurContent()) {
+        const auto blurContent = m_properties->blurContent();
+        const auto blurFrame = m_properties->blurDecorations();
+
+        // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+        // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
+        // blur region to be off on X11. The frame region is not translated, so it is used instead.
+        const auto isX11WithCSD = w->isX11Client() && w->frameGeometry() != w->bufferGeometry();
+        if (!isX11WithCSD && blurContent) {
             content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
         }
-        if (m_properties->blurDecorations() && w->decoration()) {
-            frame = QRegion(w->frameGeometry().translated(-w->x(), -w->y()).toRect()) - w->contentsRect().toRect();
+        if ((isX11WithCSD && (blurContent || blurFrame)) || (blurFrame && w->decoration())) {
+            const auto frameRect = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
+            frame = isX11WithCSD
+                ? frameRect
+                : QRegion(frameRect) - w->contentsRect().toRect();
         }
     }
 
@@ -175,7 +185,12 @@ QRegion Window::decorationBlurRegion() const
         return {};
     }
 
-    QRegion decorationRegion = QRegion(w->decoration()->rect()) - w->contentsRect().toRect();
+    QRect decorationRect = w->decoration()->rect()
+#ifdef KDECORATION3
+        .toAlignedRect()
+#endif
+        ;
+    QRegion decorationRegion = QRegion(decorationRect) - w->contentsRect().toRect();
     //! we return only blurred regions that belong to decoration region
     return decorationRegion.intersected(w->decoration()->blurRegion());
 }
@@ -201,8 +216,14 @@ void Window::setupDecorationConnections()
         return;
     }
 
-    connect(w->decoration(), &KDecoration2::Decoration::blurRegionChanged, this, [this]() {
-        updateBlurRegion();
+    connect(w->decoration(),
+#ifdef KDECORATION3
+        &KDecoration3::Decoration::blurRegionChanged
+#else
+        &KDecoration2::Decoration::blurRegionChanged
+#endif
+    , this, [this]() {
+        updateBlurRegion(w);
     });
 }
 

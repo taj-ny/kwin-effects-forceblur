@@ -43,7 +43,12 @@
 #include <KConfigGroup>
 #include <KSharedConfig>
 
+#ifdef KDECORATION3
+#include <KDecoration3/Decoration>
+#else
 #include <KDecoration2/Decoration>
+#endif
+
 #include <utility>
 
 Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur", QtWarningMsg)
@@ -78,6 +83,8 @@ BlurEffect::BlurEffect()
         m_downsamplePass.mvpMatrixLocation = m_downsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_downsamplePass.offsetLocation = m_downsamplePass.shader->uniformLocation("offset");
         m_downsamplePass.halfpixelLocation = m_downsamplePass.shader->uniformLocation("halfpixel");
+        m_downsamplePass.transformColorsLocation = m_downsamplePass.shader->uniformLocation("transformColors");
+        m_downsamplePass.colorMatrixLocation = m_downsamplePass.shader->uniformLocation("colorMatrix");
     }
 
     m_upsamplePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -234,6 +241,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 
     BetterBlur::Config::self()->read();
     m_windowRules->load();
+    m_colorMatrix = colorMatrix(BetterBlur::Config::brightness(), BetterBlur::Config::saturation(), BetterBlur::Config::contrast());
 
     m_noiseStrength = BetterBlur::Config::noiseStrength();
     m_staticBlurImage = QImage(BetterBlur::Config::fakeBlurImage());
@@ -252,7 +260,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
 {
     m_windows[w] = std::make_unique<BetterBlur::Window>(w, m_windowRules.get(), &net_wm_blur_region);
 
-    windowExpandedGeometryChangedConnections[w] = connect(w, &EffectWindow::windowExpandedGeometryChanged, this, [this,w]() {
+    windowFrameGeometryChangedConnections[w] = connect(w, &EffectWindow::windowFrameGeometryChanged, this, [this,w]() {
         if (w && w->isDesktop() && !effects->waylandDisplay()) {
             m_staticBlurTextures.clear();
         }
@@ -269,9 +277,9 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         effects->makeOpenGLContextCurrent();
         m_windows.erase(it);
     }
-    if (auto it = windowExpandedGeometryChangedConnections.find(w); it != windowExpandedGeometryChangedConnections.end()) {
+    if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
         disconnect(*it);
-        windowExpandedGeometryChangedConnections.erase(it);
+        windowFrameGeometryChangedConnections.erase(it);
     }
 
     m_windows.erase(w);
@@ -582,6 +590,10 @@ void BlurEffect::blur(BetterBlur::Window *w, const int &strength, BetterBlur::Bl
     GLTexture *staticBlurTexture = nullptr;
     if (w && w->properties()->staticBlur()) {
         staticBlurTexture = ensureStaticBlurTexture(m_currentScreen, strength, renderTarget);
+        if (staticBlurTexture) {
+            renderInfo.textures.clear();
+            renderInfo.framebuffers.clear();
+        }
     }
 
     size_t iterationCount = blurStrengthValues[strength].iteration;
@@ -766,6 +778,8 @@ void BlurEffect::blur(BetterBlur::Window *w, const int &strength, BetterBlur::Bl
 
             m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
             m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, offset);
+            m_downsamplePass.shader->setUniform(m_downsamplePass.colorMatrixLocation, m_colorMatrix);
+            m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, true);
 
             for (size_t i = 1; i < renderInfo.framebuffers.size(); ++i) {
                 const auto &read = renderInfo.framebuffers[i - 1];
@@ -779,6 +793,10 @@ void BlurEffect::blur(BetterBlur::Window *w, const int &strength, BetterBlur::Bl
 
                 GLFramebuffer::pushFramebuffer(draw.get());
                 vbo->draw(GL_TRIANGLES, 0, 6);
+
+                if (i == 1) {
+                    m_downsamplePass.shader->setUniform(m_downsamplePass.transformColorsLocation, false);
+                }
             }
 
             ShaderManager::instance()->popShader();
@@ -1011,6 +1029,38 @@ GLTexture *BlurEffect::createStaticBlurTextureX11(const int &strength, const GLe
     GLFramebuffer::popFramebuffer();
 
     return compositeTexture.release();
+}
+
+QMatrix4x4 BlurEffect::colorMatrix(const float &brightness, const float &saturation, const float &contrast) const
+{
+    QMatrix4x4 saturationMatrix;
+    if (saturation != 1.0) {
+        const qreal r = (1.0 - saturation) * .2126;
+        const qreal g = (1.0 - saturation) * .7152;
+        const qreal b = (1.0 - saturation) * .0722;
+
+        saturationMatrix = QMatrix4x4(r + saturation, r, r, 0.0,
+                                      g, g + saturation, g, 0.0,
+                                      b, b, b + saturation, 0.0,
+                                      0, 0, 0, 1.0);
+    }
+
+    QMatrix4x4 brightnessMatrix;
+    if (brightness != 1.0) {
+        brightnessMatrix.scale(brightness, brightness, brightness);
+    }
+
+    QMatrix4x4 contrastMatrix;
+    if (contrast != 1.0) {
+        const float transl = (1.0 - contrast) / 2.0;
+
+        contrastMatrix = QMatrix4x4(contrast, 0, 0, 0.0,
+                                    0, contrast, 0, 0.0,
+                                    0, 0, contrast, 0.0,
+                                    transl, transl, transl, 1.0);
+    }
+
+    return contrastMatrix * saturationMatrix * brightnessMatrix;
 }
 
 bool BlurEffect::isActive() const

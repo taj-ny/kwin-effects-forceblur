@@ -59,6 +59,7 @@ public Q_SLOTS:
 
 private:
     void initBlurStrengthValues();
+    QMatrix4x4 colorMatrix(const float &brightness, const float &saturation, const float &contrast) const;
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
@@ -101,6 +102,8 @@ private:
         int mvpMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
+        int transformColorsLocation;
+        int colorMatrixLocation;
     } m_downsamplePass;
 
     struct
@@ -120,8 +123,6 @@ private:
         int antialiasingLocation;
         int blurSizeLocation;
         int opacityLocation;
-
-
     } m_upsamplePass;
 
     struct
@@ -171,8 +172,10 @@ private:
 
     std::unordered_map<const Output *, std::unordered_map<int, std::unique_ptr<GLTexture>>> m_staticBlurTextures;
     QImage m_staticBlurImage;
+    QMatrix4x4 m_colorMatrix;
 
-    QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
+    QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
+
     QMap<Output *, QMetaObject::Connection> screenChangedConnections;
     std::unordered_map<EffectWindow *, std::unique_ptr<BetterBlur::Window>> m_windows;
 
