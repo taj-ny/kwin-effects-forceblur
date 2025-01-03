@@ -2,7 +2,7 @@
   description = "Fork of the KWin Blur effect for KDE Plasma 6 with additional features (including force blur) and bug fixes";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/88195a94f390381c6afcdaa933c2f6ff93959cb4";
     utils.url = "github:numtide/flake-utils";
   };
 
