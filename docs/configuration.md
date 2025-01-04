@@ -23,16 +23,10 @@ Obvious options are not explained here.
 | **Window top corner radius** | Requires *Blur window decorations as well* to be enabled for windows with decorations. |
 | **Anti-aliasing**            | Makes rounded corners appear smoother.                                                 |
 
-<<<<<<< HEAD
 ## Static blur
 When enabled, a cached texture will be painted behind the window instead of actually blurring the background (dynamic blur).
 The blurred areas of the window will also be marked as opaque, causing KWin to not paint anything behind the window.
 Both things result in lower resource usage.
-=======
-# Static blur
-When enabled, the blur texture will be cached and reused. The blurred areas of the window will be marked as opaque, resulting in KWin not painting anything behind them.
-Only one image per screen is cached at a time.
->>>>>>> origin/main
 
 Static blur is mainly intended for laptop users who want longer battery life while still having blur everywhere.
 
@@ -48,17 +42,11 @@ Static blur is mainly intended for laptop users who want longer battery life whi
 |-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Convert simple config to window rules** | Whether to automatically convert simple configuration into window rules. Disabling this will cause most options in the simple configuration UI to not have an effect anymore. |
 
-<<<<<<< HEAD
 # Window rules
 Configuration UI for window rules will be added in v2. The configuration file is located at ``~/.config/kwinbetterblurrc`` and isn't created automatically.
-=======
-### Image source
-The image to use for static blur.
->>>>>>> origin/main
 
 Simple configuration is converted into multiple rules with priorities lower than 0. They are not added into the configuration file. This behavior can be disabled in the configuration UI in the *Window Rules* tab.
 
-<<<<<<< HEAD
 An example is provided at the end.
 
 ## File structure
@@ -158,7 +146,3 @@ WindowType = Menu
 [WindowRules][MenuCorners][Properties]
 CornerRadius = 10
 ```
-=======
-### Blur image
-Whether to blur the image used for static blur. This is only done once.
->>>>>>> origin/main

@@ -59,7 +59,7 @@ public:
     std::unordered_map<KWin::Output *, BlurRenderData> render;
 
 public Q_SLOTS:
-    void slotWindowExpandedGeometryChanged(KWin::EffectWindow *w);
+    void slotWindowFrameGeometryChanged(KWin::EffectWindow *w);
 //    void slotDecorationBlurRegionChanged();
 
 private:
@@ -69,7 +69,7 @@ private:
     bool decorationSupportsBlurBehind() const;
 
     QMetaObject::Connection windowBlurChangedConnection;
-    QMetaObject::Connection windowExpandedGeometryChangedConnection;
+    QMetaObject::Connection windowFrameGeometryChangedConnection;
 
     std::optional<QRegion> m_contentBlurRegion;
     std::optional<QRegion> m_frameBlurRegion;

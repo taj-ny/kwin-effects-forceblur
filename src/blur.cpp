@@ -24,12 +24,6 @@
 #include "wayland/surface.h"
 #include "kwin/window.h"
 
-#ifdef KWIN_6_2_OR_GREATER
-#include "scene/decorationitem.h"
-#include "scene/surfaceitem.h"
-#include "scene/windowitem.h"
-#endif
-
 #include <QGuiApplication>
 #include <QImage>
 #include <QMatrix4x4>
@@ -42,12 +36,6 @@
 
 #include <KConfigGroup>
 #include <KSharedConfig>
-
-#ifdef KDECORATION3
-#include <KDecoration3/Decoration>
-#else
-#include <KDecoration2/Decoration>
-#endif
 
 #include <utility>
 

@@ -12,9 +12,11 @@
 #include "scene/windowitem.h"
 #endif
 
+#ifdef KDECORATION3
+#include <KDecoration3/Decoration>
+#else
 #include <KDecoration2/Decoration>
-
-#include <QWindow>
+#endif
 
 namespace BetterBlur
 {
@@ -27,7 +29,7 @@ Window::Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long *n
     connect(w, &KWin::EffectWindow::windowDecorationChanged, this, [this]() {
         setupDecorationConnections();
     });
-    windowExpandedGeometryChangedConnection = connect(w, &KWin::EffectWindow::windowExpandedGeometryChanged, this, &Window::slotWindowExpandedGeometryChanged);
+    windowFrameGeometryChangedConnection = connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &Window::slotWindowFrameGeometryChanged);
     setupDecorationConnections();
 
     if (auto surf = w->surface()) {
@@ -43,7 +45,7 @@ Window::Window(KWin::EffectWindow *w, const WindowRuleList *windowRules, long *n
 Window::~Window()
 {
     disconnect(windowBlurChangedConnection);
-    disconnect(windowExpandedGeometryChangedConnection);
+    disconnect(windowFrameGeometryChangedConnection);
 }
 
 bool Window::isMaximized() const
@@ -200,7 +202,7 @@ bool Window::decorationSupportsBlurBehind() const
     return w->decoration() && !w->decoration()->blurRegion().isNull();
 }
 
-void Window::slotWindowExpandedGeometryChanged(KWin::EffectWindow *w)
+void Window::slotWindowFrameGeometryChanged(KWin::EffectWindow *w)
 {
     if (w->size() != m_size) {
         updateProperties();
