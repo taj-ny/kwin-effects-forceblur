@@ -59,7 +59,7 @@ public:
     std::unordered_map<KWin::Output *, BlurRenderData> render;
 
 public Q_SLOTS:
-    void slotWindowFrameGeometryChanged(KWin::EffectWindow *w);
+    void slotWindowFrameGeometryChanged();
 //    void slotDecorationBlurRegionChanged();
 
 private:
@@ -79,7 +79,6 @@ private:
     std::unique_ptr<KWin::ItemEffect> m_windowEffect;
 #endif
 
-    QSizeF m_size;
     bool m_hasWindowBehind = false;
     std::unique_ptr<WindowProperties> m_properties;
 

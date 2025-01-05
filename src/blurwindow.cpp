@@ -202,14 +202,9 @@ bool Window::decorationSupportsBlurBehind() const
     return w->decoration() && !w->decoration()->blurRegion().isNull();
 }
 
-void Window::slotWindowFrameGeometryChanged(KWin::EffectWindow *w)
+void Window::slotWindowFrameGeometryChanged()
 {
-    if (w->size() != m_size) {
-        updateProperties();
-    }
-
     updateBlurRegion(true);
-    m_size = w->size();
 }
 
 void Window::setupDecorationConnections()
