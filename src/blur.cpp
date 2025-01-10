@@ -924,7 +924,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
             auto framebuffer = std::make_unique<GLFramebuffer>(texture.get());
             if (!framebuffer->valid()) {
-                qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer";
+                qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer"
+                    << w->windowClass()
+                    << w->frameGeometry()
+                    << w->expandedGeometry()
+                    << w->pos()
+                    << rawBlurRegion
+                    << blurShape
+                    << backgroundRect
+                    << deviceBackgroundRect;
                 return;
             }
             renderInfo.textures.push_back(std::move(texture));
