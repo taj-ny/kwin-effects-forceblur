@@ -72,7 +72,7 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
   <br>
 
   ```
-  sudo apt install git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations2-dev
+  sudo apt install git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations2-dev libxcb-composite0-dev libxcb-randr0-dev libxcb-shm0-dev
   ```
 </details>
 
