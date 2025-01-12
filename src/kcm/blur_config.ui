@@ -589,6 +589,13 @@ the background, resulting in much lower GPU usage.</string>
                   <widget class="QLineEdit" name="kcfg_FakeBlurImage">
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QPushButton" name="staticBlurImagePicker">
+                   <property name="icon">
+                    <iconset theme="document-open"/>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
               </layout>
