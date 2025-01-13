@@ -275,7 +275,8 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>Classes of windows to force blur (one per line):</string>
+          <string>Classes of windows to force blur (one per line).
+Use the "$regex:" prefix to specify regular expressions.</string>
          </property>
         </widget>
        </item>
@@ -527,7 +528,7 @@ the background, resulting in much lower GPU usage.</string>
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Blur image</string>
+          <string>Blur texture (only done once)</string>
          </property>
         </widget>
        </item>
@@ -536,14 +537,14 @@ the background, resulting in much lower GPU usage.</string>
          <item>
           <widget class="QLabel">
            <property name="text">
-            <string>Image source:</string>
+            <string>Texture source:</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="kcfg_FakeBlurImageSourceDesktopWallpaper">
            <property name="text">
-            <string>Desktop wallpaper</string>
+            <string>Desktop wallpaper (do not use with frequently-changing wallpapers)</string>
            </property>
           </widget>
          </item>
@@ -630,6 +631,51 @@ the background, resulting in much lower GPU usage.</string>
           </sizepolicy>
          </property>
 
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>Window Rules</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QLabel">
+         <property name="text">
+          <string>Window rules allow for doing things that aren't possible
+with this UI, such as reducing blur strength for certain windows.
+
+By default, most settings here are automatically converted into internal
+window rules. This can be disabled below.
+
+There is currently no configuration UI for window rules. The file is located
+at ~/.config/kwinbetterblurrc. See the configuration documentation for more
+information.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_ConvertSimpleConfigToRules">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Convert simple config to window rules</string>
+         </property>
         </widget>
        </item>
        <item>

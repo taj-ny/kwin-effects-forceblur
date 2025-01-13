@@ -16,11 +16,15 @@ set(forceblur_SOURCES
     blur.cpp
     blur.qrc
     main.cpp
-    settings.cpp
+    windowrules/windowrulecondition.cpp
+    windowrules/windowrule.cpp
+    windowrules/windowrulelist.cpp
+    windowrules/windowproperties.cpp
+    blurwindow.cpp
 )
 
 kconfig_add_kcfg_files(forceblur_SOURCES
-    blurconfig.kcfgc
+    config/config.kcfgc
 )
 
 add_library(forceblur MODULE ${forceblur_SOURCES})
@@ -29,6 +33,8 @@ target_link_libraries(forceblur PRIVATE
 
     KF6::ConfigGui
 )
+
+target_compile_definitions(forceblur PRIVATE CONFIG_KWIN)
 if (${KDecoration3_FOUND})
     target_link_libraries(forceblur PRIVATE KDecoration3::KDecoration)
 else()
