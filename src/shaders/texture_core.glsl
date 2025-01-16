@@ -5,7 +5,6 @@
 uniform sampler2D texUnit;
 uniform vec2 textureSize;
 uniform vec2 texStartPos;
-uniform float scale;
 
 in vec2 uv;
 
@@ -13,6 +12,6 @@ out vec4 fragColor;
 
 void main(void)
 {
-    vec2 tex = (texStartPos.xy + vec2(uv.x, 1.0 - uv.y) * blurSize) / textureSize * scale;
+    vec2 tex = (texStartPos.xy + vec2(uv.x, 1.0 - uv.y) * blurSize) / textureSize;
     fragColor = roundedRectangle(uv * blurSize, texture(texUnit, tex).rgb);
 }

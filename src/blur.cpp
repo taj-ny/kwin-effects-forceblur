@@ -116,7 +116,6 @@ BlurEffect::BlurEffect()
         m_texture.textureSizeLocation = m_texture.shader->uniformLocation("textureSize");
         m_texture.texStartPosLocation = m_texture.shader->uniformLocation("texStartPos");
         m_texture.blurSizeLocation = m_texture.shader->uniformLocation("blurSize");
-        m_texture.scaleLocation = m_texture.shader->uniformLocation("scale");
         m_texture.topCornerRadiusLocation = m_texture.shader->uniformLocation("topCornerRadius");
         m_texture.bottomCornerRadiusLocation = m_texture.shader->uniformLocation("bottomCornerRadius");
         m_texture.antialiasingLocation = m_texture.shader->uniformLocation("antialiasing");
@@ -985,14 +984,13 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
         QRectF screenGeometry;
         if (m_currentScreen) {
-            screenGeometry = m_currentScreen->geometryF();
+            screenGeometry = scaledRect(m_currentScreen->geometryF(), viewport.scale());
         }
 
         m_texture.shader->setUniform(m_texture.mvpMatrixLocation, projectionMatrix);
         m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(staticBlurTexture->size().width(), staticBlurTexture->size().height()));
-        m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(backgroundRect.x() - screenGeometry.x(), backgroundRect.y() - screenGeometry.y()));
-        m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(backgroundRect.width(), backgroundRect.height()));
-        m_texture.shader->setUniform(m_texture.scaleLocation, (float)viewport.scale());
+        m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(deviceBackgroundRect.x() - screenGeometry.x(), deviceBackgroundRect.y() - screenGeometry.y()));
+        m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
         m_texture.shader->setUniform(m_texture.topCornerRadiusLocation, topCornerRadius);
         m_texture.shader->setUniform(m_texture.bottomCornerRadiusLocation, bottomCornerRadius);
         m_texture.shader->setUniform(m_texture.antialiasingLocation, m_settings.roundedCorners.antialiasing);
