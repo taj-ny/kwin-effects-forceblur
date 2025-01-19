@@ -1,8 +1,7 @@
 # KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
 Better Blur is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
 
-![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/1078cf12-e6da-43c7-80b4-d90a8b0f3404)
-<sup>Window opacity has been set to 85% for System Settings, Dolphin and VSCodium, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
+![image](https://github.com/user-attachments/assets/f8a7c618-89b4-485a-b0f8-29dd5f77e3ca)
 
 # Features
 - X11 and Wayland support
