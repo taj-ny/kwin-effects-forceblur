@@ -1,13 +1,14 @@
-# KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Better Blur is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
+# Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+Better Blur is a fork of the Plasma 6 blur effect with additional features and bug fixes.
 
 ![image](https://github.com/user-attachments/assets/f8a7c618-89b4-485a-b0f8-29dd5f77e3ca)
 
-# Features
+### Features
 - X11 and Wayland support
 - Force blur
-- Rounded corners with optional anti-aliasing
+- Rounded corners with anti-aliasing
 - Static blur for much lower GPU usage
+- Adjust blur brightness, contrast and saturation
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.
