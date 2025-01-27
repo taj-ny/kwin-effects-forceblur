@@ -668,7 +668,14 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
-    if (w->isDesktop() || (!m_settings.forceBlur.blurDocks && w->isDock()) || (!m_settings.forceBlur.blurMenus && isMenu(w))) {
+    const auto windowClass = w->window()->resourceClass();
+    const auto layer = w->window()->layer();
+    if (w->isDesktop()
+        || (!m_settings.forceBlur.blurDocks && w->isDock())
+        || (!m_settings.forceBlur.blurMenus && isMenu(w))
+        || windowClass == "xwaylandvideobridge"
+        || ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
+            && (layer == Layer::OverlayLayer || layer == Layer::ActiveLayer))) {
         return false;
     }
 
