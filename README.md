@@ -95,6 +95,9 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 ### Building
+> [!IMPORTANT]  
+> As the installation process is different on some distributions, the following commands only build the effect. To actually install it, run the command(s) from the *Installation* section below in addition to the ones here.
+
 ```sh
 git clone https://github.com/taj-ny/kwin-effects-forceblur
 cd kwin-effects-forceblur
