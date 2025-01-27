@@ -844,7 +844,11 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         renderInfo.textures.clear();
 
         for (size_t i = 0; i <= m_iterationCount; ++i) {
-            auto texture = GLTexture::allocate(textureFormat, deviceBackgroundRect.size() / (1 << i));
+            // For very small windows, the width and/or height of the last blur texture may be 0. Creation of
+            // and/or usage of invalid textures to create framebuffers appears to cause performance issues.
+            // https://github.com/taj-ny/kwin-effects-forceblur/issues/160
+            const QSize textureSize(std::max(1, deviceBackgroundRect.width() / (1 << i)), std::max(1, deviceBackgroundRect.height() / (1 << i)));
+            auto texture = GLTexture::allocate(textureFormat, textureSize);
             if (!texture) {
                 qCWarning(KWIN_BLUR) << "Failed to allocate an offscreen texture";
                 return;
