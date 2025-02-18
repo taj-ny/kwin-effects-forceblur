@@ -95,9 +95,6 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 </details>
 
 ### Building
-> [!IMPORTANT]  
-> As the installation process is different on some distributions, the following commands only build the effect. To actually install it, run the command(s) from the *Installation* section below in addition to the ones here.
-
 ```sh
 git clone https://github.com/taj-ny/kwin-effects-forceblur
 cd kwin-effects-forceblur
@@ -105,25 +102,24 @@ mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
 make -j
+sudo make install
 ```
 
-### Installation
 <details>
-  <summary>Fedora Kinoite</summary>
+  <summary>Building on Fedora Kinoite</summary>
   <br>
 
   ```sh
+  # enter container
+  git clone https://github.com/taj-ny/kwin-effects-forceblur
+  cd kwin-effects-forceblur
+  mkdir build
+  cd build
+  cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
+  make -j
   cpack -V -G RPM
-  exit # exit the container
+  exit # exit container
   sudo rpm-ostree install kwin-effects-forceblur/build/kwin-better-blur.rpm
-  ```
-</details>
-<details>
-  <summary>Other distributions</summary>
-  <br>
-
-  ```sh
-  sudo make install
   ```
 </details>
 
