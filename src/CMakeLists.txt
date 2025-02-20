@@ -25,9 +25,8 @@ kconfig_add_kcfg_files(forceblur_SOURCES
 
 add_library(forceblur MODULE ${forceblur_SOURCES})
 target_link_libraries(forceblur PRIVATE
-    KWin::kwin
-
     KF6::ConfigGui
+    KWin::kwin
 )
 if (${KDecoration3_FOUND})
     target_link_libraries(forceblur PRIVATE KDecoration3::KDecoration)
