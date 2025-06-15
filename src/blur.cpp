@@ -16,17 +16,14 @@
 #include "effect/effecthandler.h"
 #include "opengl/glutils.h"
 #include "opengl/glplatform.h"
+#include "scene/decorationitem.h"
+#include "scene/surfaceitem.h"
+#include "scene/windowitem.h"
 #include "utils.h"
 #include "utils/xcbutils.h"
 #include "wayland/blur.h"
 #include "wayland/display.h"
 #include "wayland/surface.h"
-
-#ifdef KWIN_6_2_OR_GREATER
-#include "scene/decorationitem.h"
-#include "scene/surfaceitem.h"
-#include "scene/windowitem.h"
-#endif
 
 #include <QGuiApplication>
 #include <QImage>
@@ -41,11 +38,7 @@
 #include <KConfigGroup>
 #include <KSharedConfig>
 
-#ifdef KDECORATION3
 #include <KDecoration3/Decoration>
-#else
-#include <KDecoration2/Decoration>
-#endif
 
 #include <utility>
 
@@ -307,9 +300,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
-#ifdef KWIN_6_2_OR_GREATER
         data.windowEffect = ItemEffect(w->windowItem());
-#endif
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
@@ -433,13 +424,7 @@ void BlurEffect::setupDecorationConnections(EffectWindow *w)
         return;
     }
 
-    connect(w->decoration(),
-#ifdef KDECORATION3
-        &KDecoration3::Decoration::blurRegionChanged
-#else
-        &KDecoration2::Decoration::blurRegionChanged
-#endif
-        , this, [this, w]() {
+    connect(w->decoration(), &KDecoration3::Decoration::blurRegionChanged, this, [this, w]() {
         updateBlurRegion(w);
     });
 }
@@ -465,11 +450,7 @@ bool BlurEffect::enabledByDefault()
 
 bool BlurEffect::supported()
 {
-#ifdef KWIN_6_1_OR_GREATER
     return effects->openglContext() && (effects->openglContext()->supportsBlits() || effects->waylandDisplay());
-#else
-    return effects->isOpenGLCompositing() && GLFramebuffer::supported() && GLFramebuffer::blitSupported();
-#endif
 }
 
 bool BlurEffect::decorationSupportsBlurBehind(const EffectWindow *w) const
@@ -483,11 +464,7 @@ QRegion BlurEffect::decorationBlurRegion(const EffectWindow *w) const
         return QRegion();
     }
 
-    QRect decorationRect = w->decoration()->rect()
-#ifdef KDECORATION3
-        .toAlignedRect()
-#endif
-        ;
+    QRect decorationRect = w->decoration()->rect().toAlignedRect();
     QRegion decorationRegion = QRegion(decorationRect) - w->contentsRect().toRect();
     //! we return only blurred regions that belong to decoration region
     return decorationRegion.intersected(w->decoration()->blurRegion());
@@ -1154,12 +1131,6 @@ GLTexture *BlurEffect::wallpaper(EffectWindow *desktop, const qreal &scale, cons
     const RenderViewport renderViewport(desktop->frameGeometry(), scale, renderTarget);
     WindowPaintData data;
 
-#ifndef KWIN_6_1_OR_GREATER
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.ortho(geometry);
-    data.setProjectionMatrix(projectionMatrix);
-#endif
-
     GLFramebuffer::pushFramebuffer(desktopFramebuffer.get());
 
     effects->drawWindow(renderTarget, renderViewport, desktop, PAINT_WINDOW_TRANSFORMED | PAINT_WINDOW_TRANSLUCENT, infiniteRegion(), data);
@@ -1201,12 +1172,7 @@ GLTexture *BlurEffect::createStaticBlurTextureWayland(const Output *output, cons
     }
 
     auto *shader = ShaderManager::instance()->pushShader(ShaderTrait::MapTexture | ShaderTrait::TransformColorspace);
-    shader->setColorspaceUniforms(
-        ColorDescription::sRGB, renderTarget.colorDescription()
-#ifdef KWIN_6_2_OR_GREATER
-        , RenderingIntent::RelativeColorimetricWithBPC
-#endif
-    );
+    shader->setColorspaceUniforms(ColorDescription::sRGB, renderTarget.colorDescription(), RenderingIntent::RelativeColorimetricWithBPC);
     QMatrix4x4 projectionMatrix;
     projectionMatrix.scale(1, -1);
     projectionMatrix.ortho(QRect(0, 0, texture->width(), texture->height()));

@@ -9,9 +9,7 @@
 
 #include "effect/effect.h"
 #include "opengl/glutils.h"
-#ifdef KWIN_6_2_OR_GREATER
 #include "scene/item.h"
-#endif
 
 #include "settings.h"
 #include "window.h"
@@ -45,9 +43,7 @@ struct BlurEffectData
     /// The render data per screen. Screens can have different color spaces.
     std::unordered_map<Output *, BlurRenderData> render;
 
-#ifdef KWIN_6_2_OR_GREATER
     ItemEffect windowEffect;
-#endif
 
     bool hasWindowBehind;
 };
