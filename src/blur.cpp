@@ -820,13 +820,13 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         }
     }
 
-    glClearColor(0, 0, 0, 0);
     if (!staticBlurTexture
         && (renderInfo.framebuffers.size() != (m_iterationCount + 1)
             || renderInfo.textures[0]->size() != deviceBackgroundRect.size()
             || renderInfo.textures[0]->internalFormat() != textureFormat)) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
+        glClearColor(0, 0, 0, 0);
 
         for (size_t i = 0; i <= m_iterationCount; ++i) {
             // For very small windows, the width and/or height of the last blur texture may be 0. Creation of
