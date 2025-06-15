@@ -846,9 +846,17 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
                 qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer";
                 return;
             }
-            OpenGlContext::currentContext()->pushFramebuffer(framebuffer.get());
+            auto *context =
+#ifdef KWIN_6_4
+                EglContext
+#else
+                OpenGlContext
+#endif
+                ::currentContext();
+            context->pushFramebuffer(framebuffer.get());
             glClear(GL_COLOR_BUFFER_BIT);
-            OpenGlContext::currentContext()->popFramebuffer();
+            context->popFramebuffer();
+
             renderInfo.textures.push_back(std::move(texture));
             renderInfo.framebuffers.push_back(std::move(framebuffer));
         }
