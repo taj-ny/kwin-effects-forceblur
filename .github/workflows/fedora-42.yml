@@ -1,4 +1,4 @@
-name: Fedora 40
+name: Fedora 42
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: fedora:40
+      image: fedora:42
       options: --user root
 
     steps:
