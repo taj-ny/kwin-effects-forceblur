@@ -17,7 +17,7 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 - [Transparent color schemes don't work properly with the Breeze application style](https://github.com/taj-ny/kwin-effects-forceblur/pull/38)
 
 ### Support for previous Plasma releases
-Better Blur will usually at least one previous Plasma release (second number in version - 6.x). Exceptions may be made if there is a large amount of breaking 
+Better Blur will usually support at least one previous Plasma release (second number in version - 6.x). Exceptions may be made if there is a large amount of breaking 
 changes.
 
 Currently supported versions: **6.3**
