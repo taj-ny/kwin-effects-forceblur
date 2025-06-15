@@ -11,6 +11,9 @@ void BlurSettings::read()
     general.blurStrength = BlurConfig::blurStrength() - 1;
     general.noiseStrength = BlurConfig::noiseStrength();
     general.windowOpacityAffectsBlur = BlurConfig::transparentBlur();
+    general.brightness = BlurConfig::brightness();
+    general.saturation = BlurConfig::saturation();
+    general.contrast = BlurConfig::contrast();
 
     forceBlur.windowClasses = BlurConfig::windowClasses().split("\n");
     forceBlur.windowClassMatchingMode = BlurConfig::blurMatching() ? WindowClassMatchingMode::Whitelist : WindowClassMatchingMode::Blacklist;
@@ -26,15 +29,15 @@ void BlurSettings::read()
     roundedCorners.antialiasing = BlurConfig::roundedCornersAntialiasing();
     roundedCorners.roundMaximized = BlurConfig::roundCornersOfMaximizedWindows();
 
-    fakeBlur.enable = BlurConfig::fakeBlur();
-    fakeBlur.disableWhenWindowBehind = BlurConfig::fakeBlurDisableWhenWindowBehind();
-    fakeBlur.customImage = QImage(BlurConfig::fakeBlurImage());
+    staticBlur.enable = BlurConfig::fakeBlur();
+    staticBlur.disableWhenWindowBehind = BlurConfig::fakeBlurDisableWhenWindowBehind();
+    staticBlur.customImage = QImage(BlurConfig::fakeBlurImage());
     if (BlurConfig::fakeBlurImageSourceDesktopWallpaper()) {
-        fakeBlur.imageSource = FakeBlurImageSource::DesktopWallpaper;
+        staticBlur.imageSource = StaticBlurImageSource::DesktopWallpaper;
     } else {
-        fakeBlur.imageSource = FakeBlurImageSource::Custom;
+        staticBlur.imageSource = StaticBlurImageSource::Custom;
     }
-    fakeBlur.blurCustomImage = BlurConfig::fakeBlurCustomImageBlur();
+    staticBlur.blurCustomImage = BlurConfig::fakeBlurCustomImageBlur();
 }
 
 }

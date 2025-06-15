@@ -44,23 +44,14 @@ find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
 find_package(KWin REQUIRED COMPONENTS
     kwineffects
 )
-
-if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.0.90)
-    add_compile_definitions(KWIN_6_1_OR_GREATER)
+if(${KWin_VERSION} VERSION_LESS 6.3)
+    message(FATAL_ERROR "Better Blur does not support your Plasma version (${KWin_VERSION}). See the README for more information.")
 endif()
-if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
-    add_compile_definitions(KWIN_6_2_OR_GREATER)
-endif()
-
-find_package(KDecoration2)
-find_package(KDecoration3)
-if (${KDecoration3_FOUND})
-    add_compile_definitions(KDECORATION3)
-endif()
-if(NOT ${KDecoration3_FOUND} AND NOT ${KDecoration2_FOUND})
-    message(FATAL_ERROR "Could not find KDecoration2 or KDecoration3.")
+if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.4.0)
+    add_compile_definitions(KWIN_6_4)
 endif()
 
+find_package(KDecoration3 REQUIRED)
 
 find_package(KWinDBusInterface CONFIG REQUIRED)
 

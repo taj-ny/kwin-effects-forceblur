@@ -1,4 +1,8 @@
-set(kwin_better_blur_config_SRCS blur_config.cpp blur_config.h)
+set(kwin_better_blur_config_SRCS
+    blur_config.cpp
+    blur_config.h
+    blur_config.qrc
+)
 
 ki18n_wrap_ui(kwin_better_blur_config_SRCS blur_config.ui)
 kconfig_add_kcfg_files(kwin_better_blur_config_SRCS ../blurconfig.kcfgc)
@@ -14,3 +18,5 @@ target_link_libraries(kwin_better_blur_config
 )
 
 install(TARGETS kwin_better_blur_config DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/configs)
+
+add_compile_definitions(ABOUT_VERSION_STRING="${PROJECT_VERSION}")

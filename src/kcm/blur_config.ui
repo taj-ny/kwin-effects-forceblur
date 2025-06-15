@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>480</width>
-    <height>200</height>
+    <height>240</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -178,6 +178,82 @@
           <string>Window opacity affects blur</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Brightness</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Brightness">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Saturation</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Saturation">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Contrast</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="kcfg_Contrast">
+           <property name="minimum">
+            <double>0.0</double>
+           </property>
+           <property name="singleStep">
+            <double>0.1</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QWidget">
@@ -391,14 +467,14 @@
      </widget>
      <widget class="QWidget">
       <attribute name="title">
-       <string>Fake Blur</string>
+       <string>Static blur</string>
       </attribute>
       <layout class="QVBoxLayout">
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When enabled, the blur texture will be cached and reused, resulting in much lower GPU usage.
-Works best with tiling.</string>
+          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring
+the background, resulting in much lower GPU usage.</string>
          </property>
         </widget>
        </item>
@@ -425,7 +501,7 @@ Works best with tiling.</string>
        <item>
         <widget class="QCheckBox" name="kcfg_FakeBlurDisableWhenWindowBehind">
          <property name="text">
-          <string>Use real blur for windows that are in front of other windows</string>
+          <string>Use dynamic blur for windows with other windows behind</string>
          </property>
         </widget>
        </item>
@@ -513,6 +589,13 @@ Works best with tiling.</string>
                   <widget class="QLineEdit" name="kcfg_FakeBlurImage">
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QPushButton" name="staticBlurImagePicker">
+                   <property name="icon">
+                    <iconset theme="document-open"/>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
               </layout>
@@ -561,16 +644,26 @@ Works best with tiling.</string>
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item alignment="Qt::AlignCenter">
-    <widget class="QLabel">
-     <property name="text">
-      <string>&lt;a href="https://github.com/taj-ny/kwin-effects-forceblur/blob/main/docs/configuration.md"&gt;Configuration documentation&lt;/a&gt;</string>
-     </property>
-     <property name="openExternalLinks">
-      <bool>true</bool>
-     </property>
+     <widget class="QWidget">
+      <attribute name="title">
+       <string>About</string>
+      </attribute>
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QTextBrowser" name="aboutText">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Failed to load about.html</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

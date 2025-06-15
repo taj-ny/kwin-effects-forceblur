@@ -9,9 +9,7 @@
 
 #include "effect/effect.h"
 #include "opengl/glutils.h"
-#ifdef KWIN_6_2_OR_GREATER
 #include "scene/item.h"
-#endif
 
 #include "settings.h"
 #include "window.h"
@@ -45,9 +43,7 @@ struct BlurEffectData
     /// The render data per screen. Screens can have different color spaces.
     std::unordered_map<Output *, BlurRenderData> render;
 
-#ifdef KWIN_6_2_OR_GREATER
     ItemEffect windowEffect;
-#endif
 
     bool hasWindowBehind;
 };
@@ -96,7 +92,8 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
-    bool hasFakeBlur(EffectWindow *w);
+    bool hasStaticBlur(EffectWindow *w);
+    QMatrix4x4 colorMatrix(const float &brightness, const float &saturation, const float &contrast) const;
 
     /*
      * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
@@ -107,9 +104,9 @@ private:
     /**
      * @param output Can be nullptr.
      * @remark This method shall not be called outside of BlurEffect::blur.
-     * @return The cached fake blur texture. The texture will be created if it doesn't exist.
+     * @return The cached static blur texture. The texture will be created if it doesn't exist.
      */
-    GLTexture *ensureFakeBlurTexture(const Output *output, const RenderTarget &renderTarget);
+    GLTexture *ensureStaticBlurTexture(const Output *output, const RenderTarget &renderTarget);
     GLTexture *ensureNoiseTexture();
 
     /**
@@ -120,17 +117,17 @@ private:
     GLTexture *wallpaper(EffectWindow *desktop, const qreal &scale, const GLenum &textureFormat);
 
     /**
-     * Creates a fake blur texture for the specified screen.
+     * Creates a static blur texture for the specified screen.
      * @remark This method shall not be called outside of BlurEffect::blur.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createFakeBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureWayland(const Output *output, const RenderTarget &renderTarget, const GLenum &textureFormat);
 
     /**
-     * Creates a composite fake blur texture containing images for all screens.
+     * Creates a composite static blur texture containing images for all screens.
      * @return A pointer to the texture, or nullptr if an error occurred.
      */
-    GLTexture *createFakeBlurTextureX11(const GLenum &textureFormat);
+    GLTexture *createStaticBlurTextureX11(const GLenum &textureFormat);
 
 private:
     struct
@@ -139,6 +136,8 @@ private:
         int mvpMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
+        int transformColorsLocation;
+        int colorMatrixLocation;
     } m_downsamplePass;
 
     struct
@@ -158,8 +157,6 @@ private:
         int antialiasingLocation;
         int blurSizeLocation;
         int opacityLocation;
-
-
     } m_upsamplePass;
 
     struct
@@ -168,7 +165,6 @@ private:
         int mvpMatrixLocation;
         int textureSizeLocation;
         int texStartPosLocation;
-        int scaleLocation;
 
         int topCornerRadiusLocation;
         int bottomCornerRadiusLocation;
@@ -210,13 +206,15 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_fakeBlurTextures;
+    std::unordered_map<const Output*, std::unique_ptr<GLTexture>> m_staticBlurTextures;
 
     // Windows to blur even when transformed.
     QList<const EffectWindow*> m_blurWhenTransformed;
 
+    QMatrix4x4 m_colorMatrix;
+
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
-    QMap<EffectWindow *, QMetaObject::Connection> windowExpandedGeometryChangedConnections;
+    QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
     QMap<Output *, QMetaObject::Connection> screenChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
