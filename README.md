@@ -87,7 +87,7 @@ Latest Better Blur versions for previous Plasma releases:
 </details>
 
 <details>
-  <summary>Fedora 40, 41</summary>
+  <summary>Fedora 41, 42</summary>
   <br>
 
   ```
