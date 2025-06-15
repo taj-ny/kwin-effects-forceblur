@@ -820,6 +820,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         }
     }
 
+    glClearColor(0, 0, 0, 0);
     if (!staticBlurTexture
         && (renderInfo.framebuffers.size() != (m_iterationCount + 1)
             || renderInfo.textures[0]->size() != deviceBackgroundRect.size()
@@ -845,6 +846,9 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
                 qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer";
                 return;
             }
+            OpenGlContext::currentContext()->pushFramebuffer(framebuffer.get());
+            glClear(GL_COLOR_BUFFER_BIT);
+            OpenGlContext::currentContext()->popFramebuffer();
             renderInfo.textures.push_back(std::move(texture));
             renderInfo.framebuffers.push_back(std::move(framebuffer));
         }
