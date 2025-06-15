@@ -826,6 +826,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             || renderInfo.textures[0]->internalFormat() != textureFormat)) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
+        glClearColor(0, 0, 0, 0);
 
         for (size_t i = 0; i <= m_iterationCount; ++i) {
             // For very small windows, the width and/or height of the last blur texture may be 0. Creation of
@@ -845,6 +846,17 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
                 qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer";
                 return;
             }
+            auto *context =
+#ifdef KWIN_6_4
+                EglContext
+#else
+                OpenGlContext
+#endif
+                ::currentContext();
+            context->pushFramebuffer(framebuffer.get());
+            glClear(GL_COLOR_BUFFER_BIT);
+            context->popFramebuffer();
+
             renderInfo.textures.push_back(std::move(texture));
             renderInfo.framebuffers.push_back(std::move(framebuffer));
         }

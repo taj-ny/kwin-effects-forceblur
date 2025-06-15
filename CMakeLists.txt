@@ -75,6 +75,9 @@ find_package(KWin REQUIRED COMPONENTS
 if(${KWin_VERSION} VERSION_LESS 6.3)
     message(FATAL_ERROR "Better Blur does not support your Plasma version (${KWin_VERSION}). See the README for more information.")
 endif()
+if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.4.0)
+    add_compile_definitions(KWIN_6_4)
+endif()
 
 find_package(KDecoration3 REQUIRED)
 
