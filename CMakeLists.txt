@@ -74,8 +74,11 @@ find_package(XCB REQUIRED COMPONENTS XCB)
 
 if(BETTERBLUR_WAYLAND)
     find_package(KWin COMPONENTS
-	kwineffects
+        kwineffects
     )
+    if (NOT ${KWin_FOUND})
+        set(BETTERBLUR_WAYLAND OFF)
+    endif()
 endif()
 if(BETTERBLUR_X11)
     find_package(KWinX11 COMPONENTS
@@ -83,6 +86,8 @@ if(BETTERBLUR_X11)
     )
     if (${KWinX11_FOUND})
         set(KWin_VERSION ${KWinX11_VERSION})
+    else()
+        set(BETTERBLUR_X11 OFF)
     endif()
 endif()
 
