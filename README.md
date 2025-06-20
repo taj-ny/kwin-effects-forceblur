@@ -50,7 +50,8 @@ Latest Better Blur versions for previous Plasma releases:
 
   {
     environment.systemPackages = [
-      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default # Wayland
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.x11 # X11
     ];
   }
   ```
