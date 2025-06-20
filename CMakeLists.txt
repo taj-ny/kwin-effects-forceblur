@@ -27,6 +27,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT")
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 
+option(BETTERBLUR_WAYLAND "Whether to build Better Blur for Wayland if present." ON)
+option(BETTERBLUR_X11 "Whether to build Better Blur for X11 if present." ON)
+
 include(FeatureSummary)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -69,26 +72,30 @@ find_package(epoxy REQUIRED)
 find_package(X11 REQUIRED)
 find_package(XCB REQUIRED COMPONENTS XCB)
 
-find_package(KWin REQUIRED COMPONENTS
-    kwineffects
-)
+if(BETTERBLUR_WAYLAND)
+    find_package(KWin COMPONENTS
+        kwineffects
+    )
+    if (NOT ${KWin_FOUND})
+        set(BETTERBLUR_WAYLAND OFF)
+    endif()
+endif()
+if(BETTERBLUR_X11)
+    find_package(KWinX11 COMPONENTS
+        kwineffects
+    )
+    if (${KWinX11_FOUND})
+        set(KWin_VERSION ${KWinX11_VERSION})
+    else()
+        set(BETTERBLUR_X11 OFF)
+    endif()
+endif()
 
-if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.0.90)
-    add_compile_definitions(KWIN_6_1_OR_GREATER)
-endif()
-if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
-    add_compile_definitions(KWIN_6_2_OR_GREATER)
+if(${KWin_VERSION} VERSION_LESS 6.4)
+    message(FATAL_ERROR "Better Blur does not support your Plasma version (${KWin_VERSION}). See the README for more information.")
 endif()
 
-find_package(KDecoration2)
-find_package(KDecoration3)
-if (${KDecoration3_FOUND})
-    add_compile_definitions(KDECORATION3)
-endif()
-if(NOT ${KDecoration3_FOUND} AND NOT ${KDecoration2_FOUND})
-    message(FATAL_ERROR "Could not find KDecoration2 or KDecoration3.")
-endif()
-
+find_package(KDecoration3 REQUIRED)
 
 find_package(KWinDBusInterface CONFIG REQUIRED)
 

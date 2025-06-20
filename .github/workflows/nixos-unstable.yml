@@ -24,5 +24,8 @@ jobs:
       - name: Update flake.lock
         run: nix flake update
 
-      - name: Build
+      - name: Build (Wayland)
         run: nix build
+
+      - name: Build (X11)
+        run: nix build .#x11

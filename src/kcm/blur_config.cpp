@@ -13,6 +13,9 @@
 #include <KPluginFactory>
 #include "kwineffects_interface.h"
 
+#include <QFileDialog>
+#include <QPushButton>
+
 namespace KWin
 {
 
@@ -25,6 +28,8 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     BlurConfig::instance("kwinrc");
     addConfig(BlurConfig::self(), widget());
 
+    connect(ui.staticBlurImagePicker, &QPushButton::clicked, this, &BlurEffectConfig::slotStaticBlurImagePickerClicked);
+
     QFile about(":/effects/forceblur/kcm/about.html");
     if (about.open(QIODevice::ReadOnly)) {
         const auto html = about.readAll()
@@ -36,6 +41,16 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
 
 BlurEffectConfig::~BlurEffectConfig()
 {
+}
+
+void BlurEffectConfig::slotStaticBlurImagePickerClicked()
+{
+    const auto imagePath = QFileDialog::getOpenFileName(widget(), "Select image", {}, "Images (*.png *.jpg *.jpeg *.bmp)");
+    if (imagePath.isNull()) {
+        return;
+    }
+
+    ui.kcfg_FakeBlurImage->setText(imagePath);
 }
 
 void BlurEffectConfig::save()

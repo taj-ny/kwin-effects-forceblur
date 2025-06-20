@@ -17,6 +17,11 @@ target_link_libraries(kwin_better_blur_config
     Qt6::DBus
 )
 
-install(TARGETS kwin_better_blur_config DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/configs)
+if(BETTERBLUR_WAYLAND)
+    install(TARGETS kwin_better_blur_config DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/configs)
+endif()
+if(BETTERBLUR_X11)
+    install(TARGETS kwin_better_blur_config DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin-x11/effects/configs)
+endif()
 
 add_compile_definitions(ABOUT_VERSION_STRING="${PROJECT_VERSION}")

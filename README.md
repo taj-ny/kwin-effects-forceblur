@@ -1,20 +1,30 @@
-# KWin Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
-Better Blur is a fork the KWin Blur effect for KDE Plasma 6 with additional features and bug fixes.
+# Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+Better Blur is a fork of the Plasma 6 blur effect with additional features and bug fixes.
 
-![image](https://github.com/taj-ny/kwin-effects-forceblur/assets/79316397/1078cf12-e6da-43c7-80b4-d90a8b0f3404)
-<sup>Window opacity has been set to 85% for System Settings, Dolphin and VSCodium, Firefox uses a transparent theme | [NixOS configuration](https://github.com/taj-ny/nix-config)</sup>
+![image](https://github.com/user-attachments/assets/f8a7c618-89b4-485a-b0f8-29dd5f77e3ca)
 
-# Features
+### Features
 - X11 and Wayland support
 - Force blur
-- Rounded corners with optional anti-aliasing
+- Rounded corners with anti-aliasing
 - Static blur for much lower GPU usage
+- Adjust blur brightness, contrast and saturation
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.
 
 - Blur may sometimes disappear during animations
 - [Transparent color schemes don't work properly with the Breeze application style](https://github.com/taj-ny/kwin-effects-forceblur/pull/38)
+
+### Support for previous Plasma releases
+Better Blur will usually support at least one previous Plasma release (second number in version - 6.x). Exceptions may be made if there is a large amount of breaking 
+changes.
+
+Currently supported versions: **6.4**
+
+Latest Better Blur versions for previous Plasma releases:
+- **6.0.0 - 6.3.5**: [v1.3.6](https://github.com/taj-ny/kwin-effects-forceblur/releases/tag/v1.3.6),
+[fea9f80f27389aa8a62befb5babf40b28fed328d](https://github.com/taj-ny/kwin-effects-forceblur/tree/fea9f80f27389aa8a62befb5babf40b28fed328d)
 
 # Installation
 <details>
@@ -40,7 +50,8 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 
   {
     environment.systemPackages = [
-      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.default # Wayland
+      inputs.kwin-effects-forceblur.packages.${pkgs.system}.x11 # X11
     ];
   }
   ```
@@ -72,16 +83,16 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
   <br>
 
   ```
-  sudo apt install git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations2-dev
+  sudo apt install git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations3-dev libxcb-composite0-dev libxcb-randr0-dev libxcb-shm0-dev
   ```
 </details>
 
 <details>
-  <summary>Fedora 40, 41</summary>
+  <summary>Fedora 41, 42</summary>
   <br>
 
   ```
-  sudo dnf install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake kwin-devel extra-cmake-modules kwin-devel kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel
+  sudo dnf install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake kwin-devel extra-cmake-modules kwin-devel kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel libdrm-devel
   ```
 </details>
 
@@ -102,25 +113,24 @@ mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
 make -j
+sudo make install
 ```
 
-### Installation
 <details>
-  <summary>Fedora Kinoite</summary>
+  <summary>Building on Fedora Kinoite</summary>
   <br>
 
   ```sh
+  # enter container
+  git clone https://github.com/taj-ny/kwin-effects-forceblur
+  cd kwin-effects-forceblur
+  mkdir build
+  cd build
+  cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
+  make -j
   cpack -V -G RPM
-  exit # exit the container
+  exit # exit container
   sudo rpm-ostree install kwin-effects-forceblur/build/kwin-better-blur.rpm
-  ```
-</details>
-<details>
-  <summary>Other distributions</summary>
-  <br>
-
-  ```sh
-  sudo make install
   ```
 </details>
 

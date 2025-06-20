@@ -11,7 +11,7 @@ stdenv.mkDerivation rec {
   pname = "kwin-better-blur";
   version = "1.4.0";
 
-  src = ./.;
+  src = ./..;
 
   nativeBuildInputs = [
     cmake
