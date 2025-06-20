@@ -847,10 +847,10 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
                 return;
             }
             auto *context =
-#ifdef KWIN_6_4
-                EglContext
-#else
+#ifdef BETTERBLUR_X11
                 OpenGlContext
+#else
+                EglContext
 #endif
                 ::currentContext();
             context->pushFramebuffer(framebuffer.get());
