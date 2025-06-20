@@ -26,7 +26,7 @@ kconfig_add_kcfg_files(forceblur_SOURCES
 if(BETTERBLUR_WAYLAND)
     add_library(forceblur MODULE ${forceblur_SOURCES})
     target_link_libraries(forceblur PRIVATE
-	KDecoration3::KDecoration
+        KDecoration3::KDecoration
         KF6::ConfigGui
         KWin::kwin
     )
@@ -35,9 +35,9 @@ endif()
 if(BETTERBLUR_X11)
     add_library(forceblur_x11 MODULE ${forceblur_SOURCES})
     target_link_libraries(forceblur_x11 PRIVATE
-	KDecoration3::KDecoration
-	KF6::ConfigGui
-	KWinX11::kwin
+        KDecoration3::KDecoration
+        KF6::ConfigGui
+        KWinX11::kwin
     )
     target_compile_definitions(forceblur_x11 PRIVATE BETTERBLUR_X11)
     install(TARGETS forceblur_x11 DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin-x11/effects/plugins)
