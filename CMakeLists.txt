@@ -81,7 +81,9 @@ if(BETTERBLUR_X11)
     find_package(KWinX11 COMPONENTS
         kwineffects
     )
-    set(KWin_VERSION ${KWinX11_VERSION})
+    if (${KWinX11_FOUND})
+        set(KWin_VERSION ${KWinX11_VERSION})
+    endif()
 endif()
 
 if(${KWin_VERSION} VERSION_LESS 6.4)
