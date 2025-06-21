@@ -76,7 +76,9 @@ if(BETTERBLUR_WAYLAND)
     find_package(KWin COMPONENTS
         kwineffects
     )
-    if (NOT ${KWin_FOUND})
+    if (${KWin_FOUND})
+        find_package(KWinDBusInterface CONFIG REQUIRED)
+    else()
         set(BETTERBLUR_WAYLAND OFF)
     endif()
 endif()
@@ -85,6 +87,7 @@ if(BETTERBLUR_X11)
         kwineffects
     )
     if (${KWinX11_FOUND})
+        find_package(KWinX11DBusInterface CONFIG REQUIRED)
         set(KWin_VERSION ${KWinX11_VERSION})
     else()
         set(BETTERBLUR_X11 OFF)
@@ -96,8 +99,6 @@ if(${KWin_VERSION} VERSION_LESS 6.4)
 endif()
 
 find_package(KDecoration3 REQUIRED)
-
-find_package(KWinDBusInterface CONFIG REQUIRED)
 
 add_subdirectory(src)
 
