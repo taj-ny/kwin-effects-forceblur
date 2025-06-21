@@ -1,4 +1,4 @@
-name: openSUSE Tumbleweed
+name: openSUSE Tumbleweed (Wayland)
 
 on:
   push:

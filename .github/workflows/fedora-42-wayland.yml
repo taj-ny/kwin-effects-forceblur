@@ -1,4 +1,4 @@
-name: Fedora 42
+name: Fedora 42 (Wayland)
 
 on:
   push:
