@@ -1,4 +1,4 @@
-name: KDE Neon (unstable)
+name: KDE Neon unstable (Wayland)
 
 on:
   push:

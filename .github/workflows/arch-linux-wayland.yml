@@ -1,4 +1,4 @@
-name: Arch Linux
+name: Arch Linux (Wayland)
 
 on:
   push:
