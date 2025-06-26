@@ -1,4 +1,4 @@
-# Better Blur [![AUR Version](https://img.shields.io/aur/version/kwin-effects-forceblur)](https://aur.archlinux.org/packages/kwin-effects-forceblur)
+# Better Blur
 Better Blur is a fork of the Plasma 6 blur effect with additional features and bug fixes.
 
 ![image](https://github.com/user-attachments/assets/f8a7c618-89b4-485a-b0f8-29dd5f77e3ca)
@@ -27,6 +27,21 @@ Latest Better Blur versions for previous Plasma releases:
 [fea9f80f27389aa8a62befb5babf40b28fed328d](https://github.com/taj-ny/kwin-effects-forceblur/tree/fea9f80f27389aa8a62befb5babf40b28fed328d)
 
 # Installation
+> [!IMPORTANT]
+> If the effect stops working after a system upgrade, you will need to rebuild it or reinstall the package.
+
+## Packages
+<details>
+  <summary>Arch Linux (AUR)*</summary>
+  <br>
+
+  **Choose *cleanBuild* when reinstalling the package.**
+
+  https://aur.archlinux.org/packages/kwin-effects-forceblur
+  ```
+  yay -S kwin-effects-forceblur
+  ```
+</details>
 <details>
   <summary>NixOS (flakes)</summary>
   <br>
@@ -57,7 +72,9 @@ Latest Better Blur versions for previous Plasma releases:
   ```
 </details>
 
-# Building from source
+**\* Unofficial package, use at your own risk.**
+
+## Manual
 > [!NOTE]
 > On Fedora Kinoite and other distributions based on it, the effect must be built in a container.
 
@@ -135,8 +152,8 @@ git clone https://github.com/taj-ny/kwin-effects-forceblur
 cd kwin-effects-forceblur
 mkdir build
 cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
-make -j
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+make -j$(nproc)
 sudo make install
 ```
 
@@ -150,20 +167,17 @@ sudo make install
   cd kwin-effects-forceblur
   mkdir build
   cd build
-  cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
-  make -j
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+  make -j$(nproc)
   cpack -V -G RPM
   exit # exit container
   sudo rpm-ostree install kwin-effects-forceblur/build/kwin-better-blur.rpm
   ```
 </details>
 
-Remove the *build* directory when rebuilding the effect.
+**Remove the *build* directory when rebuilding the effect.**
 
 # Usage
-> [!NOTE]
-> If the effect stops working after a system upgrade, you will need to rebuild it.
-
 This effect will conflict with the stock blur effect and any other forks of it.
 
 1. Install the plugin.
