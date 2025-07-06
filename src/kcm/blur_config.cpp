@@ -61,10 +61,11 @@ void BlurEffectConfig::save()
                                          QStringLiteral("/Effects"),
                                          QDBusConnection::sessionBus());
 
-    if(QGuiApplication::platformName() == QStringLiteral("xcb"))
+    if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
         interface.reconfigureEffect(QStringLiteral("forceblur_x11"));
-    else
+    } else {
         interface.reconfigureEffect(QStringLiteral("forceblur"));
+    }
 }
 
 } // namespace KWin
