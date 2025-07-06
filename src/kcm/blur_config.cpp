@@ -60,7 +60,12 @@ void BlurEffectConfig::save()
     OrgKdeKwinEffectsInterface interface(QStringLiteral("org.kde.KWin"),
                                          QStringLiteral("/Effects"),
                                          QDBusConnection::sessionBus());
-    interface.reconfigureEffect(QStringLiteral("forceblur"));
+
+    if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+        interface.reconfigureEffect(QStringLiteral("forceblur_x11"));
+    } else {
+        interface.reconfigureEffect(QStringLiteral("forceblur"));
+    }
 }
 
 } // namespace KWin
