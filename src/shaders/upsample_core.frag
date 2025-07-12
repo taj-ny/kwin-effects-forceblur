@@ -1,6 +1,36 @@
 #version 140
 
-#include "roundedcorners.glsl"
+uniform float topCornerRadius;
+uniform float bottomCornerRadius;
+uniform float antialiasing;
+
+uniform vec2 blurSize;
+uniform float opacity;
+
+vec4 roundedRectangle(vec2 fragCoord, vec3 texture)
+{
+    if (topCornerRadius == 0 && bottomCornerRadius == 0) {
+        return vec4(texture, opacity);
+    }
+
+    vec2 halfblurSize = blurSize * 0.5;
+    vec2 p = fragCoord - halfblurSize;
+    float radius = 0.0;
+    if ((fragCoord.y <= bottomCornerRadius)
+        && (fragCoord.x <= bottomCornerRadius || fragCoord.x >= blurSize.x - bottomCornerRadius)) {
+        radius = bottomCornerRadius;
+        p.y -= radius;
+    } else if ((fragCoord.y >= blurSize.y - topCornerRadius)
+        && (fragCoord.x <= topCornerRadius || fragCoord.x >= blurSize.x - topCornerRadius)) {
+        radius = topCornerRadius;
+        p.y += radius;
+    }
+    float distance = length(max(abs(p) - (halfblurSize + vec2(0.0, radius)) + radius, 0.0)) - radius;
+
+    float s = smoothstep(0.0, antialiasing, distance);
+    return vec4(texture, mix(1.0, 0.0, s) * opacity);
+}
+
 
 uniform sampler2D texUnit;
 uniform float offset;
@@ -67,17 +97,17 @@ void main(void)
     vec4 sum = vec4(0,0,0,0);
     for (int i = 0; i < 8; ++i) {
         vec2 off = offsets[i] * offset;
-        sum.r += texture(texUnit, coordR + off).r * weights[i];
-        sum.g += texture(texUnit, coordG + off).g * weights[i];
-        sum.b += texture(texUnit, coordB + off).b * weights[i];
-        sum.a += texture(texUnit, coordG + off).a * weights[i];
+        sum.r += texture2D(texUnit, coordR + off).r * weights[i];
+        sum.g += texture2D(texUnit, coordG + off).g * weights[i];
+        sum.b += texture2D(texUnit, coordB + off).b * weights[i];
+        sum.a += texture2D(texUnit, coordG + off).a * weights[i];
     }
 
     sum /= weightSum;
 
     if (noise) {
-        sum += vec4(texture(noiseTexture, vec2(uv.x, 1.0 - uv.y) * blurSize / noiseTextureSize).rrr, 0.0);
+        sum += vec4(texture2D(noiseTexture, vec2(uv.x, 1.0 - uv.y) * blurSize / noiseTextureSize).rrr, 0.0);
     }
 
-    fragColor = roundedRectangle(uv * blurSize, sum.rgb);
+    gl_FragColor = roundedRectangle(uv * blurSize, sum.rgb);
 }
