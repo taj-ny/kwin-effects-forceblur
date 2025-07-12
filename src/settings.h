@@ -58,6 +58,13 @@ struct StaticBlurSettings
     bool blurCustomImage;
 };
 
+struct RefractionSettings
+{
+    float edgeSizePixels;
+    float refractionStrength;
+    float refractionNormalPow;
+};
+
 class BlurSettings
 {
 public:
@@ -65,6 +72,7 @@ public:
     ForceBlurSettings forceBlur{};
     RoundedCornersSettings roundedCorners{};
     StaticBlurSettings staticBlur{};
+    RefractionSettings refraction{};
 
     void read();
 };

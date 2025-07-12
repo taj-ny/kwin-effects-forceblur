@@ -38,6 +38,10 @@ void BlurSettings::read()
         staticBlur.imageSource = StaticBlurImageSource::Custom;
     }
     staticBlur.blurCustomImage = BlurConfig::fakeBlurCustomImageBlur();
+
+    refraction.edgeSizePixels = BlurConfig::refractionEdgeSize();
+    refraction.refractionStrength = BlurConfig::refractionStrength() / 100.0;
+    refraction.refractionNormalPow = BlurConfig::refractionNormalPow() / 15.0;
 }
 
 }
