@@ -96,6 +96,9 @@ BlurEffect::BlurEffect()
         m_upsamplePass.antialiasingLocation = m_upsamplePass.shader->uniformLocation("antialiasing");
         m_upsamplePass.blurSizeLocation = m_upsamplePass.shader->uniformLocation("blurSize");
         m_upsamplePass.opacityLocation = m_upsamplePass.shader->uniformLocation("opacity");
+        m_upsamplePass.edgeSizePixelsLocation = m_upsamplePass.shader->uniformLocation("edgeSizePixels");
+        m_upsamplePass.refractionStrengthLocation = m_upsamplePass.shader->uniformLocation("refractionStrength");
+        m_upsamplePass.refractionNormalPowLocation = m_upsamplePass.shader->uniformLocation("refractionNormalPow");
     }
 
     m_texture.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -1096,6 +1099,11 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
                                   0.5 / read->colorAttachment()->height());
         m_upsamplePass.shader->setUniform(m_upsamplePass.halfpixelLocation, halfpixel);
+
+
+        m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation, m_settings.refraction.edgeSizePixels);
+        m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
+        m_upsamplePass.shader->setUniform(m_upsamplePass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

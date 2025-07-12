@@ -157,6 +157,10 @@ private:
         int antialiasingLocation;
         int blurSizeLocation;
         int opacityLocation;
+
+        float edgeSizePixelsLocation;
+        float refractionStrengthLocation;
+        float refractionNormalPowLocation;
     } m_upsamplePass;
 
     struct
