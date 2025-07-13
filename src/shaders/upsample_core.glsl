@@ -43,14 +43,15 @@ void main(void)
 
         float concaveFactor = pow(clamp(1.0 - distToEdge / edgeSizePixels, 0.0, 1.0), refractionNormalPow);
 
+        vec2 center = texSize * 0.5;
+        vec2 offsetFromCenter = fragCoord - center;
+        vec2 direction = normalize(offsetFromCenter);
+
         float totalDist = distToEdgeX + distToEdgeY;
-        float weightX = 1.0 - (distToEdgeX / totalDist); // more weight when closer to vertical edge
-        float weightY = 1.0 - (distToEdgeY / totalDist); // more weight when closer to horizontal edge
+        float weightX = distToEdgeY / totalDist; // more weight when closer to vertical edge
+        float weightY = distToEdgeX / totalDist; // more weight when closer to horizontal edge
 
-        float dirX = (fragCoord.x < texSize.x * 0.5) ? 1.0 : -1.0;
-        float dirY = (fragCoord.y < texSize.y * 0.5) ? 1.0 : -1.0;
-
-        vec2 blendedNormal = normalize(vec2(dirX * weightX, dirY * weightY));
+        vec2 blendedNormal = normalize(vec2(direction.x * weightX, direction.y * weightY));
 
         vec3 normal = normalize(vec3(blendedNormal, concaveFactor));
 
