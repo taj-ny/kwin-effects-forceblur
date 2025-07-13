@@ -428,9 +428,9 @@
           </spacer>
          </item>
          <item>
-          <widget class="QLabel" name="labelRefractionStrengthLight">
+          <widget class="QLabel" name="labelRefractionStrengthOff">
            <property name="text">
-            <string>Light</string>
+            <string>Off</string>
            </property>
           </widget>
          </item>
