@@ -50,7 +50,7 @@ void main(void)
 
         vec2 blendedNormal = normalize(vec2(direction.x * weightX, direction.y * weightY));
 
-        vec3 normal = normalize(vec3(blendedNormal, concaveFactor));
+        vec3 normal = -normalize(vec3(blendedNormal, concaveFactor));
 
         float finalStrength = 0.05 * concaveFactor * refractionStrength;
 
