@@ -15,7 +15,16 @@ void BlurSettings::read()
     general.saturation = BlurConfig::saturation();
     general.contrast = BlurConfig::contrast();
 
-    forceBlur.windowClasses = BlurConfig::windowClasses().split("\n");
+    forceBlur.windowClasses.clear();
+    bool includeEmpty = false;
+    for (const auto &line : BlurConfig::windowClasses().split("\n")) {
+        if (line.isEmpty() && !includeEmpty) {
+            includeEmpty = true;
+            continue;
+        }
+        includeEmpty = false;
+        forceBlur.windowClasses << line;
+    }
     forceBlur.windowClassMatchingMode = BlurConfig::blurMatching() ? WindowClassMatchingMode::Whitelist : WindowClassMatchingMode::Blacklist;
     forceBlur.blurDecorations = BlurConfig::blurDecorations();
     forceBlur.blurMenus = BlurConfig::blurMenus();

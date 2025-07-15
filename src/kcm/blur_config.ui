@@ -275,7 +275,7 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>Classes of windows to force blur (one per line):</string>
+          <string>Classes of windows to force blur (one per line, two empty lines to match empty classes):</string>
          </property>
         </widget>
        </item>
