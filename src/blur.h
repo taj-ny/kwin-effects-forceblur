@@ -158,9 +158,9 @@ private:
         int blurSizeLocation;
         int opacityLocation;
 
-        float edgeSizePixelsLocation;
-        float refractionStrengthLocation;
-        float refractionNormalPowLocation;
+        int edgeSizePixelsLocation;
+        int refractionStrengthLocation;
+        int refractionNormalPowLocation;
     } m_upsamplePass;
 
     struct
