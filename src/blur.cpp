@@ -237,6 +237,8 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_staticBlurTextures.clear();
     m_colorMatrix = colorMatrix(m_settings.general.brightness, m_settings.general.saturation, m_settings.general.contrast);
 
+    m_refractionStrength = m_settings.refraction.refractionStrength;
+
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
     }
@@ -690,6 +692,8 @@ GLTexture *BlurEffect::ensureStaticBlurTexture(const Output *output, const Rende
         return nullptr;
     }
 
+    m_refractionStrength = 0;
+
     GLenum textureFormat = GL_RGBA8;
     if (renderTarget.texture()) {
         textureFormat = renderTarget.texture()->internalFormat();
@@ -697,6 +701,9 @@ GLTexture *BlurEffect::ensureStaticBlurTexture(const Output *output, const Rende
     GLTexture *texture = effects->waylandDisplay()
         ? createStaticBlurTextureWayland(output, renderTarget, textureFormat)
         : createStaticBlurTextureX11(textureFormat);
+
+    m_refractionStrength = m_settings.refraction.refractionStrength;
+
     if (!texture) {
         return nullptr;
     }
@@ -1102,7 +1109,7 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
 
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation, m_settings.refraction.edgeSizePixels);
-        m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
+        m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_refractionStrength);
         m_upsamplePass.shader->setUniform(m_upsamplePass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
 
         glEnable(GL_BLEND);
