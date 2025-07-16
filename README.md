@@ -72,7 +72,7 @@ Latest Better Blur versions for previous Plasma releases:
   ```
 </details>
 <details>
-  <summary>Fedora (COPR)</summary>
+  <summary>Fedora (COPR)*</summary>
   <br>
 
   **This package is usually built against the latest version of KWin available in Fedora's official repositories, with a delay of up to 24 hours due to Fedora's update mechanism using bodhi. If you use a beta/testing/copr/advisory version of KWin, the effect may not work. In that case, you need to either recompile the effect using the instructions below, or rebuild the SRPM using `rpmbuild --rebuild /path/to/srpm.src.rpm`. Uninstall the rpm of the effect before attempting your build.**
@@ -83,6 +83,7 @@ Latest Better Blur versions for previous Plasma releases:
   sudo dnf install --refresh kwin-effects-forceblur
   ```
 </details>
+
 **\* Unofficial package, use at your own risk.**
 
 ## Manual
