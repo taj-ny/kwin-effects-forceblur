@@ -97,9 +97,9 @@ void main(void)
 
         for (int i = 0; i < 8; ++i) {
             vec2 off = offsets[i] * offset;
-            sum.r += texture(texUnit, coordG + off).r * weights[i];
+            sum.r += texture(texUnit, coordR + off).r * weights[i];
             sum.g += texture(texUnit, coordG + off).g * weights[i];
-            sum.b += texture(texUnit, coordG + off).b * weights[i];
+            sum.b += texture(texUnit, coordB + off).b * weights[i];
             sum.a += texture(texUnit, coordG + off).a * weights[i];
         }
 
