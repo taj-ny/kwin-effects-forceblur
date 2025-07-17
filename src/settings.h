@@ -63,6 +63,8 @@ struct RefractionSettings
     float edgeSizePixels;
     float refractionStrength;
     float refractionNormalPow;
+    float refractionRGBFringing;
+    int refractionTextureRepeatMode;
 };
 
 class BlurSettings
