@@ -161,6 +161,8 @@ private:
         int edgeSizePixelsLocation;
         int refractionStrengthLocation;
         int refractionNormalPowLocation;
+        int refractionRGBFringingLocation;
+        int refractionTextureRepeatModeLocation;
     } m_upsamplePass;
 
     struct
@@ -194,6 +196,8 @@ private:
     // used for disabling refraction when generating static blur
     // other refraction values do *not* need to be set
     float m_refractionStrength = 0;
+    float m_refractionRGBFringing = 1.0;
+    int m_refractionTextureRepeatMode = 0;
 
     BlurSettings m_settings;
 
