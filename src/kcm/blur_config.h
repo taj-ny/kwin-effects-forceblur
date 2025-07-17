@@ -8,6 +8,8 @@
 
 #include "ui_blur_config.h"
 #include <KCModule>
+#include <QWidget>
+#include <KContextualHelpButton>
 
 namespace KWin
 {
@@ -27,6 +29,13 @@ private slots:
 
 private:
     ::Ui::BlurEffectConfig ui;
+
+    void setContextualHelp(
+        KContextualHelpButton *const contextualHelpButton,
+        const QString &text,
+        QWidget *const heightHintWidget = nullptr
+    );
+    void setupContextualHelp();
 };
 
 } // namespace KWin

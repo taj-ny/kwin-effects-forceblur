@@ -273,11 +273,29 @@
       </attribute>
       <layout class="QVBoxLayout">
        <item>
-        <widget class="QLabel">
-         <property name="text">
-          <string>Classes of windows to force blur (one per line, two empty lines to match empty classes):</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout">
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="windowClassesBriefDescription">
+             <property name="text">
+              <string>Classes of windows to force blur:</string>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="KContextualHelpButton" name="windowClassesContextualHelp">
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QPlainTextEdit" name="kcfg_WindowClasses">
@@ -593,6 +611,15 @@ the background, resulting in much lower GPU usage.</string>
                   <widget class="QPushButton" name="staticBlurImagePicker">
                    <property name="icon">
                     <iconset theme="document-open"/>
+                   </property>
+                   <property name="toolTip">
+                    <string>Choose File...</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Choose File...</string>
+                   </property>
+                   <property name="accessibleDescription">
+                    <string>Choose an image file as static blur's source.</string>
                    </property>
                   </widget>
                  </item>
