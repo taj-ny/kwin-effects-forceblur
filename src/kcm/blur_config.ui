@@ -610,7 +610,7 @@ the background, resulting in much lower GPU usage.</string>
                  <item>
                   <widget class="QPushButton" name="staticBlurImagePicker">
                    <property name="icon">
-                    <iconset theme="document-open"/>
+                    <iconset theme="document-open-symbolic"/>
                    </property>
                    <property name="toolTip">
                     <string>Choose File...</string>
