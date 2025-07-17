@@ -577,7 +577,7 @@ the background, resulting in much lower GPU usage.</string>
            <item>
             <layout class="QHBoxLayout">
              <item>
-              <spacer name="horizontalSpacer_2">
+              <spacer name="horizontalSpacer_3">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
