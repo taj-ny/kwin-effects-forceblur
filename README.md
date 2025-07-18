@@ -79,7 +79,7 @@ Latest Better Blur versions for previous Plasma releases:
 
   [Repository](https://copr.fedorainfracloud.org/coprs/hazel-bunny/ricing/package/kwin-effects-forceblur/)
   ```
-  sudo dnf copr enable hazel-bunny/ports
+  sudo dnf copr enable hazel-bunny/ricing
   sudo dnf install --refresh kwin-effects-forceblur
   ```
 </details>
