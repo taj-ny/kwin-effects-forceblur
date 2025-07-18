@@ -281,6 +281,9 @@
              <property name="text">
               <string>Classes of windows to force blur:</string>
              </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -358,6 +361,9 @@
         <widget class="QLabel">
          <property name="text">
           <string>The corner radius only applies to the blur region.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -491,8 +497,10 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring
-the background, resulting in much lower GPU usage.</string>
+          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring the background, resulting in much lower GPU usage.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
