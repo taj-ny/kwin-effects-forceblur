@@ -193,12 +193,6 @@ private:
     qreal noiseTextureScale = 1.0;
     int noiseTextureStength = 0;
 
-    // used for disabling refraction when generating static blur
-    // other refraction values do *not* need to be set
-    float m_refractionStrength = 0;
-    float m_refractionRGBFringing = 1.0;
-    int m_refractionTextureRepeatMode = 0;
-
     BlurSettings m_settings;
 
     struct OffsetStruct
