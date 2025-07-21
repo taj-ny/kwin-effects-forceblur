@@ -22,11 +22,20 @@ vec2 applyTextureRepeatMode(vec2 coord) {
     } else if (refractionTextureRepeatMode == 1) {
         // flip on both axes
         vec2 flip = mod(coord, 2.0);
+
         vec2 result = coord;
-        if (flip.x > 1.0) result.x = 1.0 - mod(coord.x, 1.0);
-        else result.x = mod(coord.x, 1.0);
-        if (flip.y > 1.0) result.y = 1.0 - mod(coord.y, 1.0);
-        else result.y = mod(coord.y, 1.0);
+        if (flip.x > 1.0) {
+            result.x = 1.0 - mod(coord.x, 1.0);
+        } else {
+            result.x = mod(coord.x, 1.0);
+        }
+
+        if (flip.y > 1.0) {
+            result.y = 1.0 - mod(coord.y, 1.0);
+        } else {
+            result.y = mod(coord.y, 1.0);
+        }
+
         return result;
     }
     return coord;
@@ -35,8 +44,8 @@ vec2 applyTextureRepeatMode(vec2 coord) {
 // source: https://iquilezles.org/articles/distfunctions2d/
 // https://www.shadertoy.com/view/4llXD7
 float roundedRectangleDist(vec2 p, vec2 b, float r) {
-    vec2 q = abs(p)-b+r;
-    return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r;
+    vec2 q = abs(p) - b + r;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }
 
 void main(void)
@@ -53,7 +62,7 @@ void main(void)
     );
     float weights[8] = float[](1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0);
     float weightSum = 12.0;
-    vec4 sum = vec4(0,0,0,0);
+    vec4 sum = vec4(0, 0, 0, 0);
 
     if (refractionStrength > 0) {
         vec2 halfBlurSize = 0.5 * blurSize;

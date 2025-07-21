@@ -699,7 +699,6 @@ GLTexture *BlurEffect::ensureStaticBlurTexture(const Output *output, const Rende
     GLTexture *texture = effects->waylandDisplay()
         ? createStaticBlurTextureWayland(output, renderTarget, textureFormat)
         : createStaticBlurTextureX11(textureFormat);
-
     if (!texture) {
         return nullptr;
     }
@@ -1107,7 +1106,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         m_upsamplePass.shader->setUniform(m_upsamplePass.halfpixelLocation, halfpixel);
 
         if (w && m_settings.refraction.refractionStrength > 0) {
-            m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation, std::min(m_settings.refraction.edgeSizePixels, (float)std::min(deviceBackgroundRect.width()/2, deviceBackgroundRect.height()/2)));
+            m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation,
+                std::min(m_settings.refraction.edgeSizePixels, (float)std::min(deviceBackgroundRect.width() / 2, deviceBackgroundRect.height() / 2)));
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionRGBFringingLocation, m_settings.refraction.refractionRGBFringing);
