@@ -9,6 +9,7 @@ Better Blur is a fork of the Plasma 6 blur effect with additional features and b
 - Rounded corners with anti-aliasing
 - Static blur for much lower GPU usage
 - Adjust blur brightness, contrast and saturation
+- Refraction (by [@DaddelZeit](https://github.com/DaddelZeit) and [@iGerman00](https://github.com/iGerman00))
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.
