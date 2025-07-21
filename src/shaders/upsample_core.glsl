@@ -19,7 +19,8 @@ uniform int refractionTextureRepeatMode;
 in vec2 uv;
 out vec4 fragColor;
 
-vec2 applyTextureRepeatMode(vec2 coord) {
+vec2 applyTextureRepeatMode(vec2 coord)
+{
     if (refractionTextureRepeatMode == 0) {
         return clamp(coord, 0.0, 1.0);
     } else if (refractionTextureRepeatMode == 1) {
@@ -46,7 +47,8 @@ vec2 applyTextureRepeatMode(vec2 coord) {
 
 // source: https://iquilezles.org/articles/distfunctions2d/
 // https://www.shadertoy.com/view/4llXD7
-float roundedRectangleDist(vec2 p, vec2 b, float r) {
+float roundedRectangleDist(vec2 p, vec2 b, float r)
+{
     vec2 q = abs(p) - b + r;
     return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }
