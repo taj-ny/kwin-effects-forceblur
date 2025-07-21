@@ -96,6 +96,11 @@ BlurEffect::BlurEffect()
         m_upsamplePass.antialiasingLocation = m_upsamplePass.shader->uniformLocation("antialiasing");
         m_upsamplePass.blurSizeLocation = m_upsamplePass.shader->uniformLocation("blurSize");
         m_upsamplePass.opacityLocation = m_upsamplePass.shader->uniformLocation("opacity");
+        m_upsamplePass.edgeSizePixelsLocation = m_upsamplePass.shader->uniformLocation("edgeSizePixels");
+        m_upsamplePass.refractionStrengthLocation = m_upsamplePass.shader->uniformLocation("refractionStrength");
+        m_upsamplePass.refractionNormalPowLocation = m_upsamplePass.shader->uniformLocation("refractionNormalPow");
+        m_upsamplePass.refractionRGBFringingLocation = m_upsamplePass.shader->uniformLocation("refractionRGBFringing");
+        m_upsamplePass.refractionTextureRepeatModeLocation = m_upsamplePass.shader->uniformLocation("refractionTextureRepeatMode");
     }
 
     m_texture.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -1051,6 +1056,9 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         m_upsamplePass.shader->setUniform(m_upsamplePass.noiseLocation, false);
         m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));
 
+        // apply refraction ONLY on the last pass, otherwise this ends in weird stacking
+        m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, static_cast<float>(0));
+
         for (size_t i = renderInfo.framebuffers.size() - 1; i > 1; --i) {
             GLFramebuffer::popFramebuffer();
             const auto &read = renderInfo.framebuffers[i];
@@ -1096,6 +1104,15 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
                                   0.5 / read->colorAttachment()->height());
         m_upsamplePass.shader->setUniform(m_upsamplePass.halfpixelLocation, halfpixel);
+
+        if (w && m_settings.refraction.refractionStrength > 0) {
+            m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation,
+                std::min(m_settings.refraction.edgeSizePixels, (float)std::min(deviceBackgroundRect.width() / 2, deviceBackgroundRect.height() / 2)));
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionRGBFringingLocation, m_settings.refraction.refractionRGBFringing);
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionTextureRepeatModeLocation, m_settings.refraction.refractionTextureRepeatMode);
+        }
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

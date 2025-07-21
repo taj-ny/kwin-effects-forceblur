@@ -82,5 +82,20 @@ class3</default>
         <entry name="Contrast" type="Double">
             <default>1.0</default>
         </entry>
+        <entry name="RefractionNormalPow" type="Double">
+            <default>2.0</default>
+        </entry>
+        <entry name="RefractionStrength" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="RefractionEdgeSize" type="Double">
+            <default>20.0</default>
+        </entry>
+        <entry name="RefractionRGBFringing" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="RefractionTextureRepeatMode" type="Int">
+            <default>0</default>
+        </entry>
     </group>
 </kcfg>
