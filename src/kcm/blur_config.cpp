@@ -59,7 +59,8 @@ void BlurEffectConfig::setContextualHelp(
     KContextualHelpButton *const contextualHelpButton,
     const QString &text,
     QWidget *const heightHintWidget
-) {
+)
+{
     contextualHelpButton->setContextualHelpText(text);
     if (heightHintWidget) {
         const auto ownHeightHint = contextualHelpButton->sizeHint().height();
