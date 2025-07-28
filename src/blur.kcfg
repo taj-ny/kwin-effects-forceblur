@@ -86,7 +86,7 @@ class3</default>
             <default>2.0</default>
         </entry>
         <entry name="RefractionStrength" type="Double">
-            <default>1.0</default>
+            <default>0.0</default>
         </entry>
         <entry name="RefractionEdgeSize" type="Double">
             <default>20.0</default>
