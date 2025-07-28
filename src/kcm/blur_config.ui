@@ -273,11 +273,32 @@
       </attribute>
       <layout class="QVBoxLayout">
        <item>
-        <widget class="QLabel">
-         <property name="text">
-          <string>Classes of windows to force blur (one per line):</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout">
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="windowClassesBriefDescription">
+             <property name="text">
+              <string>Classes of windows to force blur:</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="KContextualHelpButton" name="windowClassesContextualHelp">
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QPlainTextEdit" name="kcfg_WindowClasses">
@@ -673,6 +694,9 @@
          <property name="text">
           <string>The corner radius only applies to the blur region.</string>
          </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -805,8 +829,10 @@
        <item>
         <widget class="QLabel">
          <property name="text">
-          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring
-the background, resulting in much lower GPU usage.</string>
+          <string>When enabled, a cached texture will be painted behind windows instead of actually blurring the background, resulting in much lower GPU usage.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -891,7 +917,7 @@ the background, resulting in much lower GPU usage.</string>
            <item>
             <layout class="QHBoxLayout">
              <item>
-              <spacer name="horizontalSpacer_2">
+              <spacer name="horizontalSpacer_3">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -924,7 +950,16 @@ the background, resulting in much lower GPU usage.</string>
                  <item>
                   <widget class="QPushButton" name="staticBlurImagePicker">
                    <property name="icon">
-                    <iconset theme="document-open"/>
+                    <iconset theme="document-open-symbolic"/>
+                   </property>
+                   <property name="toolTip">
+                    <string>Choose File...</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Choose File...</string>
+                   </property>
+                   <property name="accessibleDescription">
+                    <string>Choose an image file as static blur's source.</string>
                    </property>
                   </widget>
                  </item>

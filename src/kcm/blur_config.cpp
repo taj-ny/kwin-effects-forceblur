@@ -37,6 +37,8 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
             .replace("${repo}", "https://github.com/taj-ny/kwin-effects-forceblur");
         ui.aboutText->setHtml(html);
     }
+
+    setupContextualHelp();
 }
 
 BlurEffectConfig::~BlurEffectConfig()
@@ -51,6 +53,33 @@ void BlurEffectConfig::slotStaticBlurImagePickerClicked()
     }
 
     ui.kcfg_FakeBlurImage->setText(imagePath);
+}
+
+void BlurEffectConfig::setContextualHelp(
+    KContextualHelpButton *const contextualHelpButton,
+    const QString &text,
+    QWidget *const heightHintWidget
+)
+{
+    contextualHelpButton->setContextualHelpText(text);
+    if (heightHintWidget) {
+        const auto ownHeightHint = contextualHelpButton->sizeHint().height();
+        const auto otherHeightHint = heightHintWidget->sizeHint().height();
+        if (ownHeightHint >= otherHeightHint) {
+            contextualHelpButton->setHeightHintWidget(heightHintWidget);
+        }
+    }
+}
+
+void BlurEffectConfig::setupContextualHelp()
+{
+    setContextualHelp(
+        ui.windowClassesContextualHelp,
+        QStringLiteral("<p>Specify one window class per line.</p>") +
+        QStringLiteral("<p>Use <code>$blank</code> to match empty window classes.<br/>") +
+        QStringLiteral("Use <code>$$</code> for literal dollar sign.</p>"),
+        ui.windowClassesBriefDescription
+    );
 }
 
 void BlurEffectConfig::save()

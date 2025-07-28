@@ -15,7 +15,33 @@ void BlurSettings::read()
     general.saturation = BlurConfig::saturation();
     general.contrast = BlurConfig::contrast();
 
-    forceBlur.windowClasses = BlurConfig::windowClasses().split("\n");
+    forceBlur.windowClasses.clear();
+    const auto blank = QStringLiteral("blank");
+    for (const auto &line : BlurConfig::windowClasses().split("\n", Qt::SkipEmptyParts)) {
+        QString unescaped = "";
+        bool consumed = false;
+        for (qsizetype i = 0; i < line.size(); i++) {
+            const auto character = line[i];
+            if (character == QChar('$') && !consumed) {
+                consumed = true;
+                continue;
+            }
+            if (consumed) {
+                const qsizetype skips = blank.size();
+                if (line.mid(i, skips) == blank) {
+                    consumed = false;
+                    i += skips - 1;
+                    continue;
+                }
+            }
+            consumed = false;
+            unescaped += character;
+        }
+        if (consumed) {
+            unescaped += QChar('$');
+        }
+        forceBlur.windowClasses << unescaped;
+    }
     forceBlur.windowClassMatchingMode = BlurConfig::blurMatching() ? WindowClassMatchingMode::Whitelist : WindowClassMatchingMode::Blacklist;
     forceBlur.blurDecorations = BlurConfig::blurDecorations();
     forceBlur.blurMenus = BlurConfig::blurMenus();
