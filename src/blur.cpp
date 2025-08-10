@@ -97,10 +97,12 @@ BlurEffect::BlurEffect()
         m_upsamplePass.blurSizeLocation = m_upsamplePass.shader->uniformLocation("blurSize");
         m_upsamplePass.opacityLocation = m_upsamplePass.shader->uniformLocation("opacity");
         m_upsamplePass.edgeSizePixelsLocation = m_upsamplePass.shader->uniformLocation("edgeSizePixels");
+        m_upsamplePass.refractionCornerRadiusPixelsLocation = m_upsamplePass.shader->uniformLocation("refractionCornerRadiusPixels");
         m_upsamplePass.refractionStrengthLocation = m_upsamplePass.shader->uniformLocation("refractionStrength");
         m_upsamplePass.refractionNormalPowLocation = m_upsamplePass.shader->uniformLocation("refractionNormalPow");
         m_upsamplePass.refractionRGBFringingLocation = m_upsamplePass.shader->uniformLocation("refractionRGBFringing");
         m_upsamplePass.refractionTextureRepeatModeLocation = m_upsamplePass.shader->uniformLocation("refractionTextureRepeatMode");
+        m_upsamplePass.refractionModeLocation = m_upsamplePass.shader->uniformLocation("refractionMode");
     }
 
     m_texture.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -1108,10 +1110,12 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         if (w && m_settings.refraction.refractionStrength > 0) {
             m_upsamplePass.shader->setUniform(m_upsamplePass.edgeSizePixelsLocation,
                 std::min(m_settings.refraction.edgeSizePixels, (float)std::min(deviceBackgroundRect.width() / 2, deviceBackgroundRect.height() / 2)));
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionCornerRadiusPixelsLocation, m_settings.refraction.refractionCornerRadiusPixels);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionRGBFringingLocation, m_settings.refraction.refractionRGBFringing);
             m_upsamplePass.shader->setUniform(m_upsamplePass.refractionTextureRepeatModeLocation, m_settings.refraction.refractionTextureRepeatMode);
+            m_upsamplePass.shader->setUniform(m_upsamplePass.refractionModeLocation, m_settings.refraction.refractionMode);
         }
 
         glEnable(GL_BLEND);

@@ -159,10 +159,12 @@ private:
         int opacityLocation;
 
         int edgeSizePixelsLocation;
+        int refractionCornerRadiusPixelsLocation;
         int refractionStrengthLocation;
         int refractionNormalPowLocation;
         int refractionRGBFringingLocation;
         int refractionTextureRepeatModeLocation;
+        int refractionModeLocation;
     } m_upsamplePass;
 
     struct

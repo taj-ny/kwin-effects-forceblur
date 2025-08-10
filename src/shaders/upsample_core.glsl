@@ -11,10 +11,12 @@ uniform sampler2D noiseTexture;
 uniform vec2 noiseTextureSize;
 
 uniform float edgeSizePixels;
+uniform float refractionCornerRadiusPixels;
 uniform float refractionStrength;
 uniform float refractionNormalPow;
 uniform float refractionRGBFringing;
 uniform int refractionTextureRepeatMode;
+uniform int refractionMode; // 0: Basic, 1: Concave
 
 in vec2 uv;
 out vec4 fragColor;
@@ -45,6 +47,21 @@ vec2 applyTextureRepeatMode(vec2 coord)
     return coord;
 }
 
+// Concave lens-style radial mapping around the rect center, shaped by distance to edge
+vec2 concaveLensCoord(vec2 uv, float strength, float fringing, float dist, vec2 halfBlurSize)
+{
+    float edgeProximity = clamp(1.0 + dist / edgeSizePixels, 0.0, 1.0);
+    float shaped = sin(pow(edgeProximity, refractionNormalPow) * 1.57079632679);
+
+    vec2 fromCenter = uv - vec2(0.5);
+
+    float scaleR = 1.0 - shaped * strength * (1.0 + fringing);
+    float scaleG = 1.0 - shaped * strength;
+    float scaleB = 1.0 - shaped * strength * (1.0 - fringing);
+
+    return vec2(0.5) + fromCenter * scaleG;
+}
+
 // source: https://iquilezles.org/articles/distfunctions2d/
 // https://www.shadertoy.com/view/4llXD7
 float roundedRectangleDist(vec2 p, vec2 b, float r)
@@ -72,40 +89,68 @@ void main(void)
     if (refractionStrength > 0) {
         vec2 halfBlurSize = 0.5 * blurSize;
         vec2 position = uv * blurSize - halfBlurSize.xy;
-        float dist = roundedRectangleDist(position, halfBlurSize, edgeSizePixels);
+        float cornerR = min(refractionCornerRadiusPixels, min(halfBlurSize.x, halfBlurSize.y));
+        float distConcave = roundedRectangleDist(position, halfBlurSize, cornerR);
+        float distBulge = roundedRectangleDist(position, halfBlurSize, edgeSizePixels);
+        if (refractionMode == 1) {
+            float fringing = refractionRGBFringing * 0.3;
+            float baseStrength = 0.2 * refractionStrength;
 
-        float concaveFactor = pow(clamp(1.0 + dist / edgeSizePixels, 0.0, 1.0), refractionNormalPow);
+            float edgeProximity = clamp(1.0 + distConcave / edgeSizePixels, 0.0, 1.0);
+            float shaped = sin(pow(edgeProximity, refractionNormalPow) * 1.57079632679);
 
-        // Initial 2D normal
-        const float h = 1.0;
-        vec2 gradient = vec2(
-            roundedRectangleDist(position + vec2(h, 0), halfBlurSize, edgeSizePixels) - roundedRectangleDist(position - vec2(h, 0), halfBlurSize, edgeSizePixels),
-            roundedRectangleDist(position + vec2(0, h), halfBlurSize, edgeSizePixels) - roundedRectangleDist(position - vec2(0, h), halfBlurSize, edgeSizePixels)
-        );
+            vec2 fromCenter = uv - vec2(0.5);
+            float scaleR = 1.0 - shaped * baseStrength * (1.0 + fringing);
+            float scaleG = 1.0 - shaped * baseStrength;
+            float scaleB = 1.0 - shaped * baseStrength * (1.0 - fringing);
 
-        vec2 normal = length(gradient) > 1e-6 ? -normalize(gradient) : vec2(0.0, 1.0);
+            vec2 coordR = applyTextureRepeatMode(vec2(0.5) + fromCenter * scaleR);
+            vec2 coordG = applyTextureRepeatMode(vec2(0.5) + fromCenter * scaleG);
+            vec2 coordB = applyTextureRepeatMode(vec2(0.5) + fromCenter * scaleB);
 
-        float finalStrength = 0.2 * concaveFactor * refractionStrength;
+            for (int i = 0; i < 8; ++i) {
+                vec2 off = offsets[i] * offset;
+                sum.r += texture(texUnit, coordR + off).r * weights[i];
+                sum.g += texture(texUnit, coordG + off).g * weights[i];
+                sum.b += texture(texUnit, coordB + off).b * weights[i];
+                sum.a += texture(texUnit, coordG + off).a * weights[i];
+            }
 
-        // Different refraction offsets for each color channel
-        float fringingFactor = refractionRGBFringing * 0.3;
-        vec2 refractOffsetR = normal.xy * (finalStrength * (1.0 + fringingFactor)); // Red bends most
-        vec2 refractOffsetG = normal.xy * finalStrength;
-        vec2 refractOffsetB = normal.xy * (finalStrength * (1.0 - fringingFactor)); // Blue bends least
+            sum /= weightSum;
+        } else {
+            float concaveFactor = pow(clamp(1.0 + distBulge / edgeSizePixels, 0.0, 1.0), refractionNormalPow);
 
-        vec2 coordR = applyTextureRepeatMode(uv - refractOffsetR);
-        vec2 coordG = applyTextureRepeatMode(uv - refractOffsetG);
-        vec2 coordB = applyTextureRepeatMode(uv - refractOffsetB);
+            // Initial 2D normal
+            const float h = 1.0;
+            vec2 gradient = vec2(
+                roundedRectangleDist(position + vec2(h, 0), halfBlurSize, edgeSizePixels) - roundedRectangleDist(position - vec2(h, 0), halfBlurSize, edgeSizePixels),
+                roundedRectangleDist(position + vec2(0, h), halfBlurSize, edgeSizePixels) - roundedRectangleDist(position - vec2(0, h), halfBlurSize, edgeSizePixels)
+            );
 
-        for (int i = 0; i < 8; ++i) {
-            vec2 off = offsets[i] * offset;
-            sum.r += texture(texUnit, coordR + off).r * weights[i];
-            sum.g += texture(texUnit, coordG + off).g * weights[i];
-            sum.b += texture(texUnit, coordB + off).b * weights[i];
-            sum.a += texture(texUnit, coordG + off).a * weights[i];
+            vec2 normal = length(gradient) > 1e-6 ? -normalize(gradient) : vec2(0.0, 1.0);
+
+            float finalStrength = 0.2 * concaveFactor * refractionStrength;
+
+            // Different refraction offsets for each color channel
+            float fringingFactor = refractionRGBFringing * 0.3;
+            vec2 refractOffsetR = normal.xy * (finalStrength * (1.0 + fringingFactor)); // Red bends most
+            vec2 refractOffsetG = normal.xy * finalStrength;
+            vec2 refractOffsetB = normal.xy * (finalStrength * (1.0 - fringingFactor)); // Blue bends least
+
+            vec2 coordR = applyTextureRepeatMode(uv - refractOffsetR);
+            vec2 coordG = applyTextureRepeatMode(uv - refractOffsetG);
+            vec2 coordB = applyTextureRepeatMode(uv - refractOffsetB);
+
+            for (int i = 0; i < 8; ++i) {
+                vec2 off = offsets[i] * offset;
+                sum.r += texture(texUnit, coordR + off).r * weights[i];
+                sum.g += texture(texUnit, coordG + off).g * weights[i];
+                sum.b += texture(texUnit, coordB + off).b * weights[i];
+                sum.a += texture(texUnit, coordG + off).a * weights[i];
+            }
+
+            sum /= weightSum;
         }
-
-        sum /= weightSum;
     } else {
         for (int i = 0; i < 8; ++i) {
             vec2 off = offsets[i] * offset;
