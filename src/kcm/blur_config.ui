@@ -358,11 +358,11 @@
       </attribute>
       <layout class="QVBoxLayout">
        <item>
-          <widget class="QLabel" name="labelRefractionNote">
-           <property name="text">
-            <string>Refraction does not work when using static blur.</string>
-           </property>
-          </widget>
+        <widget class="QLabel" name="labelRefractionNote">
+         <property name="text">
+          <string>Refraction does not work when using static blur.</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="labelRefractionStrength">
@@ -402,7 +402,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-             <number>30</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -431,47 +431,47 @@
         </layout>
        </item>
        <item>
-         <widget class="QLabel" name="labelRefractionMode">
-          <property name="text">
-           <string>Refraction Mode:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayoutRefractionMode">
-          <item>
-           <spacer name="horizontalSpacerRefractionMode">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+        <widget class="QLabel" name="labelRefractionMode">
+         <property name="text">
+          <string>Refraction Mode:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionMode">
+         <item>
+          <spacer name="horizontalSpacerRefractionMode">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QComboBox" name="kcfg_RefractionMode">
+           <item>
+            <property name="text">
+             <string>Basic (Bulge)</string>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+           </item>
+           <item>
+            <property name="text">
+             <string>Concave (Lens)</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QComboBox" name="kcfg_RefractionMode">
-            <item>
-             <property name="text">
-              <string>Basic (Bulge)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Concave (Lens)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QLabel" name="labelRefractionEdgeSize">
          <property name="text">
           <string>Refraction Edge Size:</string>
@@ -509,7 +509,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-             <number>30</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -707,7 +707,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-             <number>30</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -735,61 +735,61 @@
          </item>
         </layout>
        </item>
-        <item>
-         <widget class="QLabel" name="labelRefractionTextureRepeatMode">
-          <property name="text">
-           <string>Edge Behavior:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayoutTextureRepeatMode">
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+       <item>
+        <widget class="QLabel" name="labelRefractionTextureRepeatMode">
+         <property name="text">
+          <string>Edge Behavior:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayoutTextureRepeatMode">
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QComboBox" name="kcfg_RefractionTextureRepeatMode">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>Clamp (extend edge pixels)</string>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+           </item>
+           <item>
+            <property name="text">
+             <string>Flip (mirror texture)</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QComboBox" name="kcfg_RefractionTextureRepeatMode">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <item>
-             <property name="text">
-              <string>Clamp (extend edge pixels)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Flip (mirror texture)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item>
         <spacer name="verticalSpacer">
-          <property name="orientation">
-            <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-            <size>
-            <width>0</width>
-            <height>0</height>
-            </size>
-          </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
         </spacer>
        </item>
       </layout>
