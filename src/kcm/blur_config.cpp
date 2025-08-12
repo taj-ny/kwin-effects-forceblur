@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QPushButton>
 #include <QComboBox>
+#include <QLabel>
 
 namespace KWin
 {
@@ -44,6 +45,12 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
         }
         if (ui.labelRefractionCornerRadius) {
             ui.labelRefractionCornerRadius->setEnabled(concave);
+        }
+        if (ui.labelRefractionCornerRadiusSquare) {
+            ui.labelRefractionCornerRadiusSquare->setEnabled(concave);
+        }
+        if (ui.labelRefractionCornerRadiusRound) {
+            ui.labelRefractionCornerRadiusRound->setEnabled(concave);
         }
     };
     if (ui.kcfg_RefractionMode) {

@@ -628,8 +628,8 @@
            </property>
           </spacer>
          </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionNormalPowRound">
+          <item>
+           <widget class="QLabel" name="labelRefractionCornerRadiusSquare">
            <property name="text">
             <string>Square</string>
            </property>
@@ -660,8 +660,8 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionNormalPowRound">
+          <item>
+           <widget class="QLabel" name="labelRefractionCornerRadiusRound">
            <property name="text">
             <string>Round</string>
            </property>
