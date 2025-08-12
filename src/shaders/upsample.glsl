@@ -113,7 +113,7 @@ void main(void)
     }
 
     if (noise) {
-        sum += vec4(texture2D(noiseTexture, vec2(uv.x, 1.0 - uv.y) * blurSize / noiseTextureSize).rrr, 0.0);
+        sum += vec4(texture2D(noiseTexture, gl_FragCoord.xy / noiseTextureSize).rrr, 0.0);
     }
 
     gl_FragColor = roundedRectangle(uv * blurSize, sum.rgb);
