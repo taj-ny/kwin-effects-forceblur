@@ -343,13 +343,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QCheckBox" name="kcfg_PaintAsTranslucent">
-         <property name="text">
-          <string>Paint windows as non-opaque (fixes artifacts for some transparent windows)</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="widget">

@@ -540,6 +540,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
             data.opaque -= QRect(blurRect.x() + blurRect.width() - topCornerRadius, blurRect.y(), topCornerRadius, topCornerRadius);
             data.opaque -= QRect(blurRect.x(), blurRect.y() + blurRect.height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius);
             data.opaque -= QRect(blurRect.x() + blurRect.width() - bottomCornerRadius, blurRect.y() + blurRect.height() - bottomCornerRadius, bottomCornerRadius, bottomCornerRadius);
+            data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
         }
     }
 
@@ -576,10 +577,6 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         }
     }
 
-    if (m_settings.forceBlur.markWindowAsTranslucent && !staticBlur && shouldForceBlur(w)) {
-        data.setTranslucent();
-    }
-
     effects->prePaintWindow(w, data, presentTime);
 
     if (!staticBlur) {
@@ -614,6 +611,9 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         }
 
         m_currentBlur += blurArea;
+        if (!blurArea.isEmpty()) {
+            data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
+        }
     }
 
     m_paintedArea -= data.opaque;
