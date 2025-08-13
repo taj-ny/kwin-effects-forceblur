@@ -60,10 +60,12 @@ struct StaticBlurSettings
 struct RefractionSettings
 {
     float edgeSizePixels;
+    float refractionCornerRadiusPixels;
     float refractionStrength;
     float refractionNormalPow;
     float refractionRGBFringing;
     int refractionTextureRepeatMode;
+    int refractionMode; // 0: Basic (bulge), 1: Concave (lens)
 };
 
 class BlurSettings

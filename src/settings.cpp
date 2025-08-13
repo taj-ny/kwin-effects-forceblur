@@ -65,10 +65,21 @@ void BlurSettings::read()
     staticBlur.blurCustomImage = BlurConfig::fakeBlurCustomImageBlur();
 
     refraction.edgeSizePixels = BlurConfig::refractionEdgeSize() * 10;
-    refraction.refractionStrength = BlurConfig::refractionStrength() / 20.0;
+
+    {
+        const double maxCorner = 200.0;
+        const double steps = 30.0;
+        const double stepSize = maxCorner / steps; // ≈6.6667
+        const double raw = BlurConfig::refractionCornerRadius();
+        const double snapped = std::round(raw / stepSize) * stepSize;
+        refraction.refractionCornerRadiusPixels = snapped;
+    }
+
+    refraction.refractionStrength = BlurConfig::refractionStrength() / 30.0;
     refraction.refractionNormalPow = BlurConfig::refractionNormalPow() / 2.0;
-    refraction.refractionRGBFringing = BlurConfig::refractionRGBFringing() / 20.0;  // Scale to 0-1 range
+    refraction.refractionRGBFringing = BlurConfig::refractionRGBFringing() / 30.0;
     refraction.refractionTextureRepeatMode = BlurConfig::refractionTextureRepeatMode();
+    refraction.refractionMode = BlurConfig::refractionMode();
 }
 
 }

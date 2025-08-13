@@ -88,10 +88,16 @@ class3</default>
         <entry name="RefractionEdgeSize" type="Double">
             <default>20.0</default>
         </entry>
+        <entry name="RefractionCornerRadius" type="Double">
+            <default>8.0</default>
+        </entry>
         <entry name="RefractionRGBFringing" type="Double">
             <default>1.0</default>
         </entry>
         <entry name="RefractionTextureRepeatMode" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="RefractionMode" type="Int">
             <default>0</default>
         </entry>
     </group>

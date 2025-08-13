@@ -351,11 +351,11 @@
       </attribute>
       <layout class="QVBoxLayout">
        <item>
-          <widget class="QLabel" name="labelRefractionNote">
-           <property name="text">
-            <string>Refraction does not work when using static blur.</string>
-           </property>
-          </widget>
+        <widget class="QLabel" name="labelRefractionNote">
+         <property name="text">
+          <string>Refraction does not work when using static blur.</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="labelRefractionStrength">
@@ -395,7 +395,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-            <number>20</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -419,6 +419,47 @@
            <property name="text">
             <string>Strong</string>
            </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelRefractionMode">
+         <property name="text">
+          <string>Refraction Mode:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionMode">
+         <item>
+          <spacer name="horizontalSpacerRefractionMode">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QComboBox" name="kcfg_RefractionMode">
+           <item>
+            <property name="text">
+             <string>Basic (Bulge)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Concave (Lens)</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>
@@ -461,7 +502,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-            <number>20</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -556,6 +597,72 @@
         </layout>
        </item>
        <item>
+        <widget class="QLabel" name="labelRefractionCornerRadius">
+         <property name="text">
+          <string>Refraction Corner Radius:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayoutCornerRadius">
+         <item>
+          <spacer name="horizontalSpacerCornerRadius">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+          <item>
+           <widget class="QLabel" name="labelRefractionCornerRadiusSquare">
+           <property name="text">
+            <string>Square</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="kcfg_RefractionCornerRadius">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>200</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>7</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksBelow</enum>
+           </property>
+           <property name="tickInterval">
+            <number>7</number>
+           </property>
+          </widget>
+         </item>
+          <item>
+           <widget class="QLabel" name="labelRefractionCornerRadiusRound">
+           <property name="text">
+            <string>Round</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QLabel" name="labelRefractionRGBFringing">
          <property name="text">
           <string>RGB Fringing Strength:</string>
@@ -593,7 +700,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-            <number>20</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -648,6 +755,9 @@
          </item>
          <item>
           <widget class="QComboBox" name="kcfg_RefractionTextureRepeatMode">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <item>
             <property name="text">
              <string>Clamp (extend edge pixels)</string>
@@ -664,15 +774,15 @@
        </item>
        <item>
         <spacer name="verticalSpacer">
-          <property name="orientation">
-            <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-            <size>
-            <width>0</width>
-            <height>0</height>
-            </size>
-          </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
         </spacer>
        </item>
       </layout>

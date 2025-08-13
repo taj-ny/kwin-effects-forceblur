@@ -15,6 +15,8 @@
 
 #include <QFileDialog>
 #include <QPushButton>
+#include <QComboBox>
+#include <QLabel>
 
 namespace KWin
 {
@@ -27,6 +29,34 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     ui.setupUi(widget());
     BlurConfig::instance("kwinrc");
     addConfig(BlurConfig::self(), widget());
+
+    // Disable Edge Behavior when Concave mode is selected - not relevant
+    auto updateEdgeBehaviorEnabled = [this]() {
+        const bool concave = ui.kcfg_RefractionMode && ui.kcfg_RefractionMode->currentIndex() == 1;
+        if (ui.kcfg_RefractionTextureRepeatMode) {
+            ui.kcfg_RefractionTextureRepeatMode->setEnabled(!concave);
+        }
+        if (ui.labelRefractionTextureRepeatMode) {
+            ui.labelRefractionTextureRepeatMode->setEnabled(!concave);
+        }
+        // Corner radius is only relevant for Concave as Basic breaks with low values
+        if (ui.kcfg_RefractionCornerRadius) {
+            ui.kcfg_RefractionCornerRadius->setEnabled(concave);
+        }
+        if (ui.labelRefractionCornerRadius) {
+            ui.labelRefractionCornerRadius->setEnabled(concave);
+        }
+        if (ui.labelRefractionCornerRadiusSquare) {
+            ui.labelRefractionCornerRadiusSquare->setEnabled(concave);
+        }
+        if (ui.labelRefractionCornerRadiusRound) {
+            ui.labelRefractionCornerRadiusRound->setEnabled(concave);
+        }
+    };
+    if (ui.kcfg_RefractionMode) {
+        connect(ui.kcfg_RefractionMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [updateEdgeBehaviorEnabled](int){ updateEdgeBehaviorEnabled(); });
+        updateEdgeBehaviorEnabled();
+    }
 
     connect(ui.staticBlurImagePicker, &QPushButton::clicked, this, &BlurEffectConfig::slotStaticBlurImagePickerClicked);
 
