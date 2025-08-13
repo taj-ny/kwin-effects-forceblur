@@ -36,7 +36,6 @@ struct ForceBlurSettings
     bool blurDecorations;
     bool blurMenus;
     bool blurDocks;
-    bool markWindowAsTranslucent;
 };
 
 struct RoundedCornersSettings

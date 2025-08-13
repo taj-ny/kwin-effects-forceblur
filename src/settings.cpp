@@ -46,7 +46,6 @@ void BlurSettings::read()
     forceBlur.blurDecorations = BlurConfig::blurDecorations();
     forceBlur.blurMenus = BlurConfig::blurMenus();
     forceBlur.blurDocks = BlurConfig::blurDocks();
-    forceBlur.markWindowAsTranslucent = BlurConfig::paintAsTranslucent();
 
     roundedCorners.windowTopRadius = BlurConfig::topCornerRadius();
     roundedCorners.windowBottomRadius = BlurConfig::bottomCornerRadius();

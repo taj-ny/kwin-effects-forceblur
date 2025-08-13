@@ -14,9 +14,6 @@ Whether to blur window decorations, including borders. Enable this if your windo
 
 This option will override the blur region specified by the decoration.
 
-### Paint windows as non-opaque
-Fixes transparency for some applications by marking their windows as transparent. This will only be done for force-blurred windows.
-
 # Static blur
 When enabled, the blur texture will be cached and reused. The blurred areas of the window will be marked as opaque, resulting in KWin not painting anything behind them.
 Only one image per screen is cached at a time.
